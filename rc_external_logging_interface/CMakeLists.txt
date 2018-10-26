@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(rclogging_interfaces)
+project(rc_external_logging_interface)
 
 # Default to C11
 if(NOT CMAKE_C_STANDARD)
@@ -11,10 +11,7 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 
-find_package(ament_cmake_python REQUIRED)
 find_package(ament_cmake_ros REQUIRED)
-
-ament_python_install_package(${PROJECT_NAME})
 
 include_directories(include)
 
@@ -22,16 +19,10 @@ if(NOT WIN32)
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-set(${PROJECT_NAME}_sources
-)
-set_source_files_properties(
-  ${${PROJECT_NAME}_sources}
-  PROPERTIES language "C")
+set(${PROJECT_NAME}_sources )
+set_source_files_properties(${${PROJECT_NAME}_sources} PROPERTIES language "C")
 
-
-add_library(
-  ${PROJECT_NAME}
-  ${${PROJECT_NAME}_sources})
+add_library(${PROJECT_NAME} INTERFACE)
 
 
 install(TARGETS ${PROJECT_NAME}
@@ -42,9 +33,9 @@ install(TARGETS ${PROJECT_NAME}
 
 ament_export_dependencies(ament_cmake)
 ament_export_include_directories(include)
-ament_export_libraries(${PROJECT_NAME})
+#ament_export_libraries(${PROJECT_NAME})
 ament_package()
 
 install(
-  DIRECTORY include/ ${CMAKE_CURRENT_BINARY_DIR}/include/
+  DIRECTORY include/
   DESTINATION include)

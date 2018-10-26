@@ -16,13 +16,16 @@
 #define RC_EXTERNAL_LOGGING_RC_EXTERNAL_LOGGING_H_
 
 #include <stdarg.h>
+#include <rc_external_logging/visibility_control.h>
 
 
 typedef int rc_external_logging_ret_t;
-#define RC_EXTERNAL_LOGGING_RET_OK                  (0)
-#define RC_EXTERNAL_LOGGING_RET_WARN                (1)
-#define RC_EXTERNAL_LOGGING_RET_ERROR               (2)
-#define RC_EXTERNAL_LOGGING_RET_INVALID_ARGUMENT    (11)
+#define RC_EXTERNAL_LOGGING_RET_OK                          (0)
+#define RC_EXTERNAL_LOGGING_RET_WARN                        (1)
+#define RC_EXTERNAL_LOGGING_RET_ERROR                       (2)
+#define RC_EXTERNAL_LOGGING_RET_INVALID_ARGUMENT            (11)
+#define RC_EXTERNAL_LOGGING_RET_CONFIG_FILE_DOESNT_EXIST    (21)
+#define RC_EXTERNAL_LOGGING_RET_CONFIG_FILE_INVALID         (22)
 
 /* These are defined here to match the severity levels in rcutils. They provide a consistent way for external logger
     implementations to map between the incoming integer severity from ROS to the concept of DEBUG, INFO, WARN, ERROR,
@@ -62,11 +65,10 @@ rc_external_logging_ret_t rc_external_logging_shutdown();
  *  \param severity The severity level of the message being logged
  *  \param name The name of the logger, must be a null terminated c string or NULL. If NULL or empty the root logger will
  *          be used.
- *  \param format The format string for the log message. Must be a null terminated c string.
- *  \param ... The variable arguments used to format the string above.
+ *  \param msg The message to be logged. Must be a null terminated c string.
  */
 RC_EXTERNAL_LOGGING_PUBLIC
-void rc_external_logging_log(int severity, const char * name, const char * format, ...);
+void rc_external_logging_log(int severity, const char * name, const char * msg);
 
 
 /**
