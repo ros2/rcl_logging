@@ -24,7 +24,7 @@
 #if defined _WIN32 || defined __CYGWIN__
     #include <Windows.h>
     #define GET_PID() ((int)GetCurrentProcessId())
-    /* TODO(nburek): Change this to default to the %appdata% folder on Windows */
+/* TODO(nburek): Change this to default to the %appdata% folder on Windows */
     #define DEFAULT_LOG_FILE    "ros_logs/%i.log"
 #else
     #include <unistd.h>
@@ -42,7 +42,7 @@ typedef int rc_logging_ret_t;
 #define RC_LOGGING_RET_CONFIG_FILE_DOESNT_EXIST    (21)
 #define RC_LOGGING_RET_CONFIG_FILE_INVALID         (22)
 
-/* These are defined here to match the severity levels in rcutils. They provide a consistent way for external logger
+/* These are defined here to match the severity levels in rcl. They provide a consistent way for external logger
     implementations to map between the incoming integer severity from ROS to the concept of DEBUG, INFO, WARN, ERROR,
     and FATAL*/
 enum RC_LOGGING_LOG_SEVERITY
@@ -59,80 +59,87 @@ enum RC_LOGGING_LOG_SEVERITY
  *  Maps the logger name to the log4cxx logger. If the name is null or empty it will map to the
  *  root logger.
  */
-static const log4cxx::LoggerPtr get_logger(const char * name) {
-    if (nullptr == name ||  '\0' == name[0]) {
-        return log4cxx::Logger::getRootLogger();
+static const log4cxx::LoggerPtr get_logger(const char * name)
+{
+  if (nullptr == name || '\0' == name[0]) {
+    return log4cxx::Logger::getRootLogger();
+  }
+  return log4cxx::Logger::getLogger(name);
+}
+
+static const log4cxx::LevelPtr map_external_log_level_to_library_level(int external_level)
+{
+  log4cxx::LevelPtr level;
+  // map to the next highest level of severity
+  if (external_level <= RC_LOGGING_SEVERITY_DEBUG) {
+    level = log4cxx::Level::getDebug();
+  } else if (external_level <= RC_LOGGING_SEVERITY_INFO) {
+    level = log4cxx::Level::getInfo();
+  } else if (external_level <= RC_LOGGING_SEVERITY_WARN) {
+    level = log4cxx::Level::getWarn();
+  } else if (external_level <= RC_LOGGING_SEVERITY_ERROR) {
+    level = log4cxx::Level::getError();
+  } else if (external_level <= RC_LOGGING_SEVERITY_FATAL) {
+    level = log4cxx::Level::getFatal();
+  }
+  return level;
+}
+
+rc_logging_ret_t rcl_logging_external_initialize(const char * config_file)
+{
+  log4cxx::File file(config_file);
+  log4cxx::helpers::Pool pool;
+  bool config_file_provided = (nullptr != config_file) && (config_file[0] != '\0');
+  bool use_default_config = !config_file_provided;
+  rc_logging_ret_t status = RC_LOGGING_RET_OK;
+
+  if (config_file_provided && !file.exists(pool)) {
+    // The provided config file doesn't exist, fall back to using default configuration
+    use_default_config = true;
+    status = RC_LOGGING_RET_CONFIG_FILE_DOESNT_EXIST;
+  } else if (config_file_provided) {
+    // Attempt to configure the system using the provided config file, but if we fail fall back to using the default
+    // configuration
+    try {
+      log4cxx::PropertyConfigurator::configure(file);
+    } catch (std::exception & ex) {
+      use_default_config = true;
+      status = RC_LOGGING_RET_CONFIG_FILE_INVALID;
     }
-    return log4cxx::Logger::getLogger(name);
+  }
+
+  if (use_default_config) {
+    // Set the default File Appender on the root logger
+    log4cxx::LoggerPtr root_logger(get_logger(nullptr));
+    log4cxx::LayoutPtr layout(new log4cxx::PatternLayout("%m%n"));
+    char log_name_buffer[64];
+    snprintf(log_name_buffer, sizeof(log_name_buffer), DEFAULT_LOG_FILE, GET_PID());
+    log4cxx::FileAppenderPtr file_appender(new log4cxx::FileAppender(layout, log_name_buffer,
+      true));
+    root_logger->addAppender(file_appender);
+  }
+
+  return status;
 }
 
-static const log4cxx::LevelPtr map_external_log_level_to_library_level(int external_level) {
-    log4cxx::LevelPtr level;
-    // map to the next highest level of severity
-    if (external_level <= RC_LOGGING_SEVERITY_DEBUG) {
-        level = log4cxx::Level::getDebug();
-    } else if (external_level <= RC_LOGGING_SEVERITY_INFO) {
-        level = log4cxx::Level::getInfo();
-    } else if (external_level <= RC_LOGGING_SEVERITY_WARN) {
-        level = log4cxx::Level::getWarn();
-    } else if (external_level <= RC_LOGGING_SEVERITY_ERROR) {
-        level = log4cxx::Level::getError();
-    } else if (external_level <= RC_LOGGING_SEVERITY_FATAL) {
-        level = log4cxx::Level::getFatal();
-    }
-    return level;
+rc_logging_ret_t rcl_logging_external_shutdown()
+{
+  log4cxx::BasicConfigurator::resetConfiguration();
+  return RC_LOGGING_RET_OK;
 }
 
-rc_logging_ret_t rcutils_logging_external_initialize(const char * config_file) {
-    log4cxx::File file(config_file);
-    log4cxx::helpers::Pool pool;
-    bool config_file_provided = (nullptr != config_file) && (config_file[0] != '\0');
-    bool use_default_config = !config_file_provided;
-    rc_logging_ret_t status = RC_LOGGING_RET_OK;
-
-    if (config_file_provided && !file.exists(pool)) {
-        // The provided config file doesn't exist, fall back to using default configuration
-        use_default_config = true;
-        status = RC_LOGGING_RET_CONFIG_FILE_DOESNT_EXIST;
-    } else if (config_file_provided) {
-        // Attempt to configure the system using the provided config file, but if we fail fall back to using the default
-        // configuration
-        try {
-            log4cxx::PropertyConfigurator::configure(file);
-        } catch (std::exception& ex) {
-            use_default_config = true;
-            status = RC_LOGGING_RET_CONFIG_FILE_INVALID;
-        }
-    }
-
-    if (use_default_config) {
-        // Set the default File Appender on the root logger
-        log4cxx::LoggerPtr root_logger(get_logger(nullptr));
-        log4cxx::LayoutPtr layout(new log4cxx::PatternLayout("%m%n"));
-        char log_name_buffer[64];
-        snprintf(log_name_buffer, sizeof(log_name_buffer), DEFAULT_LOG_FILE, GET_PID());
-        log4cxx::FileAppenderPtr file_appender(new log4cxx::FileAppender(layout, log_name_buffer, true));
-        root_logger->addAppender(file_appender);
-    }
-
-    return status;
+void rcl_logging_external_log(int severity, const char * name, const char * msg)
+{
+  log4cxx::LoggerPtr logger(get_logger(name));
+  log4cxx::LevelPtr level(map_external_log_level_to_library_level(severity));
+  logger->log(level, msg);
 }
 
-rc_logging_ret_t rcutils_logging_external_shutdown() {
-    log4cxx::BasicConfigurator::resetConfiguration();
-    return RC_LOGGING_RET_OK;
-}
-
-void rcutils_logging_external_log(int severity, const char * name, const char * msg) {
-    log4cxx::LoggerPtr  logger(get_logger(name));
-    log4cxx::LevelPtr level(map_external_log_level_to_library_level(severity));
-    logger->log(level, msg);
-}
-
-rc_logging_ret_t rcutils_logging_external_set_logger_level(const char * name, int level) {
-    log4cxx::LoggerPtr  logger(get_logger(name));
-    logger->setLevel(map_external_log_level_to_library_level(level));
-    return RC_LOGGING_RET_OK;
+rc_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int level)
+{
+  log4cxx::LoggerPtr logger(get_logger(name));
+  logger->setLevel(map_external_log_level_to_library_level(level));
+  return RC_LOGGING_RET_OK;
 }
 
 } /* extern "C" */
