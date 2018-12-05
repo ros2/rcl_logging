@@ -24,7 +24,14 @@ set(${PROJECT_NAME}_sources
 )
 #set_source_files_properties(${${PROJECT_NAME}_sources} PROPERTIES language "CXX")
 
-add_library(${PROJECT_NAME} ${${PROJECT_NAME}_sources})
+if(NOT WIN32)
+  add_library(${PROJECT_NAME} ${${PROJECT_NAME}_sources})
+else()
+  # TODO(nburek): There is an issue with build on Windows where it is looking for a static lib
+  # and can't find it when trying to call find_package() for this package. This explicitly creates
+  # it.
+  add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_sources})
+endif()
 
 ament_target_dependencies(${PROJECT_NAME}
     ${dependencies}
