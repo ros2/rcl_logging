@@ -34,7 +34,7 @@
 
 extern "C" {
 
-typedef int rc_logging_ret_t;
+typedef int rcl_logging_ret_t;
 #define RC_LOGGING_RET_OK                          (0)
 #define RC_LOGGING_RET_WARN                        (1)
 #define RC_LOGGING_RET_ERROR                       (2)
@@ -85,13 +85,13 @@ static const log4cxx::LevelPtr map_external_log_level_to_library_level(int exter
   return level;
 }
 
-rc_logging_ret_t rcl_logging_external_initialize(const char * config_file)
+rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file)
 {
   log4cxx::File file(config_file);
   log4cxx::helpers::Pool pool;
   bool config_file_provided = (nullptr != config_file) && (config_file[0] != '\0');
   bool use_default_config = !config_file_provided;
-  rc_logging_ret_t status = RC_LOGGING_RET_OK;
+  rcl_logging_ret_t status = RC_LOGGING_RET_OK;
 
   if (config_file_provided && !file.exists(pool)) {
     // The provided config file doesn't exist, fall back to using default configuration
@@ -122,7 +122,7 @@ rc_logging_ret_t rcl_logging_external_initialize(const char * config_file)
   return status;
 }
 
-rc_logging_ret_t rcl_logging_external_shutdown()
+rcl_logging_ret_t rcl_logging_external_shutdown()
 {
   log4cxx::BasicConfigurator::resetConfiguration();
   return RC_LOGGING_RET_OK;
@@ -135,7 +135,7 @@ void rcl_logging_external_log(int severity, const char * name, const char * msg)
   logger->log(level, msg);
 }
 
-rc_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int level)
+rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int level)
 {
   log4cxx::LoggerPtr logger(get_logger(name));
   logger->setLevel(map_external_log_level_to_library_level(level));
