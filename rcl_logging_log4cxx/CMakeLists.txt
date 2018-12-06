@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(rc_logging_noop)
+project(rcl_logging_log4cxx)
 
 # Default to C11
 if(NOT CMAKE_C_STANDARD)
@@ -13,6 +13,10 @@ endif()
 
 find_package(ament_cmake_ros REQUIRED)
 
+set(dependencies
+    log4cxx
+)
+
 include_directories(${ament_INCLUDE_DIRS})
 
 if(NOT WIN32)
@@ -20,18 +24,11 @@ if(NOT WIN32)
 endif()
 
 set(${PROJECT_NAME}_sources
-    src/rc_logging_noop/rc_logging_noop.cpp
+    src/rcl_logging_log4cxx/rcl_logging_log4cxx.cpp
 )
 #set_source_files_properties(${${PROJECT_NAME}_sources} PROPERTIES language "CXX")
 
-if(NOT WIN32)
-  add_library(${PROJECT_NAME} ${${PROJECT_NAME}_sources})
-else()
-  # TODO(nburek): There is an issue with build on Windows where it is looking for a static lib
-  # and can't find it when trying to call find_package() for this package. This explicitly creates
-  # it.
-  add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_sources})
-endif()
+add_library(${PROJECT_NAME} ${${PROJECT_NAME}_sources})
 
 ament_target_dependencies(${PROJECT_NAME}
     ${dependencies}

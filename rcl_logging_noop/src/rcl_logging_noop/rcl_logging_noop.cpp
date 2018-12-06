@@ -15,16 +15,16 @@
 
 extern "C" {
 
-typedef int rc_logging_ret_t;
+typedef int rcl_logging_ret_t;
 #define RC_LOGGING_RET_OK   (0)
 
-rc_logging_ret_t rcl_logging_external_initialize(const char * config_file)
+rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file)
 {
   (void) config_file;
   return RC_LOGGING_RET_OK;
 }
 
-rc_logging_ret_t rcl_logging_external_shutdown()
+rcl_logging_ret_t rcl_logging_external_shutdown()
 {
   return RC_LOGGING_RET_OK;
 }
@@ -36,7 +36,7 @@ void rcl_logging_external_log(int severity, const char * name, const char * msg)
   (void) msg;
 }
 
-rc_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int level)
+rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int level)
 {
   (void) name;
   (void) level;
