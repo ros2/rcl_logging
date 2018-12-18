@@ -111,10 +111,10 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file)
   if (use_default_config) {
     // Set the default File Appender on the root logger
     log4cxx::LoggerPtr root_logger(get_logger(nullptr));
-    log4cxx::LayoutPtr layout(new log4cxx::PatternLayout("%m%n"));
+    log4cxx::LayoutPtr layout(new log4cxx::PatternLayout(LOG4CXX_STR("%m%n")));
     char log_name_buffer[64];
     snprintf(log_name_buffer, sizeof(log_name_buffer), DEFAULT_LOG_FILE, GET_PID());
-    log4cxx::FileAppenderPtr file_appender(new log4cxx::FileAppender(layout, log_name_buffer,
+    log4cxx::FileAppenderPtr file_appender(new log4cxx::FileAppender(layout, LOG4CXX_STR(log_name_buffer),
       true));
     root_logger->addAppender(file_appender);
   }
