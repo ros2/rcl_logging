@@ -114,7 +114,9 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file)
     log4cxx::LayoutPtr layout(new log4cxx::PatternLayout(LOG4CXX_STR("%m%n")));
     char log_name_buffer[64];
     snprintf(log_name_buffer, sizeof(log_name_buffer), DEFAULT_LOG_FILE, GET_PID());
-    log4cxx::FileAppenderPtr file_appender(new log4cxx::FileAppender(layout, LOG4CXX_STR(log_name_buffer),
+    std::string log_name_str(log_name_buffer);
+    LOG4CXX_DECODE_CHAR(log_name_l4cxx_str, log_name_str);
+    log4cxx::FileAppenderPtr file_appender(new log4cxx::FileAppender(layout, log_name_l4cxx_str,
       true));
     root_logger->addAppender(file_appender);
   }

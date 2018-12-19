@@ -15,10 +15,6 @@ find_package(ament_cmake_ros REQUIRED)
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(Log4cxx REQUIRED)
 
-set(dependencies
-    Log4cxx
-)
-
 include_directories(${ament_INCLUDE_DIRS})
 
 if(NOT WIN32)
@@ -33,7 +29,7 @@ set(${PROJECT_NAME}_sources
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_sources})
 
 ament_target_dependencies(${PROJECT_NAME}
-    ${dependencies}
+    Log4cxx
 )
 
 install(TARGETS ${PROJECT_NAME}
@@ -42,5 +38,5 @@ install(TARGETS ${PROJECT_NAME}
   RUNTIME DESTINATION bin)
 
 ament_export_dependencies(ament_cmake)
-ament_export_libraries(${PROJECT_NAME} ${dependencies})
+ament_export_libraries(${PROJECT_NAME} log4cxx)
 ament_package()
