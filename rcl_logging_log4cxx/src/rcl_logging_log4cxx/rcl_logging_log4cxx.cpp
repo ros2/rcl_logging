@@ -19,6 +19,13 @@
 #include <log4cxx/file.h>
 #include <log4cxx/fileappender.h>
 #include <log4cxx/patternlayout.h>
+#include <log4cxx/helpers/transcoder.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "rcl_logging_log4cxx/logging_interface.h"
 
 
 #if defined _WIN32 || defined __CYGWIN__
@@ -32,9 +39,7 @@
     #define DEFAULT_LOG_FILE    "/var/log/ros/%i.log"
 #endif
 
-extern "C" {
 
-typedef int rcl_logging_ret_t;
 #define RC_LOGGING_RET_OK                          (0)
 #define RC_LOGGING_RET_WARN                        (1)
 #define RC_LOGGING_RET_ERROR                       (2)
@@ -87,41 +92,43 @@ static const log4cxx::LevelPtr map_external_log_level_to_library_level(int exter
 
 rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file)
 {
-  log4cxx::File file(config_file);
-  log4cxx::helpers::Pool pool;
-  bool config_file_provided = (nullptr != config_file) && (config_file[0] != '\0');
-  bool use_default_config = !config_file_provided;
-  rcl_logging_ret_t status = RC_LOGGING_RET_OK;
+	bool config_file_provided = (nullptr != config_file) && (config_file[0] != '\0');
+	bool use_default_config = !config_file_provided;
+	rcl_logging_ret_t status = RC_LOGGING_RET_OK;
 
-  if (config_file_provided && !file.exists(pool)) {
-    // The provided config file doesn't exist, fall back to using default configuration
-    use_default_config = true;
-    status = RC_LOGGING_RET_CONFIG_FILE_DOESNT_EXIST;
-  } else if (config_file_provided) {
-    // Attempt to configure the system using the provided config file, but if we fail fall back to using the default
-    // configuration
-    try {
-      log4cxx::PropertyConfigurator::configure(file);
-    } catch (std::exception & ex) {
-      use_default_config = true;
-      status = RC_LOGGING_RET_CONFIG_FILE_INVALID;
-    }
-  }
+	if (config_file_provided) {
+      log4cxx::helpers::Pool pool;
+      log4cxx::File file(config_file);
+	  if (!file.exists(pool)) {
+		// The provided config file doesn't exist, fall back to using default configuration
+		use_default_config = true;
+	    status = RC_LOGGING_RET_CONFIG_FILE_DOESNT_EXIST;
+	  } else {
+		  // Attempt to configure the system using the provided config file, but if we fail fall back to using the default
+	      // configuration
+		  try {
+			  log4cxx::PropertyConfigurator::configure(file);
+		  } catch (std::exception & ex) {
+			  use_default_config = true;
+			  status = RC_LOGGING_RET_CONFIG_FILE_INVALID;
+		  }
+	  }
+	}
 
-  if (use_default_config) {
-    // Set the default File Appender on the root logger
-    log4cxx::LoggerPtr root_logger(get_logger(nullptr));
-    log4cxx::LayoutPtr layout(new log4cxx::PatternLayout(LOG4CXX_STR("%m%n")));
-    char log_name_buffer[64];
-    snprintf(log_name_buffer, sizeof(log_name_buffer), DEFAULT_LOG_FILE, GET_PID());
-    std::string log_name_str(log_name_buffer);
-    LOG4CXX_DECODE_CHAR(log_name_l4cxx_str, log_name_str);
-    log4cxx::FileAppenderPtr file_appender(new log4cxx::FileAppender(layout, log_name_l4cxx_str,
-      true));
-    root_logger->addAppender(file_appender);
-  }
-
-  return status;
+	if (use_default_config) {
+	  // Set the default File Appender on the root logger
+	  log4cxx::LoggerPtr root_logger(get_logger(nullptr));
+	  log4cxx::LayoutPtr layout(new log4cxx::PatternLayout(LOG4CXX_STR("%m%n")));
+	  char log_name_buffer[128] = { 0 };
+	  snprintf(log_name_buffer, sizeof(log_name_buffer), DEFAULT_LOG_FILE, GET_PID());
+	  std::string log_name_str(log_name_buffer);
+	  LOG4CXX_DECODE_CHAR(log_name_l4cxx_str, log_name_str);
+	  log4cxx::FileAppenderPtr file_appender(new log4cxx::FileAppender(layout, log_name_l4cxx_str,
+		true));
+	  root_logger->addAppender(file_appender);
+	}
+	
+	return status;
 }
 
 rcl_logging_ret_t rcl_logging_external_shutdown()
@@ -144,4 +151,6 @@ rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int l
   return RC_LOGGING_RET_OK;
 }
 
+#ifdef __cplusplus
 } /* extern "C" */
+#endif
