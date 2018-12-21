@@ -36,7 +36,6 @@ RCL_LOGGING_PUBLIC
 rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int level);
 
 
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
