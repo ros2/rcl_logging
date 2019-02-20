@@ -21,12 +21,54 @@
 #include <log4cxx/patternlayout.h>
 #include <log4cxx/helpers/transcoder.h>
 
+/**
+ *  Maps the logger name to the log4cxx logger. If the name is null or empty it will map to the
+ *  root logger.
+ */
+static const log4cxx::LoggerPtr get_logger(const char * name)
+{
+  if (nullptr == name || '\0' == name[0]) {
+    return log4cxx::Logger::getRootLogger();
+  }
+  return log4cxx::Logger::getLogger(name);
+}
+
+/* These are defined here to match the severity levels in rcl. They provide a consistent way for external logger
+    implementations to map between the incoming integer severity from ROS to the concept of DEBUG, INFO, WARN, ERROR,
+    and FATAL*/
+enum RC_LOGGING_LOG_SEVERITY
+{
+  RC_LOGGING_SEVERITY_UNSET = 0,  ///< The unset log level
+  RC_LOGGING_SEVERITY_DEBUG = 10,  ///< The debug log level
+  RC_LOGGING_SEVERITY_INFO = 20,  ///< The info log level
+  RC_LOGGING_SEVERITY_WARN = 30,  ///< The warn log level
+  RC_LOGGING_SEVERITY_ERROR = 40,  ///< The error log level
+  RC_LOGGING_SEVERITY_FATAL = 50,  ///< The fatal log level
+};
+
+static const log4cxx::LevelPtr map_external_log_level_to_library_level(int external_level)
+{
+  log4cxx::LevelPtr level;
+  // map to the next highest level of severity
+  if (external_level <= RC_LOGGING_SEVERITY_DEBUG) {
+    level = log4cxx::Level::getDebug();
+  } else if (external_level <= RC_LOGGING_SEVERITY_INFO) {
+    level = log4cxx::Level::getInfo();
+  } else if (external_level <= RC_LOGGING_SEVERITY_WARN) {
+    level = log4cxx::Level::getWarn();
+  } else if (external_level <= RC_LOGGING_SEVERITY_ERROR) {
+    level = log4cxx::Level::getError();
+  } else if (external_level <= RC_LOGGING_SEVERITY_FATAL) {
+    level = log4cxx::Level::getFatal();
+  }
+  return level;
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "rcl_logging_log4cxx/logging_interface.h"
-
 
 #if defined _WIN32 || defined __CYGWIN__
     #include <Windows.h>
@@ -46,49 +88,6 @@ extern "C" {
 #define RC_LOGGING_RET_INVALID_ARGUMENT            (11)
 #define RC_LOGGING_RET_CONFIG_FILE_DOESNT_EXIST    (21)
 #define RC_LOGGING_RET_CONFIG_FILE_INVALID         (22)
-
-/* These are defined here to match the severity levels in rcl. They provide a consistent way for external logger
-    implementations to map between the incoming integer severity from ROS to the concept of DEBUG, INFO, WARN, ERROR,
-    and FATAL*/
-enum RC_LOGGING_LOG_SEVERITY
-{
-  RC_LOGGING_SEVERITY_UNSET = 0,  ///< The unset log level
-  RC_LOGGING_SEVERITY_DEBUG = 10,  ///< The debug log level
-  RC_LOGGING_SEVERITY_INFO = 20,  ///< The info log level
-  RC_LOGGING_SEVERITY_WARN = 30,  ///< The warn log level
-  RC_LOGGING_SEVERITY_ERROR = 40,  ///< The error log level
-  RC_LOGGING_SEVERITY_FATAL = 50,  ///< The fatal log level
-};
-
-/**
- *  Maps the logger name to the log4cxx logger. If the name is null or empty it will map to the
- *  root logger.
- */
-static const log4cxx::LoggerPtr get_logger(const char * name)
-{
-  if (nullptr == name || '\0' == name[0]) {
-    return log4cxx::Logger::getRootLogger();
-  }
-  return log4cxx::Logger::getLogger(name);
-}
-
-static const log4cxx::LevelPtr map_external_log_level_to_library_level(int external_level)
-{
-  log4cxx::LevelPtr level;
-  // map to the next highest level of severity
-  if (external_level <= RC_LOGGING_SEVERITY_DEBUG) {
-    level = log4cxx::Level::getDebug();
-  } else if (external_level <= RC_LOGGING_SEVERITY_INFO) {
-    level = log4cxx::Level::getInfo();
-  } else if (external_level <= RC_LOGGING_SEVERITY_WARN) {
-    level = log4cxx::Level::getWarn();
-  } else if (external_level <= RC_LOGGING_SEVERITY_ERROR) {
-    level = log4cxx::Level::getError();
-  } else if (external_level <= RC_LOGGING_SEVERITY_FATAL) {
-    level = log4cxx::Level::getFatal();
-  }
-  return level;
-}
 
 rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file)
 {
