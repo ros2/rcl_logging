@@ -109,6 +109,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file)
       try {
         log4cxx::PropertyConfigurator::configure(file);
       } catch (std::exception & ex) {
+        (void)ex;
         use_default_config = true;
         status = RC_LOGGING_RET_CONFIG_FILE_INVALID;
       }
