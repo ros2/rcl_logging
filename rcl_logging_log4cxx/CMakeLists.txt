@@ -20,6 +20,12 @@ include_directories(${ament_INCLUDE_DIRS} include)
 
 if(NOT WIN32)
   add_compile_options(-Wall -Wextra -Wpedantic)
+else()
+  # Disable ddl-interface warnings for STL from log4cxx code, because we are already 
+  # forced to use the same compiler in Windows, as we are getting the binaries
+  # for log4cxx from Chocolatey
+  # https://web.archive.org/web/20130317015847/http://connect.microsoft.com/VisualStudio/feedback/details/696593/vc-10-vs-2010-basic-string-exports
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4275 /wd4251")
 endif()
 
 set(${PROJECT_NAME}_sources
