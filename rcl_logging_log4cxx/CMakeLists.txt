@@ -20,13 +20,6 @@ include_directories(${ament_INCLUDE_DIRS} include)
 
 if(NOT WIN32)
   add_compile_options(-Wall -Wextra -Wpedantic)
-else()
-  # TODO(nburek): On Windows log4cxx is throwing exceptions and crashing unless we
-  # compile in debug mode. I think this might be due to a pointer not being zero 
-  # initialized correctly, but haven't been able to fully trace the root cause yet.
-  # Forcing the build into debug mode solves the problem by making the compiler 
-  # zero initialize local variables
-  set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_DEBUG})
 endif()
 
 set(${PROJECT_NAME}_sources
@@ -34,7 +27,11 @@ set(${PROJECT_NAME}_sources
 )
 #set_source_files_properties(${${PROJECT_NAME}_sources} PROPERTIES language "CXX")
 
-add_library(${PROJECT_NAME} ${${PROJECT_NAME}_sources})
+if(NOT WIN32)
+  add_library(${PROJECT_NAME} ${${PROJECT_NAME}_sources})
+else()
+  add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_sources})
+endif()
 
 ament_target_dependencies(${PROJECT_NAME}
     Log4cxx
