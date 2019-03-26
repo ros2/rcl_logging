@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>rcl_logging_log4cxx</name>
   <version>0.0.0</version>
   <description>C API providing common interface to a shared library wrapping 3rd party loggers.</description>
   <maintainer email="amazon-b9-ros@amazon.com">Amazon B9</maintainer>
-  <author email="amazon-b9-ros@amazon.com">Nick Burek</author>
   <license>Apache License 2.0</license>
+  <author email="amazon-b9-ros@amazon.com">Nick Burek</author>
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
   <buildtool_depend>python3-empy</buildtool_depend>
