@@ -54,3 +54,8 @@ ament_export_include_directories(include)
 ament_export_dependencies(ament_cmake)
 ament_export_libraries(${PROJECT_NAME} log4cxx)
 ament_package()
+
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
