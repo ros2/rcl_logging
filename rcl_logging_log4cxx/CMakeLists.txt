@@ -50,6 +50,10 @@ install(TARGETS ${PROJECT_NAME}
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION include/${PROJECT_NAME}
+)
+
 ament_export_include_directories(include)
 ament_export_dependencies(ament_cmake)
 ament_export_libraries(${PROJECT_NAME} log4cxx)
