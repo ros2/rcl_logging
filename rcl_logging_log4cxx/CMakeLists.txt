@@ -22,7 +22,7 @@ include_directories(${ament_INCLUDE_DIRS} include)
 if(NOT WIN32)
   add_compile_options(-Wall -Wextra -Wpedantic)
 else()
-  # Disable ddl-interface warnings for STL from log4cxx code, because we are already 
+  # Disable ddl-interface warnings for STL from log4cxx code, because we are already
   # forced to use the same compiler in Windows, as we are getting the binaries
   # for log4cxx from Chocolatey
   # https://web.archive.org/web/20130317015847/http://connect.microsoft.com/VisualStudio/feedback/details/696593/vc-10-vs-2010-basic-string-exports
@@ -32,7 +32,6 @@ endif()
 set(${PROJECT_NAME}_sources
     src/rcl_logging_log4cxx/rcl_logging_log4cxx.cpp
 )
-#set_source_files_properties(${${PROJECT_NAME}_sources} PROPERTIES language "CXX")
 
 if(NOT WIN32)
   add_library(${PROJECT_NAME} ${${PROJECT_NAME}_sources})
