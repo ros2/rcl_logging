@@ -72,15 +72,13 @@ extern "C" {
 
 #include "rcl_logging_log4cxx/logging_interface.h"
 
+#define DEFAULT_LOG_FILE    "ros_logs/%i.log"
 #if defined _WIN32 || defined __CYGWIN__
     #include <Windows.h>
     #define GET_PID() ((int)GetCurrentProcessId())
-/* TODO(nburek): Change this to default to the %appdata% folder on Windows */
-    #define DEFAULT_LOG_FILE    "ros_logs/%i.log"
 #else
     #include <unistd.h>
     #define GET_PID() ((int)getpid())
-    #define DEFAULT_LOG_FILE    "/var/log/ros/%i.log"
 #endif
 
 
