@@ -21,6 +21,8 @@
 #include <log4cxx/patternlayout.h>
 #include <log4cxx/helpers/transcoder.h>
 
+#include <rcutils/allocator.h>
+
 /**
  *  Maps the logger name to the log4cxx logger. If the name is null or empty it will map to the
  *  root logger.
@@ -89,8 +91,10 @@ extern "C" {
 #define RC_LOGGING_RET_CONFIG_FILE_DOESNT_EXIST    (21)
 #define RC_LOGGING_RET_CONFIG_FILE_INVALID         (22)
 
-rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file)
+rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcutils_allocator_t allocator)
 {
+  (void)allocator;
+
   bool config_file_provided = (nullptr != config_file) && (config_file[0] != '\0');
   bool use_default_config = !config_file_provided;
   rcl_logging_ret_t status = RC_LOGGING_RET_OK;
