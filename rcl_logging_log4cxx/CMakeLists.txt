@@ -14,6 +14,7 @@ endif()
 find_package(ament_cmake_ros REQUIRED)
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(Log4cxx REQUIRED)
+find_package(rcutils REQUIRED)
 
 include_directories(${ament_INCLUDE_DIRS} include)
 
@@ -40,7 +41,8 @@ else()
 endif()
 
 ament_target_dependencies(${PROJECT_NAME}
-    Log4cxx
+  Log4cxx
+  rcutils
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "RCL_LOGGING_BUILDING_DLL")

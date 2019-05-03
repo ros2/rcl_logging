@@ -24,7 +24,7 @@ extern "C" {
 typedef int rcl_logging_ret_t;
 
 RCL_LOGGING_PUBLIC
-rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file);
+rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcutils_allocator_t allocator);
 
 RCL_LOGGING_PUBLIC
 rcl_logging_ret_t rcl_logging_external_shutdown();

@@ -12,6 +12,7 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 find_package(ament_cmake_ros REQUIRED)
+find_package(rcutils REQUIRED)
 
 include_directories(${ament_INCLUDE_DIRS})
 
@@ -34,7 +35,8 @@ else()
 endif()
 
 ament_target_dependencies(${PROJECT_NAME}
-    ${dependencies}
+  ${dependencies}
+  rcutils
 )
 
 
