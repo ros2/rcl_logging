@@ -26,7 +26,7 @@
 
 #include <rcutils/allocator.h>
 #include <rcutils/get_env.h>
-#include <rcutils/program.h>
+#include <rcutils/process.h>
 #include <rcutils/time.h>
 
 /**
@@ -141,7 +141,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcut
     int64_t ms_since_epoch = RCUTILS_NS_TO_MS(now);
 
     // Get the program name.
-    char *basec = rcutils_get_program_name(allocator);
+    char *basec = rcutils_get_executable_name(allocator);
     if (basec == NULL) {
       // We couldn't get the program name, so get out of here without setting up
       // logging.
