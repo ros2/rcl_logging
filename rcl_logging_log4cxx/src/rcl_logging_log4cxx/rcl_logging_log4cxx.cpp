@@ -147,12 +147,9 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcut
       // logging.
       return RC_LOGGING_RET_ERROR;
     }
-    // We only want the basename of the program name (in case the OS returns a
-    // a full path).
-    char *basename = ::basename(basec);
 
     char log_name_buffer[512] = {0};
-    snprintf(log_name_buffer, sizeof(log_name_buffer), "%s/.ros/log/%s_%i_%" PRId64 ".log", homedir, basename, rcutils_get_pid(), ms_since_epoch);
+    snprintf(log_name_buffer, sizeof(log_name_buffer), "%s/.ros/log/%s_%i_%" PRId64 ".log", homedir, basec, rcutils_get_pid(), ms_since_epoch);
     allocator.deallocate(basec, allocator.state);
     fprintf(stderr, "CHRIS: log_name_buffer: %s\n", log_name_buffer);
     std::string log_name_str(log_name_buffer);
