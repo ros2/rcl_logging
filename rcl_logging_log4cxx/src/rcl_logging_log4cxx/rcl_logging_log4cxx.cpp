@@ -151,7 +151,6 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcut
     char log_name_buffer[512] = {0};
     snprintf(log_name_buffer, sizeof(log_name_buffer), "%s/.ros/log/%s_%i_%" PRId64 ".log", homedir, basec, rcutils_get_pid(), ms_since_epoch);
     allocator.deallocate(basec, allocator.state);
-    fprintf(stderr, "CHRIS: log_name_buffer: %s\n", log_name_buffer);
     std::string log_name_str(log_name_buffer);
     LOG4CXX_DECODE_CHAR(log_name_l4cxx_str, log_name_str);
     log4cxx::FileAppenderPtr file_appender(new log4cxx::FileAppender(layout, log_name_l4cxx_str,
