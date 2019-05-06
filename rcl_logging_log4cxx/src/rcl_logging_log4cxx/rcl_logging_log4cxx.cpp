@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cerrno>
+#include <inttypes.h>
+
 #include <log4cxx/logger.h>
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/propertyconfigurator.h>
@@ -22,6 +25,9 @@
 #include <log4cxx/helpers/transcoder.h>
 
 #include <rcutils/allocator.h>
+#include <rcutils/get_env.h>
+#include <rcutils/process.h>
+#include <rcutils/time.h>
 
 /**
  *  Maps the logger name to the log4cxx logger. If the name is null or empty it will map to the
@@ -72,18 +78,6 @@ extern "C" {
 
 #include "rcl_logging_log4cxx/logging_interface.h"
 
-#if defined _WIN32 || defined __CYGWIN__
-    #include <Windows.h>
-    #define GET_PID() ((int)GetCurrentProcessId())
-/* TODO(nburek): Change this to default to the %appdata% folder on Windows */
-    #define DEFAULT_LOG_FILE    "ros_logs/%i.log"
-#else
-    #include <unistd.h>
-    #define GET_PID() ((int)getpid())
-    #define DEFAULT_LOG_FILE    "/var/log/ros/%i.log"
-#endif
-
-
 #define RC_LOGGING_RET_OK                          (0)
 #define RC_LOGGING_RET_WARN                        (1)
 #define RC_LOGGING_RET_ERROR                       (2)
@@ -123,8 +117,40 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcut
     // Set the default File Appender on the root logger
     log4cxx::LoggerPtr root_logger(get_logger(nullptr));
     log4cxx::LayoutPtr layout(new log4cxx::PatternLayout(LOG4CXX_STR("%m%n")));
-    char log_name_buffer[128] = {0};
-    snprintf(log_name_buffer, sizeof(log_name_buffer), DEFAULT_LOG_FILE, GET_PID());
+
+    // To be compatible with ROS 1, we want to construct a default filename of
+    // the form ~/.ros/log/<exe>_<pid>_<milliseconds-since-epoch>.log
+
+    // First get the home directory.
+    const char *homedir = rcutils_get_home_dir();
+    if (homedir == NULL) {
+      // We couldn't get the home directory; it is not really going to be
+      // possible to do logging properly, so get out of here without setting
+      // up logging.
+      return RC_LOGGING_RET_ERROR;
+    }
+
+    // Now get the milliseconds since the epoch in the local timezone.
+    rcutils_time_point_value_t now;
+    rcutils_ret_t ret = rcutils_system_time_now(&now);
+    if (ret != RCUTILS_RET_OK) {
+      // We couldn't get the system time, so get out of here without setting up
+      // logging.
+      return RC_LOGGING_RET_ERROR;
+    }
+    int64_t ms_since_epoch = RCUTILS_NS_TO_MS(now);
+
+    // Get the program name.
+    char *basec = rcutils_get_executable_name(allocator);
+    if (basec == NULL) {
+      // We couldn't get the program name, so get out of here without setting up
+      // logging.
+      return RC_LOGGING_RET_ERROR;
+    }
+
+    char log_name_buffer[512] = {0};
+    snprintf(log_name_buffer, sizeof(log_name_buffer), "%s/.ros/log/%s_%i_%" PRId64 ".log", homedir, basec, rcutils_get_pid(), ms_since_epoch);
+    allocator.deallocate(basec, allocator.state);
     std::string log_name_str(log_name_buffer);
     LOG4CXX_DECODE_CHAR(log_name_l4cxx_str, log_name_str);
     log4cxx::FileAppenderPtr file_appender(new log4cxx::FileAppender(layout, log_name_l4cxx_str,
