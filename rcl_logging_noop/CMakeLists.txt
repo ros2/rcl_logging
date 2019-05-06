@@ -37,6 +37,10 @@ ament_target_dependencies(${PROJECT_NAME}
   rcutils
 )
 
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+endif()
 
 install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION lib

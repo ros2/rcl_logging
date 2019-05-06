@@ -22,7 +22,7 @@ include_directories(${ament_INCLUDE_DIRS} include)
 if(NOT WIN32)
   add_compile_options(-Wall -Wextra -Wpedantic)
 else()
-  # Disable ddl-interface warnings for STL from log4cxx code, because we are already
+  # Disable dll-interface warnings for STL from log4cxx code, because we are already
   # forced to use the same compiler in Windows, as we are getting the binaries
   # for log4cxx from Chocolatey
   # https://web.archive.org/web/20130317015847/http://connect.microsoft.com/VisualStudio/feedback/details/696593/vc-10-vs-2010-basic-string-exports
@@ -45,6 +45,13 @@ ament_target_dependencies(${PROJECT_NAME}
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "RCL_LOGGING_BUILDING_DLL")
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  set(ament_cmake_lint_cmake_FOUND TRUE)
+  set(ament_cmake_copyright_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+endif()
 
 install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
