@@ -2,6 +2,18 @@
 Changelog for package rcl_logging_log4cxx
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.2.1 (2019-05-08)
+------------------
+* Changing the default location for log files to be a local directory instead of /var/log/ros on linux due to permission issues. (`#9 <https://github.com/ros2/rcl_logging/issues/9>`_)
+* Removes debugging fprintf
+* Review fixes.
+* Move basename down to rcutils layer.
+* Prototype to put things in ~/.ros/log
+* Changing the default location for log files to be a local directory instead of /var/log/ros on linux due to permission issues.
+* Change the API to add an allocator to logging initialize. (`#10 <https://github.com/ros2/rcl_logging/issues/10>`_)
+* Added include dir to installation of rcl_logging_log4cxx. (`#7 <https://github.com/ros2/rcl_logging/issues/7>`_)
+* Contributors: Chris Lalancette, Nick Burek, Rasmus Skovgaard Andersen, Steven! Ragnarök, burekn
+
 0.2.0 (2019-03-09)
 ------------------
 * First release of rcl_logging_log4cxx (`#3 <https://github.com/ros2/rcl_logging/issues/3>`_)
