@@ -12,11 +12,15 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 find_package(ament_cmake_ros REQUIRED)
-find_package(Log4cxx REQUIRED)
 find_package(rcutils REQUIRED)
 
-include_directories(${ament_INCLUDE_DIRS} include)
+find_package(Log4cxx QUIET)
+if(NOT Log4cxx_FOUND)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(Log4cxx REQUIRED liblog4cxx)
+endif()
 
+include_directories(${ament_INCLUDE_DIRS} include)
 
 if(NOT WIN32)
   add_compile_options(-Wall -Wextra -Wpedantic)
