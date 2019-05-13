@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>rcl_logging_spdlog</name>
+  <version>0.1.0</version>
+  <description>C API providing common interface to a shared library wrapping 3rd party loggers.</description>
+  <maintainer email="clalancette@openrobotics.org">Chris Lalancette</maintainer>
+  <author email="clalancette@openrobotics.org">Chris Lalancette</author>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake_ros</buildtool_depend>
+
+  <build_depend>spdlog_vendor</build_depend>
+  <build_depend>spdlog</build_depend>
+
+  <depend>rcutils</depend>
+
+  <member_of_group>rcl_logging_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
