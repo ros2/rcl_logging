@@ -163,7 +163,15 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcut
 
 rcl_logging_ret_t rcl_logging_external_shutdown()
 {
-  log4cxx::BasicConfigurator::resetConfiguration();
+  // TODO(clalancette): log4cxx has well known issues properly doing teardown:
+  //
+  // https://issues.apache.org/jira/projects/LOGCXX/issues/LOGCXX-322
+  // https://issues.apache.org/jira/projects/LOGCXX/issues/LOGCXX-352
+  //
+  // They are all related to C++ static initialization teardown order and the
+  // use of the singleton pattern, particularly for things like APRInitialize
+  // inside of log4cxx.  Until these issues are resolved, skip cleanup here.
+  // log4cxx::BasicConfigurator::resetConfiguration();
   return RC_LOGGING_RET_OK;
 }
 
