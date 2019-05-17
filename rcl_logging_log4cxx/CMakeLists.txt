@@ -12,8 +12,14 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 find_package(ament_cmake_ros REQUIRED)
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-find_package(Log4cxx REQUIRED)
+
+if(WIN32)
+  find_package(Log4cxx REQUIRED)
+else()
+  list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+  find_package(Log4cxx REQUIRED)
+endif()
+
 find_package(rcutils REQUIRED)
 
 include_directories(${ament_INCLUDE_DIRS} include)
@@ -57,5 +63,5 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 ament_export_include_directories(include)
 ament_export_dependencies(ament_cmake)
-ament_export_libraries(${PROJECT_NAME} log4cxx)
+ament_export_libraries(${PROJECT_NAME} ${Log4cxx_LIBRARIES})
 ament_package()
