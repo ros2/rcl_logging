@@ -34,7 +34,6 @@ else()
 endif()
 
 ament_target_dependencies(${PROJECT_NAME}
-  ${dependencies}
   rcutils
 )
 
@@ -46,5 +45,5 @@ install(TARGETS ${PROJECT_NAME}
 
 
 ament_export_dependencies(ament_cmake)
-ament_export_libraries(${PROJECT_NAME} ${dependencies})
+ament_export_libraries(${PROJECT_NAME})
 ament_package()
