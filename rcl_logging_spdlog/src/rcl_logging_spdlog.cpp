@@ -13,12 +13,14 @@
 // limitations under the License.
 
 #include <cerrno>
+#include <memory>
 #include <inttypes.h>
 
 #include <rcutils/allocator.h>
 #include <rcutils/filesystem.h>
 #include <rcutils/get_env.h>
 #include <rcutils/process.h>
+#include <rcutils/snprintf.h>
 #include <rcutils/time.h>
 
 #include "spdlog/spdlog.h"
@@ -74,7 +76,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcut
     // TODO(clalancette): implement support for an external configuration file.
     return RC_LOGGING_RET_ERROR;
   } else {
-    // To be compatible with ROS 1, we want to construct a default filename of
+    // To be compatible with ROS 1, we construct a default filename of
     // the form ~/.ros/log/<exe>_<pid>_<milliseconds-since-epoch>.log
 
     // First get the home directory.
@@ -88,15 +90,20 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcut
 
     // SPDLOG doesn't automatically create the log directories, so make them
     // by hand here.
-    char dotrosdir[512] = {0};
-    snprintf(dotrosdir, sizeof(dotrosdir), "%s/.ros", homedir);
-    if (!rcutils_mkdir(dotrosdir)) {
+    char name_buffer[4096] = {0};
+    int print_ret = rcutils_snprintf(name_buffer, sizeof(name_buffer), "%s/.ros", homedir);
+    if (print_ret < 0) {
+      return RC_LOGGING_RET_ERROR;
+    }
+    if (!rcutils_mkdir(name_buffer)) {
       return RC_LOGGING_RET_ERROR;
     }
 
-    char logdir[512] = {0};
-    snprintf(logdir, sizeof(logdir), "%s/log", dotrosdir);
-    if (!rcutils_mkdir(logdir)) {
+    print_ret = rcutils_snprintf(name_buffer, sizeof(name_buffer), "%s/.ros/log", homedir);
+    if (print_ret < 0) {
+      return RC_LOGGING_RET_ERROR;
+    }
+    if (!rcutils_mkdir(name_buffer)) {
       return RC_LOGGING_RET_ERROR;
     }
 
@@ -118,11 +125,13 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcut
       return RC_LOGGING_RET_ERROR;
     }
 
-    char log_name_buffer[512] = {0};
-    snprintf(log_name_buffer, sizeof(log_name_buffer), "%s/%s_%i_%" PRId64 ".log", logdir, basec, rcutils_get_pid(), ms_since_epoch);
+    print_ret = rcutils_snprintf(name_buffer, sizeof(name_buffer), "%s/.ros/log/%s_%i_%" PRId64 ".log", homedir, basec, rcutils_get_pid(), ms_since_epoch);
     allocator.deallocate(basec, allocator.state);
+    if (print_ret < 0) {
+      return RC_LOGGING_RET_ERROR;
+    }
 
-    g_root_logger = spdlog::basic_logger_mt("root", log_name_buffer);
+    g_root_logger = spdlog::basic_logger_mt("root", name_buffer);
     g_root_logger->set_pattern("%v");
   }
 
