@@ -14,6 +14,7 @@
 
 #include <cerrno>
 #include <memory>
+#include <mutex>
 #include <inttypes.h>
 
 #include <rcutils/allocator.h>
@@ -35,7 +36,8 @@
 extern "C" {
 #endif
 
-static std::shared_ptr<spdlog::logger> g_root_logger;
+static std::mutex g_logger_mutex;
+static std::shared_ptr<spdlog::logger> g_root_logger = nullptr;
 
 /* These are defined here to match the severity levels in rcl. They provide a consistent way for external logger
     implementations to map between the incoming integer severity from ROS to the concept of DEBUG, INFO, WARN, ERROR,
@@ -71,6 +73,14 @@ static spdlog::level::level_enum map_external_log_level_to_library_level(int ext
 
 rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcutils_allocator_t allocator)
 {
+  std::lock_guard<std::mutex> lk(g_logger_mutex);
+  // It is possible for this to get called more than once in a process (some of
+  // the tests do this implicitly by calling rclcpp::init more than once).
+  // If the logger is already setup, don't do anything.
+  if (g_root_logger != nullptr) {
+    return RC_LOGGING_RET_OK;
+  }
+
   bool config_file_provided = (nullptr != config_file) && (config_file[0] != '\0');
   if (config_file_provided) {
     // TODO(clalancette): implement support for an external configuration file.
@@ -130,7 +140,6 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcut
     if (print_ret < 0) {
       return RC_LOGGING_RET_ERROR;
     }
-
     g_root_logger = spdlog::basic_logger_mt("root", name_buffer);
     g_root_logger->set_pattern("%v");
   }
@@ -140,7 +149,10 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcut
 
 rcl_logging_ret_t rcl_logging_external_shutdown()
 {
-  g_root_logger = nullptr;
+  // We could consider setting the root logger to nullptr here, and attempt to
+  // cleanup for the next time.  spdlog doesn't expect to be destructed, so
+  // we just do nothing here and rely on it already being setup for
+  // reinitialization if necessary.
   return RC_LOGGING_RET_OK;
 }
 
