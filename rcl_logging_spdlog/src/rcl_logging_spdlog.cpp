@@ -149,10 +149,8 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcut
 
 rcl_logging_ret_t rcl_logging_external_shutdown()
 {
-  // We could consider setting the root logger to nullptr here, and attempt to
-  // cleanup for the next time.  spdlog doesn't expect to be destructed, so
-  // we just do nothing here and rely on it already being setup for
-  // reinitialization if necessary.
+  g_root_logger = nullptr;
+  spdlog::drop("root");
   return RC_LOGGING_RET_OK;
 }
 
