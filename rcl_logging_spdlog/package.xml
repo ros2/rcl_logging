@@ -6,7 +6,7 @@
   <description>C API providing common interface to a shared library wrapping 3rd party loggers.</description>
   <maintainer email="clalancette@openrobotics.org">Chris Lalancette</maintainer>
   <author email="clalancette@openrobotics.org">Chris Lalancette</author>
-  <license>MIT</license>
+  <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
 
