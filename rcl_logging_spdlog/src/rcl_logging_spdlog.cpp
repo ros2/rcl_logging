@@ -42,7 +42,7 @@ static std::shared_ptr<spdlog::logger> g_root_logger = nullptr;
 
 static spdlog::level::level_enum map_external_log_level_to_library_level(int external_level)
 {
-  spdlog::level::level_enum level;
+  spdlog::level::level_enum level = spdlog::level::level_enum::off;
 
   // map to the next highest level of severity
   if (external_level <= RCUTILS_LOG_SEVERITY_DEBUG) {
