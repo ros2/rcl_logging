@@ -12,8 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <cerrno>
-#include <inttypes.h>
+#include <rcutils/allocator.h>
+#include <rcutils/get_env.h>
+#include <rcutils/logging.h>
+#include <rcutils/process.h>
+#include <rcutils/time.h>
 
 #include <log4cxx/logger.h>
 #include <log4cxx/basicconfigurator.h>
@@ -24,10 +27,10 @@
 #include <log4cxx/patternlayout.h>
 #include <log4cxx/helpers/transcoder.h>
 
-#include <rcutils/allocator.h>
-#include <rcutils/get_env.h>
-#include <rcutils/process.h>
-#include <rcutils/time.h>
+#include <cerrno>
+#include <cinttypes>
+#include <stdexcept>
+#include <string>
 
 /**
  *  Maps the logger name to the log4cxx logger. If the name is null or empty it will map to the
@@ -41,32 +44,19 @@ static const log4cxx::LoggerPtr get_logger(const char * name)
   return log4cxx::Logger::getLogger(name);
 }
 
-/* These are defined here to match the severity levels in rcl. They provide a consistent way for external logger
-    implementations to map between the incoming integer severity from ROS to the concept of DEBUG, INFO, WARN, ERROR,
-    and FATAL*/
-enum RC_LOGGING_LOG_SEVERITY
-{
-  RC_LOGGING_SEVERITY_UNSET = 0,  ///< The unset log level
-  RC_LOGGING_SEVERITY_DEBUG = 10,  ///< The debug log level
-  RC_LOGGING_SEVERITY_INFO = 20,  ///< The info log level
-  RC_LOGGING_SEVERITY_WARN = 30,  ///< The warn log level
-  RC_LOGGING_SEVERITY_ERROR = 40,  ///< The error log level
-  RC_LOGGING_SEVERITY_FATAL = 50,  ///< The fatal log level
-};
-
 static const log4cxx::LevelPtr map_external_log_level_to_library_level(int external_level)
 {
   log4cxx::LevelPtr level;
   // map to the next highest level of severity
-  if (external_level <= RC_LOGGING_SEVERITY_DEBUG) {
+  if (external_level <= RCUTILS_LOG_SEVERITY_DEBUG) {
     level = log4cxx::Level::getDebug();
-  } else if (external_level <= RC_LOGGING_SEVERITY_INFO) {
+  } else if (external_level <= RCUTILS_LOG_SEVERITY_INFO) {
     level = log4cxx::Level::getInfo();
-  } else if (external_level <= RC_LOGGING_SEVERITY_WARN) {
+  } else if (external_level <= RCUTILS_LOG_SEVERITY_WARN) {
     level = log4cxx::Level::getWarn();
-  } else if (external_level <= RC_LOGGING_SEVERITY_ERROR) {
+  } else if (external_level <= RCUTILS_LOG_SEVERITY_ERROR) {
     level = log4cxx::Level::getError();
-  } else if (external_level <= RC_LOGGING_SEVERITY_FATAL) {
+  } else if (external_level <= RCUTILS_LOG_SEVERITY_FATAL) {
     level = log4cxx::Level::getFatal();
   }
   return level;
@@ -78,20 +68,20 @@ extern "C" {
 
 #include "rcl_logging_log4cxx/logging_interface.h"
 
-#define RC_LOGGING_RET_OK                          (0)
-#define RC_LOGGING_RET_WARN                        (1)
-#define RC_LOGGING_RET_ERROR                       (2)
-#define RC_LOGGING_RET_INVALID_ARGUMENT            (11)
-#define RC_LOGGING_RET_CONFIG_FILE_DOESNT_EXIST    (21)
-#define RC_LOGGING_RET_CONFIG_FILE_INVALID         (22)
+#define RCL_LOGGING_RET_OK                          (0)
+#define RCL_LOGGING_RET_ERROR                       (2)
+#define RCL_LOGGING_RET_CONFIG_FILE_DOESNT_EXIST    (21)
+#define RCL_LOGGING_RET_CONFIG_FILE_INVALID         (22)
 
-rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcutils_allocator_t allocator)
+rcl_logging_ret_t rcl_logging_external_initialize(
+  const char * config_file,
+  rcutils_allocator_t allocator)
 {
   (void)allocator;
 
   bool config_file_provided = (nullptr != config_file) && (config_file[0] != '\0');
   bool use_default_config = !config_file_provided;
-  rcl_logging_ret_t status = RC_LOGGING_RET_OK;
+  rcl_logging_ret_t status = RCL_LOGGING_RET_OK;
 
   if (config_file_provided) {
     log4cxx::helpers::Pool pool;
@@ -99,16 +89,16 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcut
     if (!file.exists(pool)) {
       // The provided config file doesn't exist, fall back to using default configuration
       use_default_config = true;
-      status = RC_LOGGING_RET_CONFIG_FILE_DOESNT_EXIST;
+      status = RCL_LOGGING_RET_CONFIG_FILE_DOESNT_EXIST;
     } else {
-      // Attempt to configure the system using the provided config file, but if we fail fall back to using the default
-      // configuration
+      // Attempt to configure the system using the provided config file, but if
+      // we fail fall back to using the default configuration
       try {
         log4cxx::PropertyConfigurator::configure(file);
       } catch (std::exception & ex) {
         (void)ex;
         use_default_config = true;
-        status = RC_LOGGING_RET_CONFIG_FILE_INVALID;
+        status = RCL_LOGGING_RET_CONFIG_FILE_INVALID;
       }
     }
   }
@@ -122,12 +112,12 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcut
     // the form ~/.ros/log/<exe>_<pid>_<milliseconds-since-epoch>.log
 
     // First get the home directory.
-    const char *homedir = rcutils_get_home_dir();
-    if (homedir == NULL) {
+    const char * homedir = rcutils_get_home_dir();
+    if (homedir == nullptr) {
       // We couldn't get the home directory; it is not really going to be
       // possible to do logging properly, so get out of here without setting
       // up logging.
-      return RC_LOGGING_RET_ERROR;
+      return RCL_LOGGING_RET_ERROR;
     }
 
     // Now get the milliseconds since the epoch in the local timezone.
@@ -136,21 +126,27 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcut
     if (ret != RCUTILS_RET_OK) {
       // We couldn't get the system time, so get out of here without setting up
       // logging.
-      return RC_LOGGING_RET_ERROR;
+      return RCL_LOGGING_RET_ERROR;
     }
     int64_t ms_since_epoch = RCUTILS_NS_TO_MS(now);
 
     // Get the program name.
-    char *basec = rcutils_get_executable_name(allocator);
-    if (basec == NULL) {
+    char * executable_name = rcutils_get_executable_name(allocator);
+    if (executable_name == nullptr) {
       // We couldn't get the program name, so get out of here without setting up
       // logging.
-      return RC_LOGGING_RET_ERROR;
+      return RCL_LOGGING_RET_ERROR;
     }
 
     char log_name_buffer[512] = {0};
-    snprintf(log_name_buffer, sizeof(log_name_buffer), "%s/.ros/log/%s_%i_%" PRId64 ".log", homedir, basec, rcutils_get_pid(), ms_since_epoch);
-    allocator.deallocate(basec, allocator.state);
+    int print_ret = rcutils_snprintf(log_name_buffer, sizeof(log_name_buffer),
+        "%s/.ros/log/%s_%i_%" PRId64 ".log", homedir, executable_name,
+        rcutils_get_pid(), ms_since_epoch);
+    allocator.deallocate(executable_name, allocator.state);
+    if (print_ret < 0) {
+      RCUTILS_SET_ERROR_MSG("Failed to create log file name string");
+      return RCL_LOGGING_RET_ERROR;
+    }
     std::string log_name_str(log_name_buffer);
     LOG4CXX_DECODE_CHAR(log_name_l4cxx_str, log_name_str);
     log4cxx::FileAppenderPtr file_appender(new log4cxx::FileAppender(layout, log_name_l4cxx_str,
@@ -164,7 +160,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(const char * config_file, rcut
 rcl_logging_ret_t rcl_logging_external_shutdown()
 {
   log4cxx::BasicConfigurator::resetConfiguration();
-  return RC_LOGGING_RET_OK;
+  return RCL_LOGGING_RET_OK;
 }
 
 void rcl_logging_external_log(int severity, const char * name, const char * msg)
@@ -178,7 +174,7 @@ rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int l
 {
   log4cxx::LoggerPtr logger(get_logger(name));
   logger->setLevel(map_external_log_level_to_library_level(level));
-  return RC_LOGGING_RET_OK;
+  return RCL_LOGGING_RET_OK;
 }
 
 #ifdef __cplusplus
