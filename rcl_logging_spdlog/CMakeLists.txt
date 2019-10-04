@@ -47,6 +47,6 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_include_directories(include)
-ament_export_dependencies(ament_cmake rcutils spdlog)
+ament_export_dependencies(ament_cmake rcutils)
 ament_export_libraries(${PROJECT_NAME})
 ament_package()
