@@ -2,6 +2,11 @@
 Changelog for package rcl_logging_noop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Enable linters for noop and log4cxx. (`#12 <https://github.com/ros2/rcl_logging/issues/12>`_)
+* Contributors: Steven! Ragnarök
+
 0.3.1 (2019-10-03)
 ------------------
 
