@@ -24,6 +24,7 @@
 #include <cinttypes>
 #include <memory>
 #include <mutex>
+#include <utility>
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
