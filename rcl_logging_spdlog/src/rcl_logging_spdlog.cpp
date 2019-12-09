@@ -38,7 +38,7 @@ extern "C" {
 #endif
 
 static std::mutex g_logger_mutex;
-static std::shared_ptr<spdlog::logger> g_root_logger = nullptr;
+static std::unique_ptr<spdlog::logger> g_root_logger = nullptr;
 
 static spdlog::level::level_enum map_external_log_level_to_library_level(int external_level)
 {
@@ -143,8 +143,8 @@ rcl_logging_ret_t rcl_logging_external_initialize(
       return RCL_LOGGING_RET_ERROR;
     }
 
-    auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(name_buffer, false);
-    g_root_logger = std::make_shared<spdlog::logger>("root", std::move(sink));
+    auto sink = std::make_unique<spdlog::sinks::basic_file_sink_mt>(name_buffer, false);
+    g_root_logger = std::make_unique<spdlog::logger>("root", std::move(sink));
 
     g_root_logger->set_pattern("%v");
   }
