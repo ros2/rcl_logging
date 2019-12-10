@@ -24,6 +24,7 @@
 #include <cinttypes>
 #include <memory>
 #include <mutex>
+#include <utility>
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
@@ -38,7 +39,7 @@ extern "C" {
 #endif
 
 static std::mutex g_logger_mutex;
-static std::shared_ptr<spdlog::logger> g_root_logger = nullptr;
+static std::unique_ptr<spdlog::logger> g_root_logger = nullptr;
 
 static spdlog::level::level_enum map_external_log_level_to_library_level(int external_level)
 {
@@ -142,7 +143,10 @@ rcl_logging_ret_t rcl_logging_external_initialize(
       RCUTILS_SET_ERROR_MSG("Failed to create log file name string");
       return RCL_LOGGING_RET_ERROR;
     }
-    g_root_logger = spdlog::basic_logger_mt("root", name_buffer);
+
+    auto sink = std::make_unique<spdlog::sinks::basic_file_sink_mt>(name_buffer, false);
+    g_root_logger = std::make_unique<spdlog::logger>("root", std::move(sink));
+
     g_root_logger->set_pattern("%v");
   }
 
@@ -152,7 +156,6 @@ rcl_logging_ret_t rcl_logging_external_initialize(
 rcl_logging_ret_t rcl_logging_external_shutdown()
 {
   g_root_logger = nullptr;
-  spdlog::drop("root");
   return RCL_LOGGING_RET_OK;
 }
 
