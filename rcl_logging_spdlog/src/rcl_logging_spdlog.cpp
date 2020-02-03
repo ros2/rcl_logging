@@ -135,9 +135,10 @@ rcl_logging_ret_t rcl_logging_external_initialize(
       return RCL_LOGGING_RET_ERROR;
     }
 
-    print_ret = rcutils_snprintf(name_buffer, sizeof(name_buffer),
-        "%s/.ros/log/%s_%i_%" PRId64 ".log", homedir,
-        basec, rcutils_get_pid(), ms_since_epoch);
+    print_ret = rcutils_snprintf(
+      name_buffer, sizeof(name_buffer),
+      "%s/.ros/log/%s_%i_%" PRId64 ".log", homedir,
+      basec, rcutils_get_pid(), ms_since_epoch);
     allocator.deallocate(basec, allocator.state);
     if (print_ret < 0) {
       RCUTILS_SET_ERROR_MSG("Failed to create log file name string");

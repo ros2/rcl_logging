@@ -139,9 +139,10 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     }
 
     char log_name_buffer[512] = {0};
-    int print_ret = rcutils_snprintf(log_name_buffer, sizeof(log_name_buffer),
-        "%s/.ros/log/%s_%i_%" PRId64 ".log", homedir, executable_name,
-        rcutils_get_pid(), ms_since_epoch);
+    int print_ret = rcutils_snprintf(
+      log_name_buffer, sizeof(log_name_buffer),
+      "%s/.ros/log/%s_%i_%" PRId64 ".log", homedir, executable_name,
+      rcutils_get_pid(), ms_since_epoch);
     allocator.deallocate(executable_name, allocator.state);
     if (print_ret < 0) {
       RCUTILS_SET_ERROR_MSG("Failed to create log file name string");
@@ -149,8 +150,8 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     }
     std::string log_name_str(log_name_buffer);
     LOG4CXX_DECODE_CHAR(log_name_l4cxx_str, log_name_str);
-    log4cxx::FileAppenderPtr file_appender(new log4cxx::FileAppender(layout, log_name_l4cxx_str,
-      true));
+    log4cxx::FileAppenderPtr file_appender(
+      new log4cxx::FileAppender(layout, log_name_l4cxx_str, true));
     root_logger->addAppender(file_appender);
   }
 
