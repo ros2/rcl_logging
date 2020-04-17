@@ -16,7 +16,7 @@ list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(Log4cxx REQUIRED)
 find_package(rcutils REQUIRED)
 
-include_directories(${ament_INCLUDE_DIRS} include)
+include_directories(include)
 
 
 if(NOT WIN32)
