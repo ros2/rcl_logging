@@ -14,8 +14,6 @@ endif()
 find_package(ament_cmake_ros REQUIRED)
 find_package(rcutils REQUIRED)
 
-include_directories(${ament_INCLUDE_DIRS})
-
 if(NOT WIN32)
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
