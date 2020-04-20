@@ -16,13 +16,14 @@ find_package(rcutils REQUIRED)
 find_package(spdlog_vendor REQUIRED) # Provides spdlog 1.3.1 on platforms without it.
 find_package(spdlog REQUIRED)
 
-include_directories(include)
-
 if(NOT WIN32)
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 add_library(${PROJECT_NAME} src/rcl_logging_spdlog.cpp)
+target_include_directories(${PROJECT_NAME} PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include>")
 target_link_libraries(${PROJECT_NAME} spdlog::spdlog)
 
 ament_target_dependencies(${PROJECT_NAME}
@@ -32,7 +33,7 @@ ament_target_dependencies(${PROJECT_NAME}
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "RCL_LOGGING_BUILDING_DLL")
 
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
@@ -49,4 +50,5 @@ endif()
 ament_export_include_directories(include)
 ament_export_dependencies(ament_cmake rcutils spdlog_vendor spdlog)
 ament_export_libraries(${PROJECT_NAME})
+ament_export_targets(${PROJECT_NAME})
 ament_package()
