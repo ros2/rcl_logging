@@ -2,6 +2,12 @@
 Changelog for package rcl_logging_log4cxx
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.0 (2020-04-24)
+------------------
+* Fix CMake warnings about using uninitialized variables (`#30 <https://github.com/ros2/rcl_logging/issues/30>`_)
+* Code style only: wrap after open parenthesis if not in one line (`#24 <https://github.com/ros2/rcl_logging/issues/24>`_)
+* Contributors: Dirk Thomas
+
 0.3.3 (2019-10-23)
 ------------------
 
