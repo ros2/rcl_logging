@@ -1,4 +1,4 @@
-This document is a declaration of software quality for the `rcl_logging_spdlog` package, based on the guidelines in [REP-2004](https://www.ros.org/reps/rep-2004.html).
+This document is a declaration of software quality for the `rcl_logging_spdlog` package, based on the guidelines in [REP-2004](https://github.com/ros-infrastructure/rep/blob/rep-2004/rep-2004.rst).
 
 # `rcl_logging_spdlog` Quality Declaration
 
@@ -47,7 +47,8 @@ All changes will occur through a pull request, check [ROS 2 Developer Guide](htt
 This package uses DCO as its confirmation of contributor origin policy. More information can be found in [CONTRIBUTING](./CONTRIBUTING.md)
 
 ### Peer Review Policy [2.iii]
-All pull requests will be peer-reviewed, check [ROS 2 Developer Guide](https://index.ros.org/doc/ros2/Contributing/Developer-Guide/#change-control-process) for additional information.
+
+Following the recommended guidelines in the [ROS 2 Developer Guide](https://index.ros.org/doc/ros2/Contributing/Developer-Guide/#change-control-process) all pull requests must have at least 1 peer review.
 
 ### Continuous Integration [2.iv]
 
@@ -105,7 +106,7 @@ There is an automated test which runs a linter that ensures each file has at lea
 
 ### Linters and Static Analysis [4.v]
 
-`rcl_logging_spdlog` uses and passes all the standard linters and static analysis tools for a C+ package as described in the [ROS 2 Developer Guide](https://index.ros.org/doc/ros2/Contributing/Developer-Guide/#linters-and-static-analysis). Passing implies there are no linter/static errors when testing against CI of supported platforms.
+`rcl_logging_spdlog` uses and passes all the standard linters and static analysis tools for a C package as described in the [ROS 2 Developer Guide](https://index.ros.org/doc/ros2/Contributing/Developer-Guide/#linters-and-static-analysis). Passing implies there are no linter/static errors when testing against CI of supported platforms.
 
 Currently nightly results can be seen here:
 * [linux-aarch64_release](https://ci.ros2.org/view/nightly/job/nightly_linux-aarch64_release/lastBuild/testReport/rcl_logging_spdlog/)
