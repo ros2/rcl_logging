@@ -44,7 +44,7 @@ All changes will occur through a pull request, check [ROS 2 Developer Guide](htt
 
 ### Contributor Origin [2.ii]
 
-This package uses DCO as its confirmation of contributor origin policy. More information can be found in [CONTRIBUTING](./CONTRIBUTING.md)
+This package uses DCO as its confirmation of contributor origin policy. More information can be found in [CONTRIBUTING](../CONTRIBUTING.md)
 
 ### Peer Review Policy [2.iii]
 
