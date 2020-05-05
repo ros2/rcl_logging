@@ -132,7 +132,6 @@ Below are evaluations of each of `rcl_logging_spdlog`'s run-time and build-time 
 
 `rcl_logging_spdlog` has a Direct Runtime non-ROS dependenciy the `spdlog` library. It was declared to be Quality Level 4 [here](https://github.com/ros2/spdlog_vendor/blob/master/SPDLOG_QUALITY_DECLARATION.md).
 
-
 ## Platform Support [6]
 
 `rcl_logging_spdlog` supports all of the tier 1 platforms as described in [REP-2000](https://www.ros.org/reps/rep-2000.html#support-tiers), and tests each change against all of them.
