@@ -34,10 +34,6 @@
 #define RCL_LOGGING_RET_OK    (0)
 #define RCL_LOGGING_RET_ERROR (2)
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 static std::mutex g_logger_mutex;
 static std::unique_ptr<spdlog::logger> g_root_logger = nullptr;
 
@@ -174,7 +170,3 @@ rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int l
 
   return RCL_LOGGING_RET_OK;
 }
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif

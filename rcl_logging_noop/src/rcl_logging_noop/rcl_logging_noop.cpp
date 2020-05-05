@@ -14,8 +14,6 @@
 
 #include <rcutils/allocator.h>
 
-extern "C" {
-
 typedef int rcl_logging_ret_t;
 #define RCL_LOGGING_RET_OK   (0)
 
@@ -46,5 +44,3 @@ rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int l
   (void) level;
   return RCL_LOGGING_RET_OK;
 }
-
-} /* extern "C" */
