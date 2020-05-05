@@ -137,7 +137,9 @@ Below are evaluations of each of `rcl_logging_spdlog`'s run-time and build-time 
 
 `rcl_logging_spdlog` supports all of the tier 1 platforms as described in [REP-2000](https://www.ros.org/reps/rep-2000.html#support-tiers), and tests each change against all of them.
 
-## Vulnerability Disclosure Policy [7.i]
+## Security [7]
+
+### Vulnerability Disclosure Policy [7.i]
 
 `rcl_logging_spdlog` does not have a Vulnerability Disclosure Policy.
 
