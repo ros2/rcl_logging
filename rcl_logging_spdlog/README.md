@@ -2,15 +2,15 @@
 
 Package supporting an implementation of logging functionality using `spdlog`.
 
-The `rcl_logging` interface allows [rcl_logging_spdlog/logging_interface.h](include/rcl_logging_spdlog/logging_interface.h):
+[rcl_logging_spdlog](include/rcl_logging_spdlog/logging_interface.h):
  - initialize
  - log a message
  - set the logger level
  - shutdown
 
-Further still there are some useful abstractions and utilities:
-- Macros for controlling symbol visibility on the library
- - [rcl_logging_spdlog/visibility_control.h](include/rcl_logging_spdlog/visibility_control.h)
+Some useful internal abstractions and utilities:
+  - Macros for controlling symbol visibility on the library
+    - [rcl_logging_spdlog/visibility_control.h](include/rcl_logging_spdlog/visibility_control.h)
 
 ## Quality Declaration
 
