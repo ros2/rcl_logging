@@ -65,7 +65,10 @@ void rcl_logging_external_log(int severity, const char * name, const char * msg)
  * the root logger.
  *
  * \param[in] name The name of the logger (unused).
- * \param[in] level The severity level to be used for the specified logger.
+ * \param[in] level The severity level to be used for the specified logger. Values:
+ *   RCUTILS_LOG_SEVERITY_DEBUG, RCUTILS_LOG_SEVERITY_UNSET, RCUTILS_LOG_SEVERITY_DEBUG,
+ *   RCUTILS_LOG_SEVERITY_INFO, RCUTILS_LOG_SEVERITY_WARN, RCUTILS_LOG_SEVERITY_ERROR,
+ *   RCUTILS_LOG_SEVERITY_FATAL
  * \return always RCL_LOGGING_RET_OK.
  */
 RCL_LOGGING_PUBLIC
