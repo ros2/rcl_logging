@@ -14,6 +14,7 @@
 
 #include <rcutils/allocator.h>
 #include <rcutils/error_handling.h>
+#include <rcutils/logging.h>
 #include "rcl_logging_spdlog/logging_interface.h"
 #include "gtest/gtest.h"
 
@@ -22,14 +23,28 @@ static void * bad_malloc(size_t, void *)
   return nullptr;
 }
 
-TEST(logging, init_invalid)
+TEST(logging_interface, init_invalid)
 {
   rcutils_allocator_t allocator = rcutils_get_default_allocator();
   rcutils_allocator_t bad_allocator = rcutils_get_default_allocator();
+  rcutils_allocator_t invalid_allocator = rcutils_get_zero_initialized_allocator();
   bad_allocator.allocate = bad_malloc;
 
   // Config files are not supported by spdlog
-  ASSERT_NE(0, rcl_logging_external_initialize("anything", allocator));
+  EXPECT_NE(0, rcl_logging_external_initialize("anything", allocator));
   rcutils_reset_error();
-  ASSERT_NE(0, rcl_logging_external_initialize(nullptr, bad_allocator));
+  EXPECT_NE(0, rcl_logging_external_initialize(nullptr, bad_allocator));
+  rcutils_reset_error();
+  EXPECT_NE(0, rcl_logging_external_initialize(nullptr, invalid_allocator));
+  rcutils_reset_error();
+}
+
+TEST(logging_interface, full_cycle)
+{
+  rcutils_allocator_t allocator = rcutils_get_default_allocator();
+
+  ASSERT_EQ(0, rcl_logging_external_initialize(nullptr, allocator));
+  EXPECT_EQ(0, rcl_logging_external_set_logger_level(nullptr, RCUTILS_LOG_SEVERITY_INFO));
+  rcl_logging_external_log(RCUTILS_LOG_SEVERITY_INFO, nullptr, "Log Message");
+  EXPECT_EQ(0, rcl_logging_external_shutdown());
 }
