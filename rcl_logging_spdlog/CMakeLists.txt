@@ -45,6 +45,12 @@ install(DIRECTORY include/${PROJECT_NAME}/
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+
+  find_package(ament_cmake_gtest REQUIRED)
+  ament_add_gtest(test_logging_interface test/test_logging_interface.cpp)
+  if(TARGET test_logging_interface)
+    target_link_libraries(test_logging_interface ${PROJECT_NAME})
+  endif()
 endif()
 
 ament_export_include_directories(include)
