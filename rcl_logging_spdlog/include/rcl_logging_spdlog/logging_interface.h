@@ -35,6 +35,7 @@ RCL_LOGGING_PUBLIC
 void rcl_logging_external_log(int severity, const char * name, const char * msg);
 
 RCL_LOGGING_PUBLIC
+RCUTILS_WARN_UNUSED
 rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int level);
 
 
