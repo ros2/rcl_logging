@@ -2,7 +2,7 @@
 
 Package supporting an implementation of logging functionality using `spdlog`.
 
-[rcl_logging_spdlog](include/rcl_logging_spdlog/logging_interface.h):
+[rcl_logging_spdlog](include/rcl_logging_spdlog/logging_interface.h) logging interface implementation can:
  - initialize
  - log a message
  - set the logger level
