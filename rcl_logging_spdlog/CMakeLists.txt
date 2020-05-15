@@ -45,6 +45,10 @@ install(DIRECTORY include/${PROJECT_NAME}/
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+
+  ament_add_gtest(test_logging_spdlog test/test_logging.cpp)
+  target_link_libraries(test_logging_spdlog ${PROJECT_NAME})
+  ament_target_dependencies(test_logging_spdlog rcutils)
 endif()
 
 ament_export_include_directories(include)
