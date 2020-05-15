@@ -31,11 +31,11 @@ TEST(logging_interface, init_invalid)
   bad_allocator.allocate = bad_malloc;
 
   // Config files are not supported by spdlog
-  EXPECT_NE(0, rcl_logging_external_initialize("anything", allocator));
+  EXPECT_EQ(2, rcl_logging_external_initialize("anything", allocator));
   rcutils_reset_error();
-  EXPECT_NE(0, rcl_logging_external_initialize(nullptr, bad_allocator));
+  EXPECT_EQ(2, rcl_logging_external_initialize(nullptr, bad_allocator));
   rcutils_reset_error();
-  EXPECT_NE(0, rcl_logging_external_initialize(nullptr, invalid_allocator));
+  EXPECT_EQ(2, rcl_logging_external_initialize(nullptr, invalid_allocator));
   rcutils_reset_error();
 }
 
