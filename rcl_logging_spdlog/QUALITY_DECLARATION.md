@@ -140,7 +140,7 @@ Below are evaluations of each of `rcl_logging_spdlog`'s run-time and build-time 
 
 ### Vulnerability Disclosure Policy [7.i]
 
-`rcl_logging_spdlog` does not have a Vulnerability Disclosure Policy.
+This package conforms to the Vulnerability Disclosure Policy in [REP-2006](https://www.ros.org/reps/rep-2006.html).
 
 # Current status Summary
 
