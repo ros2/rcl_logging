@@ -2,6 +2,15 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.0 (2020-05-26)
+------------------
+* Add some preliminary functional tests (`#36 <https://github.com/ros2/rcl_logging/issues/36>`_)
+* warn about unused return value for set_logger_level (`#38 <https://github.com/ros2/rcl_logging/issues/38>`_)
+* Added features to rcl_logging_spdlog (`#35 <https://github.com/ros2/rcl_logging/issues/35>`_)
+* Added public API documentation for log4cxx and spdlog (`#32 <https://github.com/ros2/rcl_logging/issues/32>`_)
+* Current state Quality Declaration, Contributing and Readme files (`#29 <https://github.com/ros2/rcl_logging/issues/29>`_)
+* Contributors: Alejandro Hernández Cordero, Dirk Thomas, Jorge Perez, Scott K Logan
+
 0.4.0 (2020-04-24)
 ------------------
 * Export targets in addition to include directories / libraries (`#31 <https://github.com/ros2/rcl_logging/issues/31>`_)
