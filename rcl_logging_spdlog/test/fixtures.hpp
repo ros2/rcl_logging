@@ -90,17 +90,16 @@ public:
     }
 
     char raw_line[2048];
-    while (fgets(raw_line, sizeof(raw_line), fp) != NULL) {
-      pclose(fp);
-
-      std::string line(raw_line);
-      fs::path line_path(line.substr(0, line.find_last_not_of(" \t\r\n") + 1));
-      // This should be changed once ros2/rcpputils#68 is resolved
-      return line_path.is_absolute() ? line_path : log_dir / line_path;
+    char * ret = fgets(raw_line, sizeof(raw_line), fp);
+    pclose(fp);
+    if (nullptr == ret) {
+      throw std::runtime_error("No log files were found");
     }
 
-    pclose(fp);
-    throw std::runtime_error("No log files were found");
+    std::string line(raw_line);
+    fs::path line_path(line.substr(0, line.find_last_not_of(" \t\r\n") + 1));
+    // This should be changed once ros2/rcpputils#68 is resolved
+    return line_path.is_absolute() ? line_path : log_dir / line_path;
   }
 
 private:
@@ -111,8 +110,7 @@ private:
       throw std::runtime_error("Failed to determine executable name");
     }
     std::stringstream prefix;
-    prefix << exe_name << "_" <<
-      rcutils_get_pid() << "_";
+    prefix << exe_name << "_" << rcutils_get_pid() << "_";
     allocator.deallocate(exe_name, allocator.state);
     return prefix.str();
   }

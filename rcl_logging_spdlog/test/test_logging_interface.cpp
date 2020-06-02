@@ -23,6 +23,16 @@
 #include "gtest/gtest.h"
 #include "rcl_logging_spdlog/logging_interface.h"
 
+const int logger_levels[] =
+{
+  RCUTILS_LOG_SEVERITY_UNSET,
+  RCUTILS_LOG_SEVERITY_DEBUG,
+  RCUTILS_LOG_SEVERITY_INFO,
+  RCUTILS_LOG_SEVERITY_WARN,
+  RCUTILS_LOG_SEVERITY_ERROR,
+  RCUTILS_LOG_SEVERITY_FATAL,
+};
+
 TEST_F(LoggingTest, init_invalid)
 {
   // Config files are not supported by spdlog
@@ -42,12 +52,10 @@ TEST_F(LoggingTest, full_cycle)
   ASSERT_EQ(0, rcl_logging_external_initialize(nullptr, allocator));
 
   std::stringstream expected_log;
-  for (int level = RCUTILS_LOG_SEVERITY_UNSET; level <= RCUTILS_LOG_SEVERITY_FATAL; level += 10) {
+  for (int level : logger_levels) {
     EXPECT_EQ(0, rcl_logging_external_set_logger_level(nullptr, level));
 
-    for (int severity = RCUTILS_LOG_SEVERITY_UNSET; severity <= RCUTILS_LOG_SEVERITY_FATAL;
-      severity += 10)
-    {
+    for (int severity : logger_levels) {
       std::stringstream ss;
       ss << "Message of severity " << severity << " at level " << level;
       rcl_logging_external_log(severity, nullptr, ss.str().c_str());
