@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <rcpputils/filesystem_helper.hpp>
+#include <rcpputils/get_env.hpp>
 #include <rcutils/allocator.h>
+#include <rcutils/env.h>
 #include <rcutils/error_handling.h>
 #include <rcutils/logging.h>
 
@@ -22,6 +25,8 @@
 #include "fixtures.hpp"
 #include "gtest/gtest.h"
 #include "rcl_logging_spdlog/logging_interface.h"
+
+namespace fs = rcpputils::fs;
 
 const int logger_levels[] =
 {
@@ -33,6 +38,29 @@ const int logger_levels[] =
   RCUTILS_LOG_SEVERITY_FATAL,
 };
 
+// This is a helper class that resets an environment
+// variable when leaving scope
+class RestoreEnvVar
+{
+public:
+  explicit RestoreEnvVar(const std::string & name)
+  : name_(name),
+    value_(rcpputils::get_env_var(name.c_str()))
+  {
+  }
+
+  ~RestoreEnvVar()
+  {
+    if (!rcutils_set_env(name_.c_str(), value_.c_str())) {
+      std::cerr << "Failed to restore value of environment variable: " << name_ << std::endl;
+    }
+  }
+
+private:
+  const std::string name_;
+  const std::string value_;
+};
+
 TEST_F(LoggingTest, init_invalid)
 {
   // Config files are not supported by spdlog
@@ -42,6 +70,39 @@ TEST_F(LoggingTest, init_invalid)
   rcutils_reset_error();
   EXPECT_EQ(2, rcl_logging_external_initialize(nullptr, invalid_allocator));
   rcutils_reset_error();
+}
+
+TEST_F(LoggingTest, init_failure)
+{
+  RestoreEnvVar home_var("HOME");
+  RestoreEnvVar userprofile_var("USERPROFILE");
+
+  // No home directory to write log to
+  ASSERT_EQ(true, rcutils_set_env("HOME", nullptr));
+  ASSERT_EQ(true, rcutils_set_env("USERPROFILE", nullptr));
+  EXPECT_EQ(2, rcl_logging_external_initialize(nullptr, allocator));
+  rcutils_reset_error();
+
+  // Force failure to create directories
+  fs::path fake_home("fake_home_dir");
+  ASSERT_TRUE(fs::create_directories(fake_home));
+  ASSERT_EQ(true, rcutils_set_env("HOME", fake_home.string().c_str()));
+
+  // ...fail to create .ros dir
+  fs::path ros_dir = fake_home / ".ros";
+  std::fstream(ros_dir.string(), std::ios_base::out).close();
+  EXPECT_EQ(2, rcl_logging_external_initialize(nullptr, allocator));
+  ASSERT_TRUE(fs::remove(ros_dir));
+
+  // ...fail to create .ros/log dir
+  ASSERT_TRUE(fs::create_directories(ros_dir));
+  fs::path ros_log_dir = ros_dir / "log";
+  std::fstream(ros_log_dir.string(), std::ios_base::out).close();
+  EXPECT_EQ(2, rcl_logging_external_initialize(nullptr, allocator));
+  ASSERT_TRUE(fs::remove(ros_log_dir));
+  ASSERT_TRUE(fs::remove(ros_dir));
+
+  ASSERT_TRUE(fs::remove(fake_home));
 }
 
 TEST_F(LoggingTest, full_cycle)
