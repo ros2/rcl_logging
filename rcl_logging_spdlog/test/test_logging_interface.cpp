@@ -61,6 +61,29 @@ private:
   const std::string value_;
 };
 
+// TODO(cottsay): Remove when ros2/rcpputils#63 is resolved
+static fs::path current_path()
+{
+  char * cwd;
+#ifdef _WIN32
+#ifdef UNICODE
+#error "rcpputils::fs does not support Unicode paths"
+#endif
+  cwd = _getcwd(NULL, 0);
+#else
+  cwd = getcwd(NULL, 0);
+#endif
+  if (nullptr == cwd) {
+    std::error_code ec{errno, std::system_category()};
+    errno = 0;
+    throw std::system_error{ec, "cannot get current working directory"};
+  }
+
+  std::string ret(cwd);
+  free(cwd);
+  return fs::path(ret);
+}
+
 TEST_F(LoggingTest, init_invalid)
 {
   // Config files are not supported by spdlog
@@ -84,7 +107,7 @@ TEST_F(LoggingTest, init_failure)
   rcutils_reset_error();
 
   // Force failure to create directories
-  fs::path fake_home("fake_home_dir");
+  fs::path fake_home = current_path() / "fake_home_dir";
   ASSERT_TRUE(fs::create_directories(fake_home));
   ASSERT_EQ(true, rcutils_set_env("HOME", fake_home.string().c_str()));
 
