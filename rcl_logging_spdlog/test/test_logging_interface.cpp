@@ -38,6 +38,9 @@ TEST_F(LoggingTest, full_cycle)
 {
   ASSERT_EQ(0, rcl_logging_external_initialize(nullptr, allocator));
 
+  // Make sure we can call initialize more than once
+  ASSERT_EQ(0, rcl_logging_external_initialize(nullptr, allocator));
+
   std::stringstream expected_log;
   for (int level = RCUTILS_LOG_SEVERITY_UNSET; level <= RCUTILS_LOG_SEVERITY_FATAL; level += 10) {
     EXPECT_EQ(0, rcl_logging_external_set_logger_level(nullptr, level));
