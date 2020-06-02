@@ -29,6 +29,9 @@
 #ifdef _WIN32
 #define popen _popen
 #define pclose _pclose
+#define DIR_CMD "dir /B"
+#else
+#define DIR_CMD "ls -d"
 #endif
 
 namespace fs = rcpputils::fs;
@@ -79,11 +82,7 @@ public:
   {
     fs::path log_dir = get_log_dir();
     std::stringstream dir_command;
-    dir_command << "dir";
-#ifdef _WIN32
-    dir_command << " /B";
-#endif
-    dir_command << " " << (log_dir / get_expected_log_prefix()).string() << "*";
+    dir_command << DIR_CMD << " " << (log_dir / get_expected_log_prefix()).string() << "*";
 
     FILE * fp = popen(dir_command.str().c_str(), "r");
     if (nullptr == fp) {
