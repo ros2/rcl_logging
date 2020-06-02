@@ -12,14 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <rcutils/allocator.h>
 #include <rcutils/error_handling.h>
 #include <rcutils/logging.h>
+
+#include <fstream>
+#include <string>
 
 #include "fixtures.hpp"
 #include "gtest/gtest.h"
 #include "rcl_logging_spdlog/logging_interface.h"
 
-TEST_F(AllocatorTest, init_invalid)
+TEST_F(LoggingTest, init_invalid)
 {
   // Config files are not supported by spdlog
   EXPECT_EQ(2, rcl_logging_external_initialize("anything", allocator));
@@ -30,10 +34,37 @@ TEST_F(AllocatorTest, init_invalid)
   rcutils_reset_error();
 }
 
-TEST_F(AllocatorTest, full_cycle)
+TEST_F(LoggingTest, full_cycle)
 {
   ASSERT_EQ(0, rcl_logging_external_initialize(nullptr, allocator));
-  EXPECT_EQ(0, rcl_logging_external_set_logger_level(nullptr, RCUTILS_LOG_SEVERITY_INFO));
-  rcl_logging_external_log(RCUTILS_LOG_SEVERITY_INFO, nullptr, "Log Message");
+
+  std::stringstream expected_log;
+  for (int level = RCUTILS_LOG_SEVERITY_UNSET; level <= RCUTILS_LOG_SEVERITY_FATAL; level += 10) {
+    EXPECT_EQ(0, rcl_logging_external_set_logger_level(nullptr, level));
+
+    for (int severity = RCUTILS_LOG_SEVERITY_UNSET; severity <= RCUTILS_LOG_SEVERITY_FATAL;
+      severity += 10)
+    {
+      std::stringstream ss;
+      ss << "Message of severity " << severity << " at level " << level;
+      rcl_logging_external_log(severity, nullptr, ss.str().c_str());
+
+      if (severity >= level) {
+        expected_log << ss.str() << std::endl;
+      } else if (severity == 0 && level == 10) {
+        // This is a special case - not sure what the right behavior is
+        expected_log << ss.str() << std::endl;
+      }
+    }
+  }
+
   EXPECT_EQ(0, rcl_logging_external_shutdown());
+
+  std::string log_file_path = find_single_log().string();
+  std::ifstream log_file(log_file_path);
+  std::stringstream actual_log;
+  actual_log << log_file.rdbuf();
+  EXPECT_EQ(
+    expected_log.str(),
+    actual_log.str()) << "Unexpected log contents in " << log_file_path;
 }

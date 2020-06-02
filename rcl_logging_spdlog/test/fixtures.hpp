@@ -15,8 +15,23 @@
 #ifndef FIXTURES_HPP_
 #define FIXTURES_HPP_
 
+#include <rcpputils/filesystem_helper.hpp>
 #include <rcutils/allocator.h>
+#include <rcutils/error_handling.h>
+#include <rcutils/get_env.h>
+#include <rcutils/process.h>
+#include <rcutils/types/string_array.h>
+
+#include <string>
+
 #include "gtest/gtest.h"
+
+#ifdef _WIN32
+#define popen _popen
+#define pclose _pclose
+#endif
+
+namespace fs = rcpputils::fs;
 
 class AllocatorTest : public ::testing::Test
 {
@@ -49,6 +64,63 @@ private:
   static void * bad_realloc(void *, size_t, void *)
   {
     return nullptr;
+  }
+};
+
+class LoggingTest : public AllocatorTest
+{
+public:
+  LoggingTest()
+  : AllocatorTest()
+  {
+  }
+
+  fs::path find_single_log()
+  {
+    fs::path log_dir = get_log_dir();
+    std::stringstream dir_command;
+    dir_command << "dir";
+#ifdef _WIN32
+    dir_command << " /B";
+#endif
+    dir_command << " " << (log_dir / get_expected_log_prefix()).string() << "*";
+
+    FILE * fp = popen(dir_command.str().c_str(), "r");
+    if (nullptr == fp) {
+      throw std::runtime_error("Failed to glob for log files");
+    }
+
+    char raw_line[2048];
+    while (fgets(raw_line, sizeof(raw_line), fp) != NULL) {
+      pclose(fp);
+
+      std::string line(raw_line);
+      fs::path line_path(line.substr(0, line.find_last_not_of(" \t\r\n") + 1));
+      // This should be changed once ros2/rcpputils#68 is resolved
+      return line_path.is_absolute() ? line_path : log_dir / line_path;
+    }
+
+    pclose(fp);
+    throw std::runtime_error("No log files were found");
+  }
+
+private:
+  std::string get_expected_log_prefix()
+  {
+    char * exe_name = rcutils_get_executable_name(allocator);
+    if (nullptr == exe_name) {
+      throw std::runtime_error("Failed to determine executable name");
+    }
+    std::stringstream prefix;
+    prefix << exe_name << "_" <<
+      rcutils_get_pid() << "_";
+    allocator.deallocate(exe_name, allocator.state);
+    return prefix.str();
+  }
+
+  fs::path get_log_dir()
+  {
+    return fs::path(rcutils_get_home_dir()) / ".ros" / "log";
   }
 };
 
