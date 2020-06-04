@@ -19,6 +19,7 @@
 #include <rcutils/error_handling.h>
 #include <rcutils/logging.h>
 
+#include <limits.h>
 #include <fstream>
 #include <string>
 
@@ -64,24 +65,22 @@ private:
 // TODO(cottsay): Remove when ros2/rcpputils#63 is resolved
 static fs::path current_path()
 {
-  char * cwd;
 #ifdef _WIN32
 #ifdef UNICODE
 #error "rcpputils::fs does not support Unicode paths"
 #endif
-  cwd = _getcwd(NULL, 0);
+  char cwd[MAX_PATH];
+  if (nullptr == _getcwd(cwd, MAX_PATH)) {
 #else
-  cwd = getcwd(NULL, 0);
+  char cwd[PATH_MAX];
+  if (nullptr == getcwd(cwd, PATH_MAX)) {
 #endif
-  if (nullptr == cwd) {
     std::error_code ec{errno, std::system_category()};
     errno = 0;
     throw std::system_error{ec, "cannot get current working directory"};
   }
 
-  std::string ret(cwd);
-  free(cwd);
-  return fs::path(ret);
+  return fs::path(cwd);
 }
 
 TEST_F(LoggingTest, init_invalid)

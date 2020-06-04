@@ -22,6 +22,7 @@
 #include <rcutils/process.h>
 #include <rcutils/types/string_array.h>
 
+#include <limits.h>
 #include <string>
 
 #include "gtest/gtest.h"
@@ -89,7 +90,11 @@ public:
       throw std::runtime_error("Failed to glob for log files");
     }
 
-    char raw_line[2048];
+#ifdef _WIN32
+    char raw_line[MAX_PATH];
+#else
+    char raw_line[PATH_MAX];
+#endif
     char * ret = fgets(raw_line, sizeof(raw_line), fp);
     pclose(fp);
     if (nullptr == ret) {
