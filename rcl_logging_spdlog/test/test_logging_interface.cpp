@@ -12,24 +12,79 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <rcpputils/filesystem_helper.hpp>
+#include <rcpputils/get_env.hpp>
 #include <rcutils/allocator.h>
+#include <rcutils/env.h>
 #include <rcutils/error_handling.h>
 #include <rcutils/logging.h>
-#include "rcl_logging_spdlog/logging_interface.h"
-#include "gtest/gtest.h"
 
-static void * bad_malloc(size_t, void *)
+#include <limits.h>
+#include <fstream>
+#include <string>
+
+#include "fixtures.hpp"
+#include "gtest/gtest.h"
+#include "rcl_logging_spdlog/logging_interface.h"
+
+namespace fs = rcpputils::fs;
+
+const int logger_levels[] =
 {
-  return nullptr;
+  RCUTILS_LOG_SEVERITY_UNSET,
+  RCUTILS_LOG_SEVERITY_DEBUG,
+  RCUTILS_LOG_SEVERITY_INFO,
+  RCUTILS_LOG_SEVERITY_WARN,
+  RCUTILS_LOG_SEVERITY_ERROR,
+  RCUTILS_LOG_SEVERITY_FATAL,
+};
+
+// This is a helper class that resets an environment
+// variable when leaving scope
+class RestoreEnvVar
+{
+public:
+  explicit RestoreEnvVar(const std::string & name)
+  : name_(name),
+    value_(rcpputils::get_env_var(name.c_str()))
+  {
+  }
+
+  ~RestoreEnvVar()
+  {
+    if (!rcutils_set_env(name_.c_str(), value_.c_str())) {
+      std::cerr << "Failed to restore value of environment variable: " << name_ << std::endl;
+    }
+  }
+
+private:
+  const std::string name_;
+  const std::string value_;
+};
+
+// TODO(cottsay): Remove when ros2/rcpputils#63 is resolved
+static fs::path current_path()
+{
+#ifdef _WIN32
+#ifdef UNICODE
+#error "rcpputils::fs does not support Unicode paths"
+#endif
+  char cwd[MAX_PATH];
+  if (nullptr == _getcwd(cwd, MAX_PATH)) {
+#else
+  char cwd[PATH_MAX];
+  if (nullptr == getcwd(cwd, PATH_MAX)) {
+#endif
+    std::error_code ec{errno, std::system_category()};
+    errno = 0;
+    throw std::system_error{ec, "cannot get current working directory"};
+  }
+
+  return fs::path(cwd);
 }
 
-TEST(logging_interface, init_invalid)
+TEST_F(LoggingTest, init_invalid)
 {
-  rcutils_allocator_t allocator = rcutils_get_default_allocator();
-  rcutils_allocator_t bad_allocator = rcutils_get_default_allocator();
-  rcutils_allocator_t invalid_allocator = rcutils_get_zero_initialized_allocator();
-  bad_allocator.allocate = bad_malloc;
-
   // Config files are not supported by spdlog
   EXPECT_EQ(2, rcl_logging_external_initialize("anything", allocator));
   rcutils_reset_error();
@@ -39,12 +94,71 @@ TEST(logging_interface, init_invalid)
   rcutils_reset_error();
 }
 
-TEST(logging_interface, full_cycle)
+TEST_F(LoggingTest, init_failure)
 {
-  rcutils_allocator_t allocator = rcutils_get_default_allocator();
+  RestoreEnvVar home_var("HOME");
+  RestoreEnvVar userprofile_var("USERPROFILE");
 
+  // No home directory to write log to
+  ASSERT_EQ(true, rcutils_set_env("HOME", nullptr));
+  ASSERT_EQ(true, rcutils_set_env("USERPROFILE", nullptr));
+  EXPECT_EQ(2, rcl_logging_external_initialize(nullptr, allocator));
+  rcutils_reset_error();
+
+  // Force failure to create directories
+  fs::path fake_home = current_path() / "fake_home_dir";
+  ASSERT_TRUE(fs::create_directories(fake_home));
+  ASSERT_EQ(true, rcutils_set_env("HOME", fake_home.string().c_str()));
+
+  // ...fail to create .ros dir
+  fs::path ros_dir = fake_home / ".ros";
+  std::fstream(ros_dir.string(), std::ios_base::out).close();
+  EXPECT_EQ(2, rcl_logging_external_initialize(nullptr, allocator));
+  ASSERT_TRUE(fs::remove(ros_dir));
+
+  // ...fail to create .ros/log dir
+  ASSERT_TRUE(fs::create_directories(ros_dir));
+  fs::path ros_log_dir = ros_dir / "log";
+  std::fstream(ros_log_dir.string(), std::ios_base::out).close();
+  EXPECT_EQ(2, rcl_logging_external_initialize(nullptr, allocator));
+  ASSERT_TRUE(fs::remove(ros_log_dir));
+  ASSERT_TRUE(fs::remove(ros_dir));
+
+  ASSERT_TRUE(fs::remove(fake_home));
+}
+
+TEST_F(LoggingTest, full_cycle)
+{
   ASSERT_EQ(0, rcl_logging_external_initialize(nullptr, allocator));
-  EXPECT_EQ(0, rcl_logging_external_set_logger_level(nullptr, RCUTILS_LOG_SEVERITY_INFO));
-  rcl_logging_external_log(RCUTILS_LOG_SEVERITY_INFO, nullptr, "Log Message");
+
+  // Make sure we can call initialize more than once
+  ASSERT_EQ(0, rcl_logging_external_initialize(nullptr, allocator));
+
+  std::stringstream expected_log;
+  for (int level : logger_levels) {
+    EXPECT_EQ(0, rcl_logging_external_set_logger_level(nullptr, level));
+
+    for (int severity : logger_levels) {
+      std::stringstream ss;
+      ss << "Message of severity " << severity << " at level " << level;
+      rcl_logging_external_log(severity, nullptr, ss.str().c_str());
+
+      if (severity >= level) {
+        expected_log << ss.str() << std::endl;
+      } else if (severity == 0 && level == 10) {
+        // This is a special case - not sure what the right behavior is
+        expected_log << ss.str() << std::endl;
+      }
+    }
+  }
+
   EXPECT_EQ(0, rcl_logging_external_shutdown());
+
+  std::string log_file_path = find_single_log().string();
+  std::ifstream log_file(log_file_path);
+  std::stringstream actual_log;
+  actual_log << log_file.rdbuf();
+  EXPECT_EQ(
+    expected_log.str(),
+    actual_log.str()) << "Unexpected log contents in " << log_file_path;
 }
