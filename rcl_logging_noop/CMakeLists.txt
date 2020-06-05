@@ -12,6 +12,7 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 find_package(ament_cmake_ros REQUIRED)
+find_package(rcl_logging_interface REQUIRED)
 find_package(rcutils REQUIRED)
 
 if(NOT WIN32)
@@ -22,18 +23,14 @@ set(${PROJECT_NAME}_sources
   src/rcl_logging_noop/rcl_logging_noop.cpp
 )
 
-if(NOT WIN32)
-  add_library(${PROJECT_NAME} ${${PROJECT_NAME}_sources})
-else()
-  # TODO(nburek): There is an issue with build on Windows where it is looking for a static lib
-  # and can't find it when trying to call find_package() for this package. This explicitly creates
-  # it.
-  add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_sources})
-endif()
+add_library(${PROJECT_NAME} ${${PROJECT_NAME}_sources})
 
 ament_target_dependencies(${PROJECT_NAME}
+  rcl_logging_interface
   rcutils
 )
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE "RCL_LOGGING_INTERFACE_BUILDING_DLL")
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -46,6 +43,6 @@ install(TARGETS ${PROJECT_NAME}
   RUNTIME DESTINATION bin)
 
 
-ament_export_dependencies(ament_cmake)
+ament_export_dependencies(ament_cmake rcl_logging_interface rcutils)
 ament_export_libraries(${PROJECT_NAME})
 ament_package()
