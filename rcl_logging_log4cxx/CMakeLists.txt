@@ -14,10 +14,8 @@ endif()
 find_package(ament_cmake_ros REQUIRED)
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(Log4cxx REQUIRED)
+find_package(rcl_logging_interface REQUIRED)
 find_package(rcutils REQUIRED)
-
-include_directories(include)
-
 
 if(NOT WIN32)
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -29,22 +27,15 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4275 /wd4251")
 endif()
 
-set(${PROJECT_NAME}_sources
-    src/rcl_logging_log4cxx/rcl_logging_log4cxx.cpp
-)
-
-if(NOT WIN32)
-  add_library(${PROJECT_NAME} ${${PROJECT_NAME}_sources})
-else()
-  add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_sources})
-endif()
+add_library(${PROJECT_NAME} src/rcl_logging_log4cxx/rcl_logging_log4cxx.cpp)
 
 ament_target_dependencies(${PROJECT_NAME}
   Log4cxx
+  rcl_logging_interface
   rcutils
 )
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE "RCL_LOGGING_BUILDING_DLL")
+target_compile_definitions(${PROJECT_NAME} PRIVATE "RCL_LOGGING_INTERFACE_BUILDING_DLL")
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -53,16 +44,12 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION include/${PROJECT_NAME}
-)
-
-ament_export_include_directories(include)
-ament_export_dependencies(ament_cmake)
+ament_export_dependencies(ament_cmake rcl_logging_interface rcutils)
 ament_export_libraries(${PROJECT_NAME} log4cxx)
+ament_export_targets(${PROJECT_NAME})
 ament_package()
