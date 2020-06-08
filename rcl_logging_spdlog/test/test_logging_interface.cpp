@@ -25,7 +25,7 @@
 
 #include "fixtures.hpp"
 #include "gtest/gtest.h"
-#include "rcl_logging_spdlog/logging_interface.h"
+#include "rcl_logging_interface/rcl_logging_interface.h"
 
 namespace fs = rcpputils::fs;
 
@@ -86,11 +86,11 @@ static fs::path current_path()
 TEST_F(LoggingTest, init_invalid)
 {
   // Config files are not supported by spdlog
-  EXPECT_EQ(2, rcl_logging_external_initialize("anything", allocator));
+  EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize("anything", allocator));
   rcutils_reset_error();
-  EXPECT_EQ(2, rcl_logging_external_initialize(nullptr, bad_allocator));
+  EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, bad_allocator));
   rcutils_reset_error();
-  EXPECT_EQ(2, rcl_logging_external_initialize(nullptr, invalid_allocator));
+  EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, invalid_allocator));
   rcutils_reset_error();
 }
 
@@ -102,7 +102,7 @@ TEST_F(LoggingTest, init_failure)
   // No home directory to write log to
   ASSERT_EQ(true, rcutils_set_env("HOME", nullptr));
   ASSERT_EQ(true, rcutils_set_env("USERPROFILE", nullptr));
-  EXPECT_EQ(2, rcl_logging_external_initialize(nullptr, allocator));
+  EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, allocator));
   rcutils_reset_error();
 
   // Force failure to create directories
@@ -113,14 +113,14 @@ TEST_F(LoggingTest, init_failure)
   // ...fail to create .ros dir
   fs::path ros_dir = fake_home / ".ros";
   std::fstream(ros_dir.string(), std::ios_base::out).close();
-  EXPECT_EQ(2, rcl_logging_external_initialize(nullptr, allocator));
+  EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, allocator));
   ASSERT_TRUE(fs::remove(ros_dir));
 
   // ...fail to create .ros/log dir
   ASSERT_TRUE(fs::create_directories(ros_dir));
   fs::path ros_log_dir = ros_dir / "log";
   std::fstream(ros_log_dir.string(), std::ios_base::out).close();
-  EXPECT_EQ(2, rcl_logging_external_initialize(nullptr, allocator));
+  EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, allocator));
   ASSERT_TRUE(fs::remove(ros_log_dir));
   ASSERT_TRUE(fs::remove(ros_dir));
 
@@ -129,14 +129,14 @@ TEST_F(LoggingTest, init_failure)
 
 TEST_F(LoggingTest, full_cycle)
 {
-  ASSERT_EQ(0, rcl_logging_external_initialize(nullptr, allocator));
+  ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, allocator));
 
   // Make sure we can call initialize more than once
-  ASSERT_EQ(0, rcl_logging_external_initialize(nullptr, allocator));
+  ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, allocator));
 
   std::stringstream expected_log;
   for (int level : logger_levels) {
-    EXPECT_EQ(0, rcl_logging_external_set_logger_level(nullptr, level));
+    EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_set_logger_level(nullptr, level));
 
     for (int severity : logger_levels) {
       std::stringstream ss;
@@ -152,7 +152,7 @@ TEST_F(LoggingTest, full_cycle)
     }
   }
 
-  EXPECT_EQ(0, rcl_logging_external_shutdown());
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
 
   std::string log_file_path = find_single_log().string();
   std::ifstream log_file(log_file_path);
