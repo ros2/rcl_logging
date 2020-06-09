@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <rcl_logging_interface/rcl_logging_interface.h>
+
 #include <rcutils/allocator.h>
 #include <rcutils/get_env.h>
 #include <rcutils/logging.h>
@@ -61,17 +63,6 @@ static const log4cxx::LevelPtr map_external_log_level_to_library_level(int exter
   }
   return level;
 }
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "rcl_logging_log4cxx/logging_interface.h"
-
-#define RCL_LOGGING_RET_OK                          (0)
-#define RCL_LOGGING_RET_ERROR                       (2)
-#define RCL_LOGGING_RET_CONFIG_FILE_DOESNT_EXIST    (21)
-#define RCL_LOGGING_RET_CONFIG_FILE_INVALID         (22)
 
 rcl_logging_ret_t rcl_logging_external_initialize(
   const char * config_file,
@@ -177,7 +168,3 @@ rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int l
   logger->setLevel(map_external_log_level_to_library_level(level));
   return RCL_LOGGING_RET_OK;
 }
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif

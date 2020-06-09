@@ -12,8 +12,9 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 find_package(ament_cmake_ros REQUIRED)
+find_package(rcl_logging_interface REQUIRED)
 find_package(rcutils REQUIRED)
-find_package(spdlog_vendor REQUIRED) # Provides spdlog 1.3.1 on platforms without it.
+find_package(spdlog_vendor REQUIRED) # Provides spdlog on platforms without it.
 find_package(spdlog REQUIRED)
 
 if(NOT WIN32)
@@ -21,26 +22,20 @@ if(NOT WIN32)
 endif()
 
 add_library(${PROJECT_NAME} src/rcl_logging_spdlog.cpp)
-target_include_directories(${PROJECT_NAME} PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-  "$<INSTALL_INTERFACE:include>")
 target_link_libraries(${PROJECT_NAME} spdlog::spdlog)
 
 ament_target_dependencies(${PROJECT_NAME}
+  rcl_logging_interface
   rcutils
   spdlog
 )
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE "RCL_LOGGING_BUILDING_DLL")
+target_compile_definitions(${PROJECT_NAME} PRIVATE "RCL_LOGGING_INTERFACE_BUILDING_DLL")
 
 install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
-
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION include/${PROJECT_NAME}
-)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -55,8 +50,7 @@ if(BUILD_TESTING)
   endif()
 endif()
 
-ament_export_include_directories(include)
-ament_export_dependencies(ament_cmake rcutils spdlog_vendor spdlog)
+ament_export_dependencies(ament_cmake rcl_logging_interface rcutils spdlog_vendor spdlog)
 ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(${PROJECT_NAME})
 ament_package()

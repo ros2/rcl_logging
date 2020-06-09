@@ -11,6 +11,7 @@
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
   <buildtool_depend>python3-empy</buildtool_depend>
 
+  <depend>rcl_logging_interface</depend>
   <depend>rcutils</depend>
 
   <test_depend>ament_cmake_gmock</test_depend>
