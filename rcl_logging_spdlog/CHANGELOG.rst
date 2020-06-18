@@ -2,6 +2,14 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use new package with rcl logging interface (`#41 <https://github.com/ros2/rcl_logging/issues/41>`_)
+* Increased test coverage (`#40 <https://github.com/ros2/rcl_logging/issues/40>`_)
+* Add Security Vulnerability Policy pointing to REP-2006.
+* Rename Quality_Declaration.md -> QUALITY_DECLARATION.md
+* Contributors: Chris Lalancette, Scott K Logan
+
 1.0.0 (2020-05-26)
 ------------------
 * Add some preliminary functional tests (`#36 <https://github.com/ros2/rcl_logging/issues/36>`_)
