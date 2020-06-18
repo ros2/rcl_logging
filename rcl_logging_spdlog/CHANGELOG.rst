@@ -2,8 +2,8 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.0 (2020-06-18)
+------------------
 * Use new package with rcl logging interface (`#41 <https://github.com/ros2/rcl_logging/issues/41>`_)
 * Increased test coverage (`#40 <https://github.com/ros2/rcl_logging/issues/40>`_)
 * Add Security Vulnerability Policy pointing to REP-2006.
