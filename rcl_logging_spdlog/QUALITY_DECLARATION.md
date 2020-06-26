@@ -78,13 +78,13 @@ All pull requests must resolve related documentation changes before merging.
 
 The license for `rcl_logging_spdlog` is Apache 2.0, and a summary is in each source file, the type is declared in the [`package.xml`](./package.xml) manifest file, and a full copy of the license is in the [`LICENSE`](../LICENSE) file.
 
-There is an automated test which runs a linter that ensures each file has a license statement. [Here](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastStableBuild/testReport/rcl_logging_spdlog/) can be found a list with the latest results of the various linters being run on the package.
+There is an automated test which runs a linter that ensures each file has a license statement. [Here](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastSuccessfulBuild/testReport/rcl_logging_spdlog/) can be found a list with the latest results of the various linters being run on the package.
 
 ### Copyright Statements [3.iv]
 
 The copyright holders each provide a statement of copyright in each source code file in `rcl_logging_spdlog`.
 
-There is an automated test which runs a linter that ensures each file has at least one copyright statement. Latest linter result report can be seen [here](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastStableBuild/testReport/rcl_logging_spdlog/copyright/).
+There is an automated test which runs a linter that ensures each file has at least one copyright statement. Latest linter result report can be seen [here](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastSuccessfulBuild/testReport/rcl_logging_spdlog/copyright/).
 
 ## Testing [4]
 
@@ -95,10 +95,10 @@ New features are required to have tests before being added.
 
 Currently nightly test results can be seen here:
 
-* [linux-aarch64_release](https://ci.ros2.org/view/nightly/job/nightly_linux-aarch64_release/lastStableBuild/testReport/rcl_logging_spdlog/)
-* [linux_release](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastBuild/lastStableBuild/testReport/rcl_logging_spdlog/)
-* [mac_osx_release](https://ci.ros2.org/view/nightly/job/nightly_osx_release/lastBuild/lastStableBuild/testReport/rcl_logging_spdlog/)
-* [windows_release](https://ci.ros2.org/view/nightly/job/nightly_win_rel/lastStableBuild/testReport/rcl_logging_spdlog/)
+* [linux-aarch64_release](https://ci.ros2.org/view/nightly/job/nightly_linux-aarch64_release/lastSuccessfulBuild/testReport/rcl_logging_spdlog/)
+* [linux_release](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastBuild/lastSuccessfulBuild/testReport/rcl_logging_spdlog/)
+* [mac_osx_release](https://ci.ros2.org/view/nightly/job/nightly_osx_release/lastBuild/lastSuccessfulBuild/testReport/rcl_logging_spdlog/)
+* [windows_release](https://ci.ros2.org/view/nightly/job/nightly_win_rel/lastSuccessfulBuild/testReport/rcl_logging_spdlog/)
 
 ### Public API Testing [4.ii]
 
@@ -117,21 +117,21 @@ This includes:
 
 Changes are required to make a best effort to keep or increase coverage before being accepted, but decreases are allowed if properly justified and accepted by reviewers.
 
-Current coverage statistics can be viewed [here](https://ci.ros2.org/job/ci_linux_coverage/lastStableBuild/cobertura/src_ros2_rcl_logging_rcl_logging_spdlog_src/). A description of how coverage statistics are calculated is summarized in this page ["ROS 2 Onboarding Guide"](https://index.ros.org/doc/ros2/Contributing/ROS-2-On-boarding-Guide/#note-on-coverage-runs).
+Current coverage statistics can be viewed [here](https://ci.ros2.org/job/nightly_linux_coverage/lastSuccessfulBuild/cobertura/src_ros2_rcl_logging_rcl_logging_spdlog_src/). A description of how coverage statistics are calculated is summarized in this page ["ROS 2 Onboarding Guide"](https://index.ros.org/doc/ros2/Contributing/ROS-2-On-boarding-Guide/#note-on-coverage-runs).
 
 ### Performance [4.iv]
 
-It is not yet defined if this package requires performance testing and how addresses this topic.
+`rcl_logging_spdlog` does not conduct performance tests.
 
 ### Linters and Static Analysis [4.v]
 
 `rcl_logging_spdlog` uses and passes all the standard linters and static analysis tools for a C package as described in the [ROS 2 Developer Guide](https://index.ros.org/doc/ros2/Contributing/Developer-Guide/#linters-and-static-analysis). Passing implies there are no linter/static errors when testing against CI of supported platforms.
 
 Currently nightly results can be seen here:
-* [linux-aarch64_release](https://ci.ros2.org/view/nightly/job/nightly_linux-aarch64_release/lastStableBuild/testReport/rcl_logging_spdlog/)
-* [linux_release](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastBuild/lastStableBuild/testReport/rcl_logging_spdlog/)
-* [mac_osx_release](https://ci.ros2.org/view/nightly/job/nightly_osx_release/lastBuild/lastStableBuild/testReport/rcl_logging_spdlog/)
-* [windows_release](https://ci.ros2.org/view/nightly/job/nightly_win_rel/lastStableBuild/testReport/rcl_logging_spdlog/)
+* [linux-aarch64_release](https://ci.ros2.org/view/nightly/job/nightly_linux-aarch64_release/lastSuccessfulBuild/testReport/rcl_logging_spdlog/)
+* [linux_release](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastBuild/lastSuccessfulBuild/testReport/rcl_logging_spdlog/)
+* [mac_osx_release](https://ci.ros2.org/view/nightly/job/nightly_osx_release/lastBuild/lastSuccessfulBuild/testReport/rcl_logging_spdlog/)
+* [windows_release](https://ci.ros2.org/view/nightly/job/nightly_win_rel/lastSuccessfulBuild/testReport/rcl_logging_spdlog/)
 
 ## Dependencies [5]
 
