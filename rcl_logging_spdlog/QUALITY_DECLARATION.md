@@ -2,7 +2,7 @@ This document is a declaration of software quality for the `rcl_logging_spdlog` 
 
 # rcl_logging_spdlog Quality Declaration
 
-The package `rcl_logging_spdlog` claims to be in the **Quality Level 4** category.
+The package `rcl_logging_spdlog` claims to be in the **Quality Level 3** category.
 
 Below are the rationales, notes, and caveats for this claim, organized by each requirement listed in the [Package Quality Categories in REP-2004](https://index.ros.org/doc/ros2/Contributing/Developer-Guide/#package-quality-categories) of the ROS2 developer guide.
 
@@ -78,27 +78,46 @@ All pull requests must resolve related documentation changes before merging.
 
 The license for `rcl_logging_spdlog` is Apache 2.0, and a summary is in each source file, the type is declared in the [`package.xml`](./package.xml) manifest file, and a full copy of the license is in the [`LICENSE`](../LICENSE) file.
 
-There is an automated test which runs a linter that ensures each file has a license statement. [Here](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastBuild/testReport/rcl_logging_spdlog/) can be found a list with the latest results of the various linters being run on the package.
+There is an automated test which runs a linter that ensures each file has a license statement. [Here](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastSuccessfulBuild/testReport/rcl_logging_spdlog/) can be found a list with the latest results of the various linters being run on the package.
 
 ### Copyright Statements [3.iv]
 
 The copyright holders each provide a statement of copyright in each source code file in `rcl_logging_spdlog`.
 
-There is an automated test which runs a linter that ensures each file has at least one copyright statement. Latest linter result report can be seen [here](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastBuild/testReport/rcl_logging_spdlog/copyright/).
+There is an automated test which runs a linter that ensures each file has at least one copyright statement. Latest linter result report can be seen [here](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastSuccessfulBuild/testReport/rcl_logging_spdlog/copyright/).
 
 ## Testing [4]
 
 ### Feature Testing [4.i]
 
-`rcl_logging_spdlog` does not include feature testing.
+Each feature in `rcl_logging_spdlog` has corresponding tests which simulate typical usage, and they are located in the [`test`](https://github.com/ros2/rcl_logging/tree/master/rcl_logging_spdlog/test) directory.
+New features are required to have tests before being added.
+
+Currently nightly test results can be seen here:
+
+* [linux-aarch64_release](https://ci.ros2.org/view/nightly/job/nightly_linux-aarch64_release/lastSuccessfulBuild/testReport/rcl_logging_spdlog/)
+* [linux_release](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastBuild/lastSuccessfulBuild/testReport/rcl_logging_spdlog/)
+* [mac_osx_release](https://ci.ros2.org/view/nightly/job/nightly_osx_release/lastBuild/lastSuccessfulBuild/testReport/rcl_logging_spdlog/)
+* [windows_release](https://ci.ros2.org/view/nightly/job/nightly_win_rel/lastSuccessfulBuild/testReport/rcl_logging_spdlog/)
 
 ### Public API Testing [4.ii]
 
-`rcl_logging_spdlog` does not include Public API testing.
+Each part of the public API has tests, and new additions or changes to the public API require tests before being added.
+The tests aim to cover both typical usage and corner cases, but are quantified by contributing to code coverage.
 
 ### Coverage [4.iii]
 
-`rcl_logging_spdlog` does not include tests, so coverage is not provided.
+`rcl_logging_spdlog` follows the recommendations for ROS Core packages in the [ROS 2 Developer Guide](https://index.ros.org/doc/ros2/Contributing/Developer-Guide/#code-coverage), and opts to use line coverage instead of branch coverage.
+
+This includes:
+
+- tracking and reporting line coverage statistics
+- achieving and maintaining a reasonable branch line coverage (90-100%)
+- no lines are manually skipped in coverage calculations
+
+Changes are required to make a best effort to keep or increase coverage before being accepted, but decreases are allowed if properly justified and accepted by reviewers.
+
+Current coverage statistics can be viewed [here](https://ci.ros2.org/job/nightly_linux_coverage/lastSuccessfulBuild/cobertura/src_ros2_rcl_logging_rcl_logging_spdlog_src/). A description of how coverage statistics are calculated is summarized in this page ["ROS 2 Onboarding Guide"](https://index.ros.org/doc/ros2/Contributing/ROS-2-On-boarding-Guide/#note-on-coverage-runs).
 
 ### Performance [4.iv]
 
@@ -109,10 +128,10 @@ There is an automated test which runs a linter that ensures each file has at lea
 `rcl_logging_spdlog` uses and passes all the standard linters and static analysis tools for a C package as described in the [ROS 2 Developer Guide](https://index.ros.org/doc/ros2/Contributing/Developer-Guide/#linters-and-static-analysis). Passing implies there are no linter/static errors when testing against CI of supported platforms.
 
 Currently nightly results can be seen here:
-* [linux-aarch64_release](https://ci.ros2.org/view/nightly/job/nightly_linux-aarch64_release/lastBuild/testReport/rcl_logging_spdlog/)
-* [linux_release](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastBuild/testReport/rcl_logging_spdlog/)
-* [mac_osx_release](https://ci.ros2.org/view/nightly/job/nightly_osx_release/lastBuild/testReport/rcl_logging_spdlog/)
-* [windows_release](https://ci.ros2.org/view/nightly/job/nightly_win_rel/lastBuild/testReport/rcl_logging_spdlog/)
+* [linux-aarch64_release](https://ci.ros2.org/view/nightly/job/nightly_linux-aarch64_release/lastSuccessfulBuild/testReport/rcl_logging_spdlog/)
+* [linux_release](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastBuild/lastSuccessfulBuild/testReport/rcl_logging_spdlog/)
+* [mac_osx_release](https://ci.ros2.org/view/nightly/job/nightly_osx_release/lastBuild/lastSuccessfulBuild/testReport/rcl_logging_spdlog/)
+* [windows_release](https://ci.ros2.org/view/nightly/job/nightly_win_rel/lastSuccessfulBuild/testReport/rcl_logging_spdlog/)
 
 ## Dependencies [5]
 
@@ -120,9 +139,17 @@ Below are evaluations of each of `rcl_logging_spdlog`'s run-time and build-time 
 
 `rcl_logging_spdlog` depends on the ROS packages `rcutils` and `spdlog_vendor`.
 
-`rcutils` was declared to be Quality Level 4 [here](https://github.com/ros2/rcutils/blob/master/QUALITY_DECLARATION.md).
+#### `rcutils`
 
-`spdlog_vendor` was declared to be Quality Level 4 [here](https://github.com/ros2/spdlog_vendor/blob/master/Quality_Declaration.md).
+The `rcutils` package provides an API which contains common utilities and data structures useful when programming in C.
+
+It is **Quality Level 2**, see its [Quality Declaration document](https://github.com/ros2/rcutils/blob/master/QUALITY_DECLARATION.md).
+
+#### `spdlog_vendor`
+
+The `spdlog_vendor` package provides a CMake shim over the spdlog library.
+
+It is **Quality Level 3**, see its [Quality Declaration document](https://github.com/ros2/spdlog_vendor/blob/master/QUALITY_DECLARATION.md).
 
 ### Optional Direct Runtime ROS Dependencies [5.ii]
 
@@ -150,29 +177,29 @@ The chart below compares the requirements in the REP-2004 with the current state
 |--|--|--|
 |1| **Version policy** |---|
 |1.i|Version Policy available | ✓ |
-|1.ii|Stable version |☓|
-|1.iii|Declared public API|✓|
-|1.iv|API stability policy|✓|
-|1.v|ABI stability policy|✓|
-|1.vi_|API/ABI stable within ros distribution|✓|
+|1.ii|Stable version | ✓ |
+|1.iii|Declared public API| ✓ |
+|1.iv|API stability policy| ✓ |
+|1.v|ABI stability policy| ✓ |
+|1.vi_|API/ABI stable within ros distribution| ✓ |
 |2| **Change control process** |---|
-|2.i| All changes occur on change request | ✓|
-|2.ii| Contributor origin (DCO, CLA, etc) | ✓|
+|2.i| All changes occur on change request | ✓ |
+|2.ii| Contributor origin (DCO, CLA, etc) | ✓ |
 |2.iii| Peer review policy | ✓ |
 |2.iv| CI policy for change requests | ✓ |
 |2.v| Documentation policy for change requests | ✓ |
 |3| **Documentation** | --- |
-|3.i| Per feature documentation | ☓ |
-|3.ii| Per public API item documentation | ☓ |
+|3.i| Per feature documentation | ✓ |
+|3.ii| Per public API item documentation | ✓ |
 |3.iii| Declared License(s) | ✓ |
 |3.iv| Copyright in source files| ✓ |
 |3.v.a| Quality declaration linked to README | ✓ |
-|3.v.b| Centralized declaration available for peer review |✓|
+|3.v.b| Centralized declaration available for peer review | ✓ |
 |4| Testing | --- |
-|4.i| Feature items tests | ☓ |
-|4.ii| Public API tests | ☓ |
-|4.iii.a| Using coverage | ☓ |
-|4.iii.a| Coverage policy | ☓ |
+|4.i| Feature items tests | ✓ |
+|4.ii| Public API tests | ✓ |
+|4.iii.a| Using coverage | ✓ |
+|4.iii.a| Coverage policy | ✓ |
 |4.iv.a| Performance tests (if applicable) | ☓ |
 |4.iv.b| Performance tests policy| ✓ |
 |4.v.a| Code style enforcement (linters)| ✓ |
@@ -184,4 +211,4 @@ The chart below compares the requirements in the REP-2004 with the current state
 |6| Platform support | --- |
 |6.i| Support targets Tier1 ROS platforms| ✓ |
 |7| Security | --- |
-|7.i| Vulnerability Disclosure Policy | ☓ |
+|7.i| Vulnerability Disclosure Policy | ✓ |
