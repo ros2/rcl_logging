@@ -17,6 +17,7 @@
 #include <rcutils/allocator.h>
 #include <rcutils/env.h>
 #include <rcutils/error_handling.h>
+#include <rcutils/testing/fault_injection.h>
 #include <rcutils/logging.h>
 
 #include <limits.h>
@@ -161,4 +162,24 @@ TEST_F(LoggingTest, full_cycle)
   EXPECT_EQ(
     expected_log.str(),
     actual_log.str()) << "Unexpected log contents in " << log_file_path;
+}
+
+TEST_F(LoggingTest, maybe_fail_test)
+{
+  #ifdef RCUTILS_ENABLE_FAULT_INJECTION
+  bool fault_injection_enabled = true;
+  #else
+  bool fault_injection_enabled = false;
+  #endif
+  ASSERT_TRUE(fault_injection_enabled);
+
+  for (int i = 0; i < 10; ++i) {
+    RCUTILS_SET_FAULT_INJECTION_COUNT(i);
+    if (RCL_LOGGING_RET_OK == rcl_logging_external_initialize(nullptr, allocator)) {
+      EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
+    } else {
+      EXPECT_TRUE(rcutils_error_is_set());
+      rcutils_reset_error();
+    }
+  }
 }
