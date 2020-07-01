@@ -19,6 +19,8 @@
 extern "C" {
 #endif
 
+#include <rcutils/allocator.h>
+
 #include "rcl_logging_spdlog/visibility_control.h"
 
 typedef int rcl_logging_ret_t;
