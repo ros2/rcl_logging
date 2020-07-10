@@ -15,11 +15,12 @@
 #ifndef RCL_LOGGING_LOG4CXX__LOGGING_INTERFACE_H_
 #define RCL_LOGGING_LOG4CXX__LOGGING_INTERFACE_H_
 
+#include "rcl_logging_log4cxx/visibility_control.h"
+#include "rcutils/allocator.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "rcl_logging_log4cxx/visibility_control.h"
 
 typedef int rcl_logging_ret_t;
 
