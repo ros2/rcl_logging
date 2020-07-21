@@ -2,6 +2,12 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Bump QD to level 3 and updated QD (`#44 <https://github.com/ros2/rcl_logging/issues/44>`_)
+* Added Doxyfile and fixed related warnings (`#42 <https://github.com/ros2/rcl_logging/issues/42>`_)
+* Contributors: Alejandro Hernández Cordero
+
 2.0.0 (2020-06-18)
 ------------------
 * Use new package with rcl logging interface (`#41 <https://github.com/ros2/rcl_logging/issues/41>`_)
