@@ -2,6 +2,11 @@
 Changelog for package rcl_logging_log4cxx
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Include rcutils/allocator.h in logging_interface.h (`#47 <https://github.com/ros2/rcl_logging/issues/47>`_)
+* Contributors: Jose Luis Rivero
+
 1.0.0 (2020-05-26)
 ------------------
 * warn about unused return value for set_logger_level (`#38 <https://github.com/ros2/rcl_logging/issues/38>`_)

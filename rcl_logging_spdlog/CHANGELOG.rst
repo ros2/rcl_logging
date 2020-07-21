@@ -2,6 +2,14 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Include rcutils/allocator.h in logging_interface.h (`#47 <https://github.com/ros2/rcl_logging/issues/47>`_)
+* Added Doxyfile and fixed related warnings (`#42 <https://github.com/ros2/rcl_logging/issues/42>`_) (`#46 <https://github.com/ros2/rcl_logging/issues/46>`_)
+* Add Security Vulnerability Policy pointing to REP-2006.
+* Rename Quality_Declaration.md -> QUALITY_DECLARATION.md
+* Contributors: Chris Lalancette, Jacob Perron, Jose Luis Rivero
+
 1.0.0 (2020-05-26)
 ------------------
 * Add some preliminary functional tests (`#36 <https://github.com/ros2/rcl_logging/issues/36>`_)
