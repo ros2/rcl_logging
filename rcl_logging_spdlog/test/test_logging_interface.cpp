@@ -164,22 +164,15 @@ TEST_F(LoggingTest, full_cycle)
     actual_log.str()) << "Unexpected log contents in " << log_file_path;
 }
 
-TEST_F(LoggingTest, maybe_fail_test)
+TEST_F(LoggingTest, init_fini_maybe_fail_test)
 {
-  #ifdef RCUTILS_ENABLE_FAULT_INJECTION
-  bool fault_injection_enabled = true;
-  #else
-  bool fault_injection_enabled = false;
-  #endif
-  ASSERT_TRUE(fault_injection_enabled);
-
-  for (int i = 0; i < 10; ++i) {
-    RCUTILS_SET_FAULT_INJECTION_COUNT(i);
+  RCUTILS_FAULT_INJECTION_TEST(
+  {
     if (RCL_LOGGING_RET_OK == rcl_logging_external_initialize(nullptr, allocator)) {
       EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
     } else {
       EXPECT_TRUE(rcutils_error_is_set());
       rcutils_reset_error();
     }
-  }
+  });
 }
