@@ -17,8 +17,8 @@
 #include <rcutils/allocator.h>
 #include <rcutils/env.h>
 #include <rcutils/error_handling.h>
-#include <rcutils/testing/fault_injection.h>
 #include <rcutils/logging.h>
+#include <rcutils/testing/fault_injection.h>
 
 #include <limits.h>
 #include <fstream>
