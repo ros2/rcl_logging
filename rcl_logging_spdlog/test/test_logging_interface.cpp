@@ -18,6 +18,7 @@
 #include <rcutils/env.h>
 #include <rcutils/error_handling.h>
 #include <rcutils/logging.h>
+#include <rcutils/testing/fault_injection.h>
 
 #include <limits.h>
 #include <fstream>
@@ -161,4 +162,17 @@ TEST_F(LoggingTest, full_cycle)
   EXPECT_EQ(
     expected_log.str(),
     actual_log.str()) << "Unexpected log contents in " << log_file_path;
+}
+
+TEST_F(LoggingTest, init_fini_maybe_fail_test)
+{
+  RCUTILS_FAULT_INJECTION_TEST(
+  {
+    if (RCL_LOGGING_RET_OK == rcl_logging_external_initialize(nullptr, allocator)) {
+      EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
+    } else {
+      EXPECT_TRUE(rcutils_error_is_set());
+      rcutils_reset_error();
+    }
+  });
 }
