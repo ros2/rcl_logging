@@ -41,6 +41,11 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
+  find_package(performance_test_fixture REQUIRED)
+  # Give cppcheck hints about macro definitions coming from outside this package
+  get_target_property(ament_cmake_cppcheck_ADDITIONAL_INCLUDE_DIRS
+    performance_test_fixture::performance_test_fixture INTERFACE_INCLUDE_DIRECTORIES)
+
   find_package(ament_cmake_gtest REQUIRED)
   find_package(rcpputils REQUIRED)
   ament_add_gtest(test_logging_interface test/test_logging_interface.cpp)
@@ -48,6 +53,11 @@ if(BUILD_TESTING)
     target_link_libraries(test_logging_interface ${PROJECT_NAME})
     target_compile_definitions(test_logging_interface PUBLIC RCUTILS_ENABLE_FAULT_INJECTION)
     ament_target_dependencies(test_logging_interface rcpputils)
+  endif()
+  add_performance_test(benchmark_logging_interface benchmark/benchmark_logging_interface.cpp)
+  if(TARGET benchmark_logging_interface)
+    target_include_directories(benchmark_logging_interface PUBLIC include)
+    target_link_libraries(benchmark_logging_interface ${PROJECT_NAME})
   endif()
 endif()
 
