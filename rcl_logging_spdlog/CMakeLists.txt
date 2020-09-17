@@ -58,6 +58,10 @@ if(BUILD_TESTING)
   if(TARGET benchmark_logging_interface)
     target_include_directories(benchmark_logging_interface PUBLIC include)
     target_link_libraries(benchmark_logging_interface ${PROJECT_NAME})
+    ament_target_dependencies(benchmark_logging_interface
+      rcl_logging_interface
+      rcutils
+    )
   endif()
 endif()
 
