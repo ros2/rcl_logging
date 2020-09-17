@@ -18,8 +18,6 @@
 
 #include <rcl_logging_interface/rcl_logging_interface.h>
 
-#include <rmw/types.h>
-
 #include <string>
 
 #include "performance_test_fixture/performance_test_fixture.hpp"
@@ -50,7 +48,7 @@ public:
     performance_test_fixture::PerformanceTest::SetUp(st);
     allocator = rcutils_get_default_allocator();
 
-    rmw_ret_t ret = rcl_logging_external_initialize(nullptr, allocator);
+    rcl_logging_ret_t ret = rcl_logging_external_initialize(nullptr, allocator);
     if (ret != RCL_LOGGING_RET_OK) {
       st.SkipWithError(rcutils_get_error_string().str);
     }
@@ -61,7 +59,7 @@ public:
   void TearDown(benchmark::State & st)
   {
     performance_test_fixture::PerformanceTest::TearDown(st);
-    rmw_ret_t ret = rcl_logging_external_shutdown();
+    rcl_logging_ret_t ret = rcl_logging_external_shutdown();
     if (ret != RCL_LOGGING_RET_OK) {
       st.SkipWithError(rcutils_get_error_string().str);
     }
@@ -69,7 +67,7 @@ public:
 
   void setLogLevel(int logger_level, benchmark::State & st)
   {
-    rmw_ret_t ret = rcl_logging_external_set_logger_level(nullptr, logger_level);
+    rcl_logging_ret_t ret = rcl_logging_external_set_logger_level(nullptr, logger_level);
     if (ret != RCL_LOGGING_RET_OK) {
       st.SkipWithError(rcutils_get_error_string().str);
     }
