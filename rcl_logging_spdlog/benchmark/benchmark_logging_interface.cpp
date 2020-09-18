@@ -29,7 +29,6 @@ namespace
 constexpr const uint64_t kSize = 4096;
 }
 
-
 const int logger_levels[] =
 {
   RCUTILS_LOG_SEVERITY_UNSET,
@@ -55,6 +54,7 @@ public:
 
     data = std::string(kSize, '0');
     i = 0;
+    reset_heap_counters();
   }
   void TearDown(benchmark::State & st)
   {
