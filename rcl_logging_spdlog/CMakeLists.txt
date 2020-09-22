@@ -13,6 +13,7 @@ endif()
 
 find_package(ament_cmake_ros REQUIRED)
 find_package(rcl_logging_interface REQUIRED)
+find_package(rcpputils REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(spdlog_vendor REQUIRED) # Provides spdlog on platforms without it.
 find_package(spdlog REQUIRED)
@@ -26,6 +27,7 @@ target_link_libraries(${PROJECT_NAME} spdlog::spdlog)
 
 ament_target_dependencies(${PROJECT_NAME}
   rcl_logging_interface
+  rcpputils
   rcutils
   spdlog
 )
@@ -47,7 +49,6 @@ if(BUILD_TESTING)
     performance_test_fixture::performance_test_fixture INTERFACE_INCLUDE_DIRECTORIES)
 
   find_package(ament_cmake_gtest REQUIRED)
-  find_package(rcpputils REQUIRED)
   ament_add_gtest(test_logging_interface test/test_logging_interface.cpp)
   if(TARGET test_logging_interface)
     target_link_libraries(test_logging_interface ${PROJECT_NAME})

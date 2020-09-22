@@ -102,12 +102,11 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     // To be compatible with ROS 1, we want to construct a default filename of
     // the form ~/.ros/log/<exe>_<pid>_<milliseconds-since-epoch>.log
 
-    // First get the home directory.
-    const char * homedir = rcutils_get_home_dir();
-    if (homedir == nullptr) {
-      // We couldn't get the home directory; it is not really going to be
-      // possible to do logging properly, so get out of here without setting
-      // up logging.
+    const char * logdir;
+    rcl_logging_ret_t dir_ret = rcl_logging_get_logging_directory(&logdir, allocator);
+    if (dir_ret != RCL_LOGGING_RET_OK) {
+      // We couldn't get the log directory, so get out of here without setting up
+      // logging.
       return RCL_LOGGING_RET_ERROR;
     }
 
@@ -132,7 +131,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     char log_name_buffer[512] = {0};
     int print_ret = rcutils_snprintf(
       log_name_buffer, sizeof(log_name_buffer),
-      "%s/.ros/log/%s_%i_%" PRId64 ".log", homedir, executable_name,
+      "%s/%s_%i_%" PRId64 ".log", logdir, executable_name,
       rcutils_get_pid(), ms_since_epoch);
     allocator.deallocate(executable_name, allocator.state);
     if (print_ret < 0) {

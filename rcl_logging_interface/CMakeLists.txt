@@ -32,6 +32,21 @@ install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION include/${PROJECT_NAME}
 )
 
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(rcpputils REQUIRED)
+  ament_add_gtest(test_get_logging_directory test/test_get_logging_directory.cpp)
+  if(TARGET test_get_logging_directory)
+    target_link_libraries(test_get_logging_directory ${PROJECT_NAME})
+    target_include_directories(test_get_logging_directory PRIVATE include)
+    #target_compile_definitions(test_get_logging_directory PUBLIC RCUTILS_ENABLE_FAULT_INJECTION)
+    ament_target_dependencies(test_get_logging_directory rcutils rcpputils)
+  endif()
+endif()
+
 ament_export_include_directories(include)
 ament_export_targets(${PROJECT_NAME})
 ament_export_dependencies(rcutils)
