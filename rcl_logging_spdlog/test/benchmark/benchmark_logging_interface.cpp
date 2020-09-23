@@ -29,24 +29,14 @@ namespace
 constexpr const uint64_t kSize = 4096;
 }
 
-const int logger_levels[] =
-{
-  RCUTILS_LOG_SEVERITY_UNSET,
-  RCUTILS_LOG_SEVERITY_DEBUG,
-  RCUTILS_LOG_SEVERITY_INFO,
-  RCUTILS_LOG_SEVERITY_WARN,
-  RCUTILS_LOG_SEVERITY_ERROR,
-  RCUTILS_LOG_SEVERITY_FATAL,
-};
-
 class LoggingBenchmarkPerformance : public PerformanceTest
 {
 public:
   void SetUp(benchmark::State & st)
   {
-    allocator = rcutils_get_default_allocator();
-
-    rcl_logging_ret_t ret = rcl_logging_external_initialize(nullptr, allocator);
+    rcl_logging_ret_t ret = rcl_logging_external_initialize(
+      nullptr,
+      rcutils_get_default_allocator());
     if (ret != RCL_LOGGING_RET_OK) {
       st.SkipWithError(rcutils_get_error_string().str);
     }
@@ -71,29 +61,26 @@ public:
     }
   }
 
-  rcutils_allocator_t allocator;
   std::string data;
 };
 
-BENCHMARK_DEFINE_F(LoggingBenchmarkPerformance, log_level_hit)(benchmark::State & st)
+BENCHMARK_F(LoggingBenchmarkPerformance, log_level_hit)(benchmark::State & st)
 {
   setLogLevel(RCUTILS_LOG_SEVERITY_INFO, st);
   for (auto _ : st) {
     rcl_logging_external_log(RCUTILS_LOG_SEVERITY_INFO, nullptr, data.c_str());
   }
 }
-BENCHMARK_REGISTER_F(LoggingBenchmarkPerformance, log_level_hit);
 
-BENCHMARK_DEFINE_F(LoggingBenchmarkPerformance, log_level_miss)(benchmark::State & st)
+BENCHMARK_F(LoggingBenchmarkPerformance, log_level_miss)(benchmark::State & st)
 {
   setLogLevel(RCUTILS_LOG_SEVERITY_INFO, st);
   for (auto _ : st) {
     rcl_logging_external_log(RCUTILS_LOG_SEVERITY_DEBUG, nullptr, data.c_str());
   }
 }
-BENCHMARK_REGISTER_F(LoggingBenchmarkPerformance, log_level_miss);
 
-BENCHMARK_DEFINE_F(PerformanceTest, logging_initialize)(benchmark::State & st)
+BENCHMARK_F(PerformanceTest, logging_initialize)(benchmark::State & st)
 {
   rcutils_allocator_t allocator = rcutils_get_default_allocator();
   for (auto _ : st) {
@@ -103,9 +90,8 @@ BENCHMARK_DEFINE_F(PerformanceTest, logging_initialize)(benchmark::State & st)
     }
   }
 }
-BENCHMARK_REGISTER_F(PerformanceTest, logging_initialize);
 
-BENCHMARK_DEFINE_F(PerformanceTest, logging_shutdown)(benchmark::State & st)
+BENCHMARK_F(PerformanceTest, logging_shutdown)(benchmark::State & st)
 {
   for (auto _ : st) {
     rcl_logging_ret_t ret = rcl_logging_external_shutdown();
@@ -114,4 +100,3 @@ BENCHMARK_DEFINE_F(PerformanceTest, logging_shutdown)(benchmark::State & st)
     }
   }
 }
-BENCHMARK_REGISTER_F(PerformanceTest, logging_shutdown);
