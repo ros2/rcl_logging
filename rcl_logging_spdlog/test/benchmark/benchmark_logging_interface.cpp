@@ -39,12 +39,11 @@ const int logger_levels[] =
   RCUTILS_LOG_SEVERITY_FATAL,
 };
 
-class RCL_LOGGING_BENCHMARK : public PerformanceTest
+class LoggingBenchmarkPerformance : public PerformanceTest
 {
 public:
   void SetUp(benchmark::State & st)
   {
-    performance_test_fixture::PerformanceTest::SetUp(st);
     allocator = rcutils_get_default_allocator();
 
     rcl_logging_ret_t ret = rcl_logging_external_initialize(nullptr, allocator);
@@ -53,19 +52,18 @@ public:
     }
 
     data = std::string(kSize, '0');
-    i = 0;
-    reset_heap_counters();
+    PerformanceTest::SetUp(st);
   }
   void TearDown(benchmark::State & st)
   {
-    performance_test_fixture::PerformanceTest::TearDown(st);
+    PerformanceTest::TearDown(st);
     rcl_logging_ret_t ret = rcl_logging_external_shutdown();
     if (ret != RCL_LOGGING_RET_OK) {
       st.SkipWithError(rcutils_get_error_string().str);
     }
   }
 
-  void setLogLevel(int logger_level, benchmark::State & st)
+  static void setLogLevel(int logger_level, benchmark::State & st)
   {
     rcl_logging_ret_t ret = rcl_logging_external_set_logger_level(nullptr, logger_level);
     if (ret != RCL_LOGGING_RET_OK) {
@@ -75,59 +73,45 @@ public:
 
   rcutils_allocator_t allocator;
   std::string data;
-  int i;
 };
 
-BENCHMARK_DEFINE_F(RCL_LOGGING_BENCHMARK, benchmark_log_severity_unset)(benchmark::State & st)
+BENCHMARK_DEFINE_F(LoggingBenchmarkPerformance, log_level_hit)(benchmark::State & st)
 {
-  setLogLevel(logger_levels[0], st);
+  setLogLevel(RCUTILS_LOG_SEVERITY_INFO, st);
   for (auto _ : st) {
-    rcl_logging_external_log(i++ % 5, nullptr, data.c_str());
+    rcl_logging_external_log(RCUTILS_LOG_SEVERITY_INFO, nullptr, data.c_str());
   }
 }
-BENCHMARK_REGISTER_F(RCL_LOGGING_BENCHMARK, benchmark_log_severity_unset);
+BENCHMARK_REGISTER_F(LoggingBenchmarkPerformance, log_level_hit);
 
-BENCHMARK_DEFINE_F(RCL_LOGGING_BENCHMARK, benchmark_log_severity_debug)(benchmark::State & st)
+BENCHMARK_DEFINE_F(LoggingBenchmarkPerformance, log_level_miss)(benchmark::State & st)
 {
-  setLogLevel(logger_levels[1], st);
+  setLogLevel(RCUTILS_LOG_SEVERITY_INFO, st);
   for (auto _ : st) {
-    rcl_logging_external_log(i++ % 5, nullptr, data.c_str());
+    rcl_logging_external_log(RCUTILS_LOG_SEVERITY_DEBUG, nullptr, data.c_str());
   }
 }
-BENCHMARK_REGISTER_F(RCL_LOGGING_BENCHMARK, benchmark_log_severity_debug);
+BENCHMARK_REGISTER_F(LoggingBenchmarkPerformance, log_level_miss);
 
-BENCHMARK_DEFINE_F(RCL_LOGGING_BENCHMARK, benchmark_log_severity_info)(benchmark::State & st)
+BENCHMARK_DEFINE_F(PerformanceTest, logging_initialize)(benchmark::State & st)
 {
-  setLogLevel(logger_levels[2], st);
+  rcutils_allocator_t allocator = rcutils_get_default_allocator();
   for (auto _ : st) {
-    rcl_logging_external_log(i++ % 5, nullptr, data.c_str());
+    rcl_logging_ret_t ret = rcl_logging_external_initialize(nullptr, allocator);
+    if (ret != RCL_LOGGING_RET_OK) {
+      st.SkipWithError(rcutils_get_error_string().str);
+    }
   }
 }
-BENCHMARK_REGISTER_F(RCL_LOGGING_BENCHMARK, benchmark_log_severity_info);
+BENCHMARK_REGISTER_F(PerformanceTest, logging_initialize);
 
-BENCHMARK_DEFINE_F(RCL_LOGGING_BENCHMARK, benchmark_log_severity_warn)(benchmark::State & st)
+BENCHMARK_DEFINE_F(PerformanceTest, logging_shutdown)(benchmark::State & st)
 {
-  setLogLevel(logger_levels[3], st);
   for (auto _ : st) {
-    rcl_logging_external_log(i++ % 5, nullptr, data.c_str());
+    rcl_logging_ret_t ret = rcl_logging_external_shutdown();
+    if (ret != RCL_LOGGING_RET_OK) {
+      st.SkipWithError(rcutils_get_error_string().str);
+    }
   }
 }
-BENCHMARK_REGISTER_F(RCL_LOGGING_BENCHMARK, benchmark_log_severity_warn);
-
-BENCHMARK_DEFINE_F(RCL_LOGGING_BENCHMARK, benchmark_log_severity_error)(benchmark::State & st)
-{
-  setLogLevel(logger_levels[4], st);
-  for (auto _ : st) {
-    rcl_logging_external_log(i++ % 5, nullptr, data.c_str());
-  }
-}
-BENCHMARK_REGISTER_F(RCL_LOGGING_BENCHMARK, benchmark_log_severity_error);
-
-BENCHMARK_DEFINE_F(RCL_LOGGING_BENCHMARK, benchmark_log_severity_fatal)(benchmark::State & st)
-{
-  setLogLevel(logger_levels[5], st);
-  for (auto _ : st) {
-    rcl_logging_external_log(i++ % 5, nullptr, data.c_str());
-  }
-}
-BENCHMARK_REGISTER_F(RCL_LOGGING_BENCHMARK, benchmark_log_severity_fatal);
+BENCHMARK_REGISTER_F(PerformanceTest, logging_shutdown);
