@@ -67,6 +67,10 @@ public:
 BENCHMARK_F(LoggingBenchmarkPerformance, log_level_hit)(benchmark::State & st)
 {
   setLogLevel(RCUTILS_LOG_SEVERITY_INFO, st);
+
+  rcl_logging_external_log(RCUTILS_LOG_SEVERITY_INFO, nullptr, data.c_str());
+  reset_heap_counters();
+
   for (auto _ : st) {
     rcl_logging_external_log(RCUTILS_LOG_SEVERITY_INFO, nullptr, data.c_str());
   }
@@ -84,6 +88,9 @@ BENCHMARK_F(PerformanceTest, logging_reinitialize)(benchmark::State & st)
 {
   rcutils_allocator_t allocator = rcutils_get_default_allocator();
   rcl_logging_ret_t ret = rcl_logging_external_initialize(nullptr, allocator);
+
+  reset_heap_counters();
+
   for (auto _ : st) {
     ret = rcl_logging_external_initialize(nullptr, allocator);
     if (ret != RCL_LOGGING_RET_OK) {
