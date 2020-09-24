@@ -80,7 +80,24 @@ BENCHMARK_F(LoggingBenchmarkPerformance, log_level_miss)(benchmark::State & st)
   }
 }
 
-BENCHMARK_F(PerformanceTest, logging_initialize)(benchmark::State & st)
+BENCHMARK_F(PerformanceTest, logging_reinitialize)(benchmark::State & st)
+{
+  rcutils_allocator_t allocator = rcutils_get_default_allocator();
+  rcl_logging_ret_t ret = rcl_logging_external_initialize(nullptr, allocator);
+  for (auto _ : st) {
+    ret = rcl_logging_external_initialize(nullptr, allocator);
+    if (ret != RCL_LOGGING_RET_OK) {
+      st.SkipWithError(rcutils_get_error_string().str);
+    }
+  }
+
+  ret = rcl_logging_external_shutdown();
+  if (ret != RCL_LOGGING_RET_OK) {
+    st.SkipWithError(rcutils_get_error_string().str);
+  }
+}
+
+BENCHMARK_F(PerformanceTest, logging_initialize_shutdown)(benchmark::State & st)
 {
   rcutils_allocator_t allocator = rcutils_get_default_allocator();
   for (auto _ : st) {
@@ -88,13 +105,7 @@ BENCHMARK_F(PerformanceTest, logging_initialize)(benchmark::State & st)
     if (ret != RCL_LOGGING_RET_OK) {
       st.SkipWithError(rcutils_get_error_string().str);
     }
-  }
-}
-
-BENCHMARK_F(PerformanceTest, logging_shutdown)(benchmark::State & st)
-{
-  for (auto _ : st) {
-    rcl_logging_ret_t ret = rcl_logging_external_shutdown();
+    ret = rcl_logging_external_shutdown();
     if (ret != RCL_LOGGING_RET_OK) {
       st.SkipWithError(rcutils_get_error_string().str);
     }
