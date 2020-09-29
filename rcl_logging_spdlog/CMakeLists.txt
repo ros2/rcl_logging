@@ -20,7 +20,7 @@ find_package(spdlog REQUIRED)
 if(NOT WIN32)
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_C_COMPILER_ID MATCHES "Clang")
   add_compile_options(
     -Wformat=2 -Wconversion -Woverloaded-virtual -Wshadow
     -Wnon-virtual-dtor -Wold-style-cast -Wcast-qual
