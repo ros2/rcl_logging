@@ -57,7 +57,7 @@ TEST(test_logging_directory, directory)
   rcutils_allocator_t allocator = rcutils_get_default_allocator();
 
   // Fails without any relevant env vars at all (HOME included)
-  const char * directory;
+  char * directory;
   EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_get_logging_directory(&allocator, &directory));
 
   // Default case without ROS2_LOG_DIR or ROS2_HOME being set (but with HOME)
@@ -66,20 +66,24 @@ TEST(test_logging_directory, directory)
   rcpputils::fs::path default_dir = fake_home / ".ros" / "log";
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(&allocator, &directory));
   EXPECT_STREQ(directory, default_dir.string().c_str());
+  allocator.deallocate(directory, allocator.state);
 
   // Use $ROS2_LOG_DIR if it is set
   ASSERT_EQ(true, rcutils_set_env("ROS2_LOG_DIR", "/my/ros2_log_dir"));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(&allocator, &directory));
   EXPECT_STREQ(directory, "/my/ros2_log_dir");
+  allocator.deallocate(directory, allocator.state);
   // Empty is considered unset
   ASSERT_EQ(true, rcutils_set_env("ROS2_LOG_DIR", ""));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(&allocator, &directory));
   EXPECT_STREQ(directory, default_dir.string().c_str());
+  allocator.deallocate(directory, allocator.state);
   // Make sure '~' is expanded to the home directory
   ASSERT_EQ(true, rcutils_set_env("ROS2_LOG_DIR", "~/logdir"));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(&allocator, &directory));
   rcpputils::fs::path fake_log_dir = fake_home / "logdir";
   EXPECT_STREQ(directory, fake_log_dir.string().c_str());
+  allocator.deallocate(directory, allocator.state);
 
   ASSERT_EQ(true, rcutils_set_env("ROS2_LOG_DIR", nullptr));
 
@@ -89,14 +93,17 @@ TEST(test_logging_directory, directory)
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(&allocator, &directory));
   rcpputils::fs::path fake_ros_home_log_dir = fake_ros_home / "log";
   EXPECT_STREQ(directory, fake_ros_home_log_dir.string().c_str());
+  allocator.deallocate(directory, allocator.state);
   // Empty is considered unset
   ASSERT_EQ(true, rcutils_set_env("ROS2_HOME", ""));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(&allocator, &directory));
   EXPECT_STREQ(directory, default_dir.string().c_str());
+  allocator.deallocate(directory, allocator.state);
   // Make sure '~' is expanded to the home directory
   ASSERT_EQ(true, rcutils_set_env("ROS2_HOME", "~/.fakeroshome"));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(&allocator, &directory));
   EXPECT_STREQ(directory, fake_ros_home_log_dir.string().c_str());
+  allocator.deallocate(directory, allocator.state);
 
   ASSERT_EQ(true, rcutils_set_env("ROS2_HOME", nullptr));
 }

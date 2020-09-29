@@ -102,7 +102,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     // To be compatible with ROS 1, we want to construct a default filename of
     // the form ~/.ros/log/<exe>_<pid>_<milliseconds-since-epoch>.log
 
-    const char * logdir;
+    char * logdir;
     rcl_logging_ret_t dir_ret = rcl_logging_get_logging_directory(&allocator, &logdir);
     if (dir_ret != RCL_LOGGING_RET_OK) {
       // We couldn't get the log directory, so get out of here without setting up
@@ -133,6 +133,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(
       log_name_buffer, sizeof(log_name_buffer),
       "%s/%s_%i_%" PRId64 ".log", logdir, executable_name,
       rcutils_get_pid(), ms_since_epoch);
+    allocator.deallocate(logdir, allocator.state);
     allocator.deallocate(executable_name, allocator.state);
     if (print_ret < 0) {
       RCUTILS_SET_ERROR_MSG("Failed to create log file name string");
