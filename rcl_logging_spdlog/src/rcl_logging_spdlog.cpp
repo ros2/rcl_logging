@@ -86,7 +86,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     }
 
     // SPDLOG doesn't automatically create the log directories, so create them
-    rcpputils::fs::path logdir_path = std::string(logdir);
+    rcpputils::fs::path logdir_path(logdir);
     if (!rcpputils::fs::create_directories(logdir_path)) {
       RCUTILS_SET_ERROR_MSG_WITH_FORMAT_STRING("Failed to create log directory: %s", logdir);
       return RCL_LOGGING_RET_ERROR;
