@@ -79,6 +79,7 @@ TEST(test_logging_directory, directory)
   // Default case without ROS_LOG_DIR or ROS_HOME being set (but with HOME)
   rcpputils::fs::path fake_home("/fake_home_dir");
   ASSERT_EQ(true, rcutils_set_env("HOME", fake_home.string().c_str()));
+  ASSERT_EQ(true, rcutils_set_env("USERPROFILE", fake_home.string().c_str()));
   rcpputils::fs::path default_dir = fake_home / ".ros" / "log";
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
   EXPECT_STREQ(directory, default_dir.string().c_str());
@@ -109,6 +110,24 @@ TEST(test_logging_directory, directory)
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
   rcpputils::fs::path fake_log_dir = fake_home / "logdir";
   EXPECT_STREQ(directory, fake_log_dir.string().c_str());
+  allocator.deallocate(directory, allocator.state);
+  directory = nullptr;
+  // But it should only be expanded if it's at the beginning
+  rcpputils::fs::path prefixed_fake_log_dir("/prefix/~/logdir");
+  ASSERT_EQ(true, rcutils_set_env("ROS_LOG_DIR", prefixed_fake_log_dir.string().c_str()));
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
+  EXPECT_STREQ(directory, prefixed_fake_log_dir.string().c_str());
+  allocator.deallocate(directory, allocator.state);
+  directory = nullptr;
+  ASSERT_EQ(true, rcutils_set_env("ROS_LOG_DIR", "~"));
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
+  EXPECT_STREQ(directory, fake_home.string().c_str());
+  allocator.deallocate(directory, allocator.state);
+  directory = nullptr;
+  std::string home_trailing_slash(fake_home.string() + "/");
+  ASSERT_EQ(true, rcutils_set_env("ROS_LOG_DIR", "~/"));
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
+  EXPECT_STREQ(directory, home_trailing_slash.c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
 

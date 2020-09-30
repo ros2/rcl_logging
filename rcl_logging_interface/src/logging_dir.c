@@ -72,12 +72,23 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
       RCUTILS_SET_ERROR_MSG("failed to get the home directory");
       return RCL_LOGGING_RET_ERROR;
     }
-    char * directory_not_expanded = *directory;
-    *directory = rcutils_join_path(homedir, directory_not_expanded + 2, allocator);
-    allocator.deallocate(directory_not_expanded, allocator.state);
-    if (NULL == *directory) {
-      RCUTILS_SET_ERROR_MSG("rcutils_join_path failed");
-      return RCL_LOGGING_RET_ERROR;
+    if (1 == strlen(*directory)) {
+      allocator.deallocate(*directory, allocator.state);
+      *directory = rcutils_strdup(homedir, allocator);
+      if (NULL == *directory) {
+        RCUTILS_SET_ERROR_MSG("rcutils_strdup failed");
+        return RCL_LOGGING_RET_ERROR;
+      }
+    } else {
+      char * directory_not_expanded = *directory;
+      // Try to avoid having a double slash
+      const int offset = (2 <= strlen(*directory) && '/' == directory_not_expanded[1]) ? 2 : 1;
+      *directory = rcutils_join_path(homedir, directory_not_expanded + offset, allocator);
+      allocator.deallocate(directory_not_expanded, allocator.state);
+      if (NULL == *directory) {
+        RCUTILS_SET_ERROR_MSG("rcutils_join_path failed");
+        return RCL_LOGGING_RET_ERROR;
+      }
     }
   }
   return RCL_LOGGING_RET_OK;
