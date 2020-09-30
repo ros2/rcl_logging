@@ -107,7 +107,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     if (RCL_LOGGING_RET_OK != dir_ret) {
       // We couldn't get the log directory, so get out of here without setting up
       // logging.
-      return RCL_LOGGING_RET_ERROR;
+      return dir_ret;
     }
 
     // Now get the milliseconds since the epoch in the local timezone.
