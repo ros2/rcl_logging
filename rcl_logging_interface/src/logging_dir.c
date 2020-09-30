@@ -74,7 +74,12 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
       return RCL_LOGGING_RET_ERROR;
     }
     char * directory_not_expanded = *directory;
-    *directory = rcutils_format_string(allocator, "%s%s", homedir, directory_not_expanded + 1);
+    *directory = rcutils_format_string_limit(
+      allocator,
+      strlen(homedir) + strlen(directory_not_expanded),
+      "%s%s",
+      homedir,
+      directory_not_expanded + 1);
     allocator.deallocate(directory_not_expanded, allocator.state);
     if (NULL == *directory) {
       RCUTILS_SET_ERROR_MSG("rcutils_format_string failed");
