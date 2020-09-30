@@ -122,11 +122,11 @@ inline
 rcl_logging_ret_t
 rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directory)
 {
-  if (directory == NULL) {
+  if (NULL == directory) {
     RCUTILS_SET_ERROR_MSG("directory argument must not be null");
     return RCL_LOGGING_RET_INVALID_ARGUMENT;
   }
-  if (*directory != NULL) {
+  if (NULL != *directory) {
     RCUTILS_SET_ERROR_MSG("directory argument must point to null");
     return RCL_LOGGING_RET_INVALID_ARGUMENT;
   }
@@ -137,9 +137,9 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
     RCUTILS_SET_ERROR_MSG("rcutils_get_env failed");
     return RCL_LOGGING_RET_ERROR;
   }
-  if (*log_dir_env != '\0') {
+  if ('\0' != *log_dir_env) {
     *directory = rcutils_strdup(log_dir_env, allocator);
-    if (*directory == NULL) {
+    if (NULL == *directory) {
       RCUTILS_SET_ERROR_MSG("rcutils_strdup failed");
       return RCL_LOGGING_RET_ERROR;
     }
@@ -150,15 +150,15 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
       RCUTILS_SET_ERROR_MSG("rcutils_get_env failed");
       return RCL_LOGGING_RET_ERROR;
     }
-    if (*ros2_home_dir_env == '\0') {
+    if ('\0' == *ros2_home_dir_env) {
       ros2_home_dir_env = rcutils_join_path("~", ".ros", allocator);
-      if (ros2_home_dir_env == NULL) {
+      if (NULL == ros2_home_dir_env) {
         RCUTILS_SET_ERROR_MSG("rcutils_join_path failed");
         return RCL_LOGGING_RET_ERROR;
       }
     }
     *directory = rcutils_join_path(ros2_home_dir_env, "log", allocator);
-    if (*directory == NULL) {
+    if (NULL == *directory) {
       RCUTILS_SET_ERROR_MSG("rcutils_join_path failed");
       return RCL_LOGGING_RET_ERROR;
     }
@@ -167,12 +167,12 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
   // Expand home directory
   if (SIZE_MAX != rcutils_find(*directory, '~')) {
     const char * homedir = rcutils_get_home_dir();
-    if (homedir == NULL) {
+    if (NULL == homedir) {
       RCUTILS_SET_ERROR_MSG("failed to get the home directory");
       return RCL_LOGGING_RET_ERROR;
     }
     *directory = rcutils_repl_str(*directory, "~", homedir, &allocator);
-    if (*directory == NULL) {
+    if (NULL == *directory) {
       RCUTILS_SET_ERROR_MSG("rcutils_repl_str failed");
       return RCL_LOGGING_RET_ERROR;
     }

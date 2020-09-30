@@ -78,7 +78,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(
 
     char * logdir = nullptr;
     rcl_logging_ret_t dir_ret = rcl_logging_get_logging_directory(allocator, &logdir);
-    if (dir_ret != RCL_LOGGING_RET_OK) {
+    if (RCL_LOGGING_RET_OK != dir_ret) {
       // We couldn't get the log directory, so get out of here without setting up
       // logging.
       return RCL_LOGGING_RET_ERROR;
