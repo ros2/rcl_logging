@@ -22,10 +22,6 @@
 
 #include "rcl_logging_interface/rcl_logging_interface.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 rcl_logging_ret_t
 rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directory)
 {
@@ -86,7 +82,3 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
   }
   return RCL_LOGGING_RET_OK;
 }
-
-#ifdef __cplusplus
-}
-#endif
