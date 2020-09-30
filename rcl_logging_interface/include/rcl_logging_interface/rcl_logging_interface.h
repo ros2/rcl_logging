@@ -133,7 +133,11 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
 
   const char * log_dir_env;
   const char * err = rcutils_get_env("ROS2_LOG_DIR", &log_dir_env);
-  if (!err && *log_dir_env != '\0') {
+  if (NULL != err) {
+    RCUTILS_SET_ERROR_MSG("rcutils_get_env failed");
+    return RCL_LOGGING_RET_ERROR;
+  }
+  if (*log_dir_env != '\0') {
     *directory = rcutils_strdup(log_dir_env, allocator);
     if (*directory == NULL) {
       RCUTILS_SET_ERROR_MSG("rcutils_strdup failed");
@@ -142,7 +146,11 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
   } else {
     const char * ros2_home_dir_env;
     err = rcutils_get_env("ROS2_HOME", &ros2_home_dir_env);
-    if (err || *ros2_home_dir_env == '\0') {
+    if (NULL != err) {
+      RCUTILS_SET_ERROR_MSG("rcutils_get_env failed");
+      return RCL_LOGGING_RET_ERROR;
+    }
+    if (*ros2_home_dir_env == '\0') {
       ros2_home_dir_env = rcutils_join_path("~", ".ros", allocator);
       if (ros2_home_dir_env == NULL) {
         RCUTILS_SET_ERROR_MSG("rcutils_join_path failed");
