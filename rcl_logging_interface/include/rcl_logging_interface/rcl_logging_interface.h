@@ -109,7 +109,7 @@ rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int l
  *
  * \param[in] allocator The allocator to use for memory allocation.
  * \param[out] directory The C string pointer at which to write the directory path.
- *   Only meaningful if the call is successful. Must not be null and must point to null.
+ *   Only meaningful if the call is successful. Must not be nullptr and must point to nullptr.
  * \return RCL_LOGGING_RET_OK if successful, or
  * \return RCL_LOGGING_RET_INVALID_ARGUMENT if any arguments are invalid, or
  * \return RCL_LOGGING_RET_ERROR if an unspecified error occurs.
