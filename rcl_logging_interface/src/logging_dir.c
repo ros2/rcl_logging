@@ -15,7 +15,6 @@
 #include <rcutils/allocator.h>
 #include <rcutils/error_handling.h>
 #include <rcutils/filesystem.h>
-#include <rcutils/find.h>
 #include <rcutils/get_env.h>
 #include <rcutils/strdup.h>
 
@@ -67,7 +66,7 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
   }
 
   // Expand home directory
-  if (0 == rcutils_find(*directory, '~')) {
+  if ('~' == (*directory)[0]) {
     const char * homedir = rcutils_get_home_dir();
     if (NULL == homedir) {
       RCUTILS_SET_ERROR_MSG("failed to get the home directory");
