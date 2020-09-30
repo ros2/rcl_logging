@@ -17,7 +17,6 @@
 #include <rcutils/filesystem.h>
 #include <rcutils/find.h>
 #include <rcutils/get_env.h>
-#include <rcutils/repl_str.h>
 #include <rcutils/strdup.h>
 
 #include "rcl_logging_interface/rcl_logging_interface.h"
@@ -68,15 +67,17 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
   }
 
   // Expand home directory
-  if (SIZE_MAX != rcutils_find(*directory, '~')) {
+  if (0 == rcutils_find(*directory, '~')) {
     const char * homedir = rcutils_get_home_dir();
     if (NULL == homedir) {
       RCUTILS_SET_ERROR_MSG("failed to get the home directory");
       return RCL_LOGGING_RET_ERROR;
     }
-    *directory = rcutils_repl_str(*directory, "~", homedir, &allocator);
+    char * directory_not_expanded = *directory;
+    *directory = rcutils_join_path(homedir, directory_not_expanded + 2, allocator);
+    allocator.deallocate(directory_not_expanded, allocator.state);
     if (NULL == *directory) {
-      RCUTILS_SET_ERROR_MSG("rcutils_repl_str failed");
+      RCUTILS_SET_ERROR_MSG("rcutils_join_path failed");
       return RCL_LOGGING_RET_ERROR;
     }
   }

@@ -134,6 +134,14 @@ TEST(test_logging_directory, directory)
   EXPECT_STREQ(directory, fake_ros_home_log_dir.string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
+  // But it should only be expanded if it's at the beginning
+  rcpputils::fs::path prefixed_fake_ros_home("/prefix/~/.fakeroshome");
+  rcpputils::fs::path prefixed_fake_ros_home_log_dir = prefixed_fake_ros_home / "log";
+  ASSERT_EQ(true, rcutils_set_env("ROS_HOME", prefixed_fake_ros_home.string().c_str()));
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
+  EXPECT_STREQ(directory, prefixed_fake_ros_home_log_dir.string().c_str());
+  allocator.deallocate(directory, allocator.state);
+  directory = nullptr;
 
   ASSERT_EQ(true, rcutils_set_env("ROS_HOME", nullptr));
 }
