@@ -102,8 +102,8 @@ rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int l
 /**
  * Uses various environment variables to construct a logging directory path.
  *
- * Use $ROS2_LOG_DIR if ROS2_LOG_DIR is set and not empty.
- * Otherwise, use $ROS2_HOME/log, using ~/.ros for ROS2_HOME if not set or if empty.
+ * Use $ROS_LOG_DIR if ROS_LOG_DIR is set and not empty.
+ * Otherwise, use $ROS_HOME/log, using ~/.ros for ROS_HOME if not set or if empty.
  *
  * It also expands '~' to the current user's home directory.
  *
@@ -132,7 +132,7 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
   }
 
   const char * log_dir_env;
-  const char * err = rcutils_get_env("ROS2_LOG_DIR", &log_dir_env);
+  const char * err = rcutils_get_env("ROS_LOG_DIR", &log_dir_env);
   if (NULL != err) {
     RCUTILS_SET_ERROR_MSG("rcutils_get_env failed");
     return RCL_LOGGING_RET_ERROR;
@@ -144,20 +144,20 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
       return RCL_LOGGING_RET_ERROR;
     }
   } else {
-    const char * ros2_home_dir_env;
-    err = rcutils_get_env("ROS2_HOME", &ros2_home_dir_env);
+    const char * ros_home_dir_env;
+    err = rcutils_get_env("ROS_HOME", &ros_home_dir_env);
     if (NULL != err) {
       RCUTILS_SET_ERROR_MSG("rcutils_get_env failed");
       return RCL_LOGGING_RET_ERROR;
     }
-    if ('\0' == *ros2_home_dir_env) {
-      ros2_home_dir_env = rcutils_join_path("~", ".ros", allocator);
-      if (NULL == ros2_home_dir_env) {
+    if ('\0' == *ros_home_dir_env) {
+      ros_home_dir_env = rcutils_join_path("~", ".ros", allocator);
+      if (NULL == ros_home_dir_env) {
         RCUTILS_SET_ERROR_MSG("rcutils_join_path failed");
         return RCL_LOGGING_RET_ERROR;
       }
     }
-    *directory = rcutils_join_path(ros2_home_dir_env, "log", allocator);
+    *directory = rcutils_join_path(ros_home_dir_env, "log", allocator);
     if (NULL == *directory) {
       RCUTILS_SET_ERROR_MSG("rcutils_join_path failed");
       return RCL_LOGGING_RET_ERROR;
