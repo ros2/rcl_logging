@@ -117,7 +117,7 @@ rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int l
 RCL_LOGGING_INTERFACE_PUBLIC
 inline
 rcl_logging_ret_t
-rcl_logging_get_logging_directory(rcutils_allocator_t allocator, const char ** directory)
+rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directory)
 {
   if (directory == NULL) {
     RCUTILS_SET_ERROR_MSG("directory argument must not be null");
