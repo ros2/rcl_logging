@@ -16,6 +16,7 @@
 #include <rcpputils/get_env.hpp>
 #include <rcutils/allocator.h>
 #include <rcutils/env.h>
+#include <rcutils/error_handling.h>
 
 #include <string>
 
