@@ -91,6 +91,13 @@ TEST(test_logging_directory, directory)
   EXPECT_STREQ(directory, "/my/ros_log_dir");
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
+  // Setting ROS_HOME won't change anything since ROS_LOG_DIR is used first
+  ASSERT_EQ(true, rcutils_set_env("ROS_HOME", "/this/wont/be/used"));
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
+  EXPECT_STREQ(directory, "/my/ros_log_dir");
+  allocator.deallocate(directory, allocator.state);
+  directory = nullptr;
+  ASSERT_EQ(true, rcutils_set_env("ROS_HOME", nullptr));
   // Empty is considered unset
   ASSERT_EQ(true, rcutils_set_env("ROS_LOG_DIR", ""));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
