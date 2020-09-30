@@ -107,6 +107,9 @@ rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int l
  *
  * It also expands '~' to the current user's home directory.
  *
+ * If successful, the directory C string should be deallocated using the given allocator when it is
+ * no longer needed.
+ *
  * \param[in] allocator The allocator to use for memory allocation.
  * \param[out] directory The C string pointer at which to write the directory path.
  *   Only meaningful if the call is successful. Must not be nullptr and must point to nullptr.
@@ -131,7 +134,11 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
   const char * log_dir_env;
   const char * err = rcutils_get_env("ROS2_LOG_DIR", &log_dir_env);
   if (!err && *log_dir_env != '\0') {
-    *directory = log_dir_env;
+    *directory = rcutils_strdup(log_dir_env, allocator);
+    if (*directory == NULL) {
+      RCUTILS_SET_ERROR_MSG("rcutils_strdup failed");
+      return RCL_LOGGING_RET_ERROR;
+    }
   } else {
     const char * ros2_home_dir_env;
     err = rcutils_get_env("ROS2_HOME", &ros2_home_dir_env);
