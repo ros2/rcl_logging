@@ -77,7 +77,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     // the form ~/.ros/log/<exe>_<pid>_<milliseconds-since-epoch>.log
 
     char * logdir;
-    rcl_logging_ret_t dir_ret = rcl_logging_get_logging_directory(&allocator, &logdir);
+    rcl_logging_ret_t dir_ret = rcl_logging_get_logging_directory(allocator, &logdir);
     if (dir_ret != RCL_LOGGING_RET_OK) {
       // We couldn't get the log directory, so get out of here without setting up
       // logging.

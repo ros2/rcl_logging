@@ -117,7 +117,7 @@ rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int l
 RCL_LOGGING_INTERFACE_PUBLIC
 inline
 rcl_logging_ret_t
-rcl_logging_get_logging_directory(const rcutils_allocator_t * allocator, const char ** directory)
+rcl_logging_get_logging_directory(rcutils_allocator_t allocator, const char ** directory)
 {
   if (directory == NULL) {
     RCUTILS_SET_ERROR_MSG("directory argument must not be null");
@@ -136,13 +136,13 @@ rcl_logging_get_logging_directory(const rcutils_allocator_t * allocator, const c
     const char * ros2_home_dir_env;
     err = rcutils_get_env("ROS2_HOME", &ros2_home_dir_env);
     if (err || *ros2_home_dir_env == '\0') {
-      ros2_home_dir_env = rcutils_join_path("~", ".ros", *allocator);
+      ros2_home_dir_env = rcutils_join_path("~", ".ros", allocator);
       if (ros2_home_dir_env == NULL) {
         RCUTILS_SET_ERROR_MSG("rcutils_join_path failed");
         return RCL_LOGGING_RET_ERROR;
       }
     }
-    *directory = rcutils_join_path(ros2_home_dir_env, "log", *allocator);
+    *directory = rcutils_join_path(ros2_home_dir_env, "log", allocator);
     if (*directory == NULL) {
       RCUTILS_SET_ERROR_MSG("rcutils_join_path failed");
       return RCL_LOGGING_RET_ERROR;
@@ -156,7 +156,7 @@ rcl_logging_get_logging_directory(const rcutils_allocator_t * allocator, const c
       RCUTILS_SET_ERROR_MSG("failed to get the home directory");
       return RCL_LOGGING_RET_ERROR;
     }
-    *directory = rcutils_repl_str(*directory, "~", homedir, allocator);
+    *directory = rcutils_repl_str(*directory, "~", homedir, &allocator);
     if (*directory == NULL) {
       RCUTILS_SET_ERROR_MSG("rcutils_repl_str failed");
       return RCL_LOGGING_RET_ERROR;
