@@ -16,11 +16,14 @@
 #include <rcutils/allocator.h>
 #include <rcutils/logging.h>
 
-#include <rcl_logging_interface/rcl_logging_interface.h>
+#include <rcl_logging_spdlog/logging_interface.h>
 
 #include <string>
 
 #include "performance_test_fixture/performance_test_fixture.hpp"
+
+#define RCL_LOGGING_RET_OK    (0)
+#define RCL_LOGGING_RET_ERROR (2)
 
 using performance_test_fixture::PerformanceTest;
 
