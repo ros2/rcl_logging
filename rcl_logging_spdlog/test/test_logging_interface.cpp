@@ -28,6 +28,9 @@
 #include "gtest/gtest.h"
 #include "rcl_logging_spdlog/logging_interface.h"
 
+#define RCL_LOGGING_RET_OK    (0)
+#define RCL_LOGGING_RET_ERROR (2)
+
 namespace fs = rcpputils::fs;
 
 const int logger_levels[] =
