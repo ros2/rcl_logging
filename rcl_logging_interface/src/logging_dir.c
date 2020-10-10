@@ -52,14 +52,22 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
       RCUTILS_SET_ERROR_MSG("rcutils_get_env failed");
       return RCL_LOGGING_RET_ERROR;
     }
+    char * ros_home_dir;
     if ('\0' == *ros_home_dir_env) {
-      ros_home_dir_env = rcutils_join_path("~", ".ros", allocator);
-      if (NULL == ros_home_dir_env) {
+      ros_home_dir = rcutils_join_path("~", ".ros", allocator);
+      if (NULL == ros_home_dir) {
         RCUTILS_SET_ERROR_MSG("rcutils_join_path failed");
         return RCL_LOGGING_RET_ERROR;
       }
+    } else {
+      ros_home_dir = rcutils_strdup(ros_home_dir_env, allocator);
+      if (NULL == ros_home_dir) {
+        RCUTILS_SET_ERROR_MSG("rcutils_strdup failed");
+        return RCL_LOGGING_RET_ERROR;
+      }
     }
-    *directory = rcutils_join_path(ros_home_dir_env, "log", allocator);
+    *directory = rcutils_join_path(ros_home_dir, "log", allocator);
+    allocator.deallocate(ros_home_dir, allocator.state);
     if (NULL == *directory) {
       RCUTILS_SET_ERROR_MSG("rcutils_join_path failed");
       return RCL_LOGGING_RET_ERROR;
