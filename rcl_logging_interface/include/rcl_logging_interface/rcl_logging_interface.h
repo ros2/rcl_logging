@@ -99,7 +99,8 @@ rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int l
  * Use $ROS_LOG_DIR if ROS_LOG_DIR is set and not empty.
  * Otherwise, use $ROS_HOME/log, using ~/.ros for ROS_HOME if not set or if empty.
  *
- * It also expands an initial '~' to the current user's home directory.
+ * It also expands an initial '~' to the current user's home directory,
+ * and converts the path separator if necessary.
  *
  * If successful, the directory C string should be deallocated using the given allocator when it is
  * no longer needed.

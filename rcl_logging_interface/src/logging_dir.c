@@ -94,5 +94,13 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
       return RCL_LOGGING_RET_ERROR;
     }
   }
+
+  char * directory_maybe_not_native = *directory;
+  *directory = rcutils_to_native_path(directory_maybe_not_native, allocator);
+  allocator.deallocate(directory_maybe_not_native, allocator.state);
+  if (NULL == *directory) {
+    RCUTILS_SET_ERROR_MSG("rcutils_to_native_path failed");
+    return RCL_LOGGING_RET_ERROR;
+  }
   return RCL_LOGGING_RET_OK;
 }

@@ -87,15 +87,23 @@ TEST(test_logging_directory, directory)
   directory = nullptr;
 
   // Use $ROS_LOG_DIR if it is set
-  ASSERT_EQ(true, rcutils_set_env("ROS_LOG_DIR", "/my/ros_log_dir"));
+  const char * my_log_dir_raw = "/my/ros_log_dir";
+  rcpputils::fs::path my_log_dir(my_log_dir_raw);
+  ASSERT_EQ(true, rcutils_set_env("ROS_LOG_DIR", my_log_dir.string().c_str()));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
-  EXPECT_STREQ(directory, "/my/ros_log_dir");
+  EXPECT_STREQ(directory, my_log_dir.string().c_str());
+  allocator.deallocate(directory, allocator.state);
+  directory = nullptr;
+  // Make sure it converts path separators when necessary
+  ASSERT_EQ(true, rcutils_set_env("ROS_LOG_DIR", my_log_dir_raw));
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
+  EXPECT_STREQ(directory, my_log_dir.string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
   // Setting ROS_HOME won't change anything since ROS_LOG_DIR is used first
   ASSERT_EQ(true, rcutils_set_env("ROS_HOME", "/this/wont/be/used"));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
-  EXPECT_STREQ(directory, "/my/ros_log_dir");
+  EXPECT_STREQ(directory, my_log_dir.string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
   ASSERT_EQ(true, rcutils_set_env("ROS_HOME", nullptr));
@@ -124,10 +132,10 @@ TEST(test_logging_directory, directory)
   EXPECT_STREQ(directory, fake_home.string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
-  std::string home_trailing_slash(fake_home.string() + "/");
+  rcpputils::fs::path home_trailing_slash(fake_home.string() + "/");
   ASSERT_EQ(true, rcutils_set_env("ROS_LOG_DIR", "~/"));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
-  EXPECT_STREQ(directory, home_trailing_slash.c_str());
+  EXPECT_STREQ(directory, home_trailing_slash.string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
 
@@ -139,6 +147,14 @@ TEST(test_logging_directory, directory)
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
   rcpputils::fs::path fake_ros_home_log_dir = fake_ros_home / "log";
   EXPECT_STREQ(directory, fake_ros_home_log_dir.string().c_str());
+  allocator.deallocate(directory, allocator.state);
+  directory = nullptr;
+  // Make sure it converts path separators when necessary
+  const char * my_ros_home_raw = "/my/ros/home";
+  ASSERT_EQ(true, rcutils_set_env("ROS_HOME", my_ros_home_raw));
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
+  rcpputils::fs::path my_ros_home_log_dir = rcpputils::fs::path(my_ros_home_raw) / "log";
+  EXPECT_STREQ(directory, my_ros_home_log_dir.string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
   // Empty is considered unset
