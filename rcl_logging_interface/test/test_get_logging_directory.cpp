@@ -18,6 +18,7 @@
 #include <rcutils/env.h>
 #include <rcutils/error_handling.h>
 
+#include <iostream>
 #include <string>
 
 #include "gtest/gtest.h"
