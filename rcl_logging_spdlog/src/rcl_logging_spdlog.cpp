@@ -89,6 +89,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     rcpputils::fs::path logdir_path(logdir);
     if (!rcpputils::fs::create_directories(logdir_path)) {
       RCUTILS_SET_ERROR_MSG_WITH_FORMAT_STRING("Failed to create log directory: %s", logdir);
+      allocator.deallocate(logdir, allocator.state);
       return RCL_LOGGING_RET_ERROR;
     }
 
@@ -96,6 +97,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     rcutils_time_point_value_t now;
     rcutils_ret_t ret = rcutils_system_time_now(&now);
     if (ret != RCUTILS_RET_OK) {
+      allocator.deallocate(logdir, allocator.state);
       // We couldn't get the system time, so get out of here without setting up
       // logging.  We don't need to call RCUTILS_SET_ERROR_MSG either since
       // rcutils_system_time_now() already did it.
@@ -106,6 +108,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     // Get the program name.
     char * basec = rcutils_get_executable_name(allocator);
     if (basec == nullptr) {
+      allocator.deallocate(logdir, allocator.state);
       // We couldn't get the program name, so get out of here without setting up
       // logging.
       RCUTILS_SET_ERROR_MSG("Failed to get the executable name");

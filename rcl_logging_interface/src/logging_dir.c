@@ -78,6 +78,7 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
   if ('~' == (*directory)[0]) {
     const char * homedir = rcutils_get_home_dir();
     if (NULL == homedir) {
+      allocator.deallocate(*directory, allocator.state);
       RCUTILS_SET_ERROR_MSG("failed to get the home directory");
       return RCL_LOGGING_RET_ERROR;
     }

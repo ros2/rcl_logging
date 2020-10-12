@@ -115,6 +115,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     rcutils_time_point_value_t now;
     rcutils_ret_t ret = rcutils_system_time_now(&now);
     if (ret != RCUTILS_RET_OK) {
+      allocator.deallocate(logdir, allocator.state);
       // We couldn't get the system time, so get out of here without setting up
       // logging.
       return RCL_LOGGING_RET_ERROR;
@@ -124,6 +125,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     // Get the program name.
     char * executable_name = rcutils_get_executable_name(allocator);
     if (executable_name == nullptr) {
+      allocator.deallocate(logdir, allocator.state);
       // We couldn't get the program name, so get out of here without setting up
       // logging.
       return RCL_LOGGING_RET_ERROR;
