@@ -18,21 +18,41 @@ endif()
 find_package(ament_cmake_ros REQUIRED)
 find_package(rcutils REQUIRED)
 
-add_library(${PROJECT_NAME} INTERFACE)
-target_include_directories(${PROJECT_NAME} INTERFACE
+set(${PROJECT_NAME}_sources
+  "src/logging_dir.c"
+)
+add_library(${PROJECT_NAME} ${${PROJECT_NAME}_sources})
+target_include_directories(${PROJECT_NAME} PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
-ament_target_dependencies(${PROJECT_NAME} INTERFACE rcutils)
+ament_target_dependencies(${PROJECT_NAME} rcutils)
+target_compile_definitions(${PROJECT_NAME} PRIVATE "RCL_LOGGING_INTERFACE_BUILDING_DLL")
 
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
 install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION include/${PROJECT_NAME}
-)
-
 ament_export_include_directories(include)
 ament_export_targets(${PROJECT_NAME})
 ament_export_dependencies(rcutils)
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(rcpputils REQUIRED)
+  ament_add_gtest(test_get_logging_directory test/test_get_logging_directory.cpp)
+  if(TARGET test_get_logging_directory)
+    target_link_libraries(test_get_logging_directory ${PROJECT_NAME})
+    target_include_directories(test_get_logging_directory PRIVATE include)
+    ament_target_dependencies(test_get_logging_directory rcutils rcpputils)
+  endif()
+endif()
+
 ament_package()
