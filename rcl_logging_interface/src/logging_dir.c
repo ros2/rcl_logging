@@ -74,26 +74,12 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
     }
   }
 
-  // Expand home directory
-  if ('~' == (*directory)[0]) {
-    const char * homedir = rcutils_get_home_dir();
-    if (NULL == homedir) {
-      allocator.deallocate(*directory, allocator.state);
-      RCUTILS_SET_ERROR_MSG("failed to get the home directory");
-      return RCL_LOGGING_RET_ERROR;
-    }
-    char * directory_not_expanded = *directory;
-    *directory = rcutils_format_string_limit(
-      allocator,
-      strlen(homedir) + strlen(directory_not_expanded),
-      "%s%s",
-      homedir,
-      directory_not_expanded + 1);
-    allocator.deallocate(directory_not_expanded, allocator.state);
-    if (NULL == *directory) {
-      RCUTILS_SET_ERROR_MSG("rcutils_format_string failed");
-      return RCL_LOGGING_RET_ERROR;
-    }
+  char * directory_maybe_not_expanded = *directory;
+  *directory = rcutils_expand_user(directory_maybe_not_expanded, allocator);
+  allocator.deallocate(directory_maybe_not_expanded, allocator.state);
+  if (NULL == *directory) {
+    RCUTILS_SET_ERROR_MSG("rcutils_expand_user failed");
+    return RCL_LOGGING_RET_ERROR;
   }
 
   char * directory_maybe_not_native = *directory;
