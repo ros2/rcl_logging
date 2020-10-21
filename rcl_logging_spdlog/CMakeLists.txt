@@ -29,14 +29,12 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 add_library(${PROJECT_NAME} src/rcl_logging_spdlog.cpp)
-target_link_libraries(${PROJECT_NAME} spdlog::spdlog)
-
-ament_target_dependencies(${PROJECT_NAME}
-  rcl_logging_interface
-  rcpputils
-  rcutils
-  spdlog
-)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+  rcpputils::rcpputils
+  rcutils::rcutils
+  spdlog::spdlog)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  rcl_logging_interface::rcl_logging_interface)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "RCL_LOGGING_INTERFACE_BUILDING_DLL")
 
@@ -67,7 +65,8 @@ if(BUILD_TESTING)
   endif()
 endif()
 
-ament_export_dependencies(ament_cmake rcl_logging_interface rcutils spdlog_vendor spdlog)
+# Export rcl_logging_interface to give downstream packages access to it's headers
+ament_export_dependencies(rcl_logging_interface)
 ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(${PROJECT_NAME})
 ament_package()
