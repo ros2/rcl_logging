@@ -25,10 +25,10 @@ set(${PROJECT_NAME}_sources
 
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_sources})
 
-ament_target_dependencies(${PROJECT_NAME}
-  rcl_logging_interface
-  rcutils
-)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+  rcutils::rcutils)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  rcl_logging_interface::rcl_logging_interface)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "RCL_LOGGING_INTERFACE_BUILDING_DLL")
 
@@ -43,7 +43,8 @@ install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
   RUNTIME DESTINATION bin)
 
 
-ament_export_dependencies(ament_cmake rcl_logging_interface rcutils)
+# Export rcl_logging_interface to give downstream packages access to it's headers
+ament_export_dependencies(rcl_logging_interface)
 ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(${PROJECT_NAME})
 ament_package()
