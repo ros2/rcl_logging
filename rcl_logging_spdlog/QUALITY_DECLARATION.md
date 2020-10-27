@@ -90,7 +90,7 @@ There is an automated test which runs a linter that ensures each file has at lea
 
 ### Feature Testing [4.i]
 
-Each feature in `rcl_logging_spdlog` has corresponding tests which simulate typical usage, and they are located in the [`test`](https://github.com/ros2/rcl_logging/tree/master/rcl_logging_spdlog/test) directory.
+Each feature in `rcl_logging_spdlog` has corresponding tests which simulate typical usage, and they are located in the [`test`](https://github.com/ros2/rcl_logging/tree/foxy/rcl_logging_spdlog/test) directory.
 New features are required to have tests before being added.
 
 Currently nightly test results can be seen here:
@@ -143,13 +143,13 @@ Below are evaluations of each of `rcl_logging_spdlog`'s run-time and build-time 
 
 The `rcutils` package provides an API which contains common utilities and data structures useful when programming in C.
 
-It is **Quality Level 2**, see its [Quality Declaration document](https://github.com/ros2/rcutils/blob/master/QUALITY_DECLARATION.md).
+It is **Quality Level 2**, see its [Quality Declaration document](https://github.com/ros2/rcutils/blob/foxy/QUALITY_DECLARATION.md).
 
 #### `spdlog_vendor`
 
 The `spdlog_vendor` package provides a CMake shim over the spdlog library.
 
-It is **Quality Level 3**, see its [Quality Declaration document](https://github.com/ros2/spdlog_vendor/blob/master/QUALITY_DECLARATION.md).
+It is **Quality Level 3**, see its [Quality Declaration document](https://github.com/ros2/spdlog_vendor/blob/foxy/QUALITY_DECLARATION.md).
 
 ### Optional Direct Runtime ROS Dependencies [5.ii]
 
@@ -157,7 +157,7 @@ It is **Quality Level 3**, see its [Quality Declaration document](https://github
 
 ### Direct Runtime non-ROS Dependency [5.iii]
 
-`rcl_logging_spdlog` has a Direct Runtime non-ROS dependenciy the `spdlog` library. It was declared to be Quality Level 4 [here](https://github.com/ros2/spdlog_vendor/blob/master/SPDLOG_QUALITY_DECLARATION.md).
+`rcl_logging_spdlog` has a Direct Runtime non-ROS dependenciy the `spdlog` library. It was declared to be Quality Level 4 [here](https://github.com/ros2/spdlog_vendor/blob/foxy/SPDLOG_QUALITY_DECLARATION.md).
 
 ## Platform Support [6]
 
