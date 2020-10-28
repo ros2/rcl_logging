@@ -149,7 +149,7 @@ It is **Quality Level 2**, see its [Quality Declaration document](https://github
 
 The `spdlog_vendor` package provides a CMake shim over the spdlog library.
 
-It is **Quality Level 3**, see its [Quality Declaration document](https://github.com/ros2/spdlog_vendor/blob/master/QUALITY_DECLARATION.md).
+It is **Quality Level 1**, see its [Quality Declaration document](https://github.com/ros2/spdlog_vendor/blob/master/QUALITY_DECLARATION.md).
 
 ### Optional Direct Runtime ROS Dependencies [5.ii]
 
