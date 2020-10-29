@@ -2,7 +2,7 @@ This document is a declaration of software quality for the `rcl_logging_spdlog` 
 
 # rcl_logging_spdlog Quality Declaration
 
-The package `rcl_logging_spdlog` claims to be in the **Quality Level 3** category.
+The package `rcl_logging_spdlog` claims to be in the **Quality Level 2** category.
 
 Below are the rationales, notes, and caveats for this claim, organized by each requirement listed in the [Package Quality Categories in REP-2004](https://index.ros.org/doc/ros2/Contributing/Developer-Guide/#package-quality-categories) of the ROS2 developer guide.
 
@@ -157,7 +157,7 @@ It is **Quality Level 1**, see its [Quality Declaration document](https://github
 
 ### Direct Runtime non-ROS Dependency [5.iii]
 
-`rcl_logging_spdlog` has a Direct Runtime non-ROS dependenciy the `spdlog` library. It was declared to be Quality Level 4 [here](https://github.com/ros2/spdlog_vendor/blob/foxy/SPDLOG_QUALITY_DECLARATION.md).
+`rcl_logging_spdlog` has a Direct Runtime non-ROS dependenciy the `spdlog` library. It was declared to be Quality Level 1 [here](https://github.com/ros2/spdlog_vendor/blob/foxy/SPDLOG_QUALITY_DECLARATION.md).
 
 ## Platform Support [6]
 
