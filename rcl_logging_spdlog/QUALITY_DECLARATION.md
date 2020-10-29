@@ -68,11 +68,11 @@ All pull requests must resolve related documentation changes before merging.
 
 ### Feature Documentation [3.i]
 
-`rcl_logging_spdlog` does not have feature documentation.
+`rcl_logging_spdlog` has a documented feature list and it is hosted [here](http://docs.ros2.org/latest/api/rcl_logging_spdlog/index.html).
 
 ### Public API Documentation [3.ii]
 
-`rcl_logging_spdlog` does not have public API documentation.
+`rcl_logging_spdlog` has documentation of its public API and it is hosted [here](http://docs.ros2.org/latest/api/rcl_logging_spdlog/index.html).
 
 ### License [3.iii]
 
@@ -157,7 +157,7 @@ It is **Quality Level 1**, see its [Quality Declaration document](https://github
 
 ### Direct Runtime non-ROS Dependency [5.iii]
 
-`rcl_logging_spdlog` has a Direct Runtime non-ROS dependenciy the `spdlog` library. It was declared to be Quality Level 1 [here](https://github.com/ros2/spdlog_vendor/blob/master/SPDLOG_QUALITY_DECLARATION.md).
+`rcl_logging_spdlog` has a Direct Runtime non-ROS dependency on the `spdlog` library. It was declared to be Quality Level 1 [here](https://github.com/ros2/spdlog_vendor/blob/master/SPDLOG_QUALITY_DECLARATION.md).
 
 ## Platform Support [6]
 
