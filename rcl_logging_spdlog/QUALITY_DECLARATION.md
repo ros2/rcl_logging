@@ -78,13 +78,13 @@ All pull requests must resolve related documentation changes before merging.
 
 The license for `rcl_logging_spdlog` is Apache 2.0, and a summary is in each source file, the type is declared in the [`package.xml`](./package.xml) manifest file, and a full copy of the license is in the [`LICENSE`](../LICENSE) file.
 
-There is an automated test which runs a linter that ensures each file has a license statement. [Here](http://build.ros2.org/view/Fpr/job/Fpr__rcl_logging_spdlog__ubuntu_focal_amd64/lastCompletedBuild/testReport/rcl_logging_spdlog) can be found a list with the latest results of the various linters being run on the package.
+There is an automated test which runs a linter that ensures each file has a license statement. [Here](http://build.ros2.org/view/Fpr/job/Fpr__rcl_logging__ubuntu_focal_amd64/lastCompletedBuild/testReport/rcl_logging_spdlog) can be found a list with the latest results of the various linters being run on the package.
 
 ### Copyright Statements [3.iv]
 
 The copyright holders each provide a statement of copyright in each source code file in `rcl_logging_spdlog`.
 
-There is an automated test which runs a linter that ensures each file has at least one copyright statement. Latest linter result report can be seen [here](http://build.ros2.org/view/Fpr/job/Fpr__rcl_logging_spdlog__ubuntu_focal_amd64/lastCompletedBuild/testReport/rcl_logging_spdlog/copyright/).
+There is an automated test which runs a linter that ensures each file has at least one copyright statement. Latest linter result report can be seen [here](http://build.ros2.org/view/Fpr/job/Fpr__rcl_logging__ubuntu_focal_amd64/lastCompletedBuild/testReport/rcl_logging_spdlog/copyright/).
 
 ## Testing [4]
 
@@ -132,7 +132,7 @@ Changes that introduce regressions in performance must be adequately justified i
 
 `rcl_logging_spdlog` uses and passes all the standard linters and static analysis tools for a C package as described in the [ROS 2 Developer Guide](https://index.ros.org/doc/ros2/Contributing/Developer-Guide/#linters-and-static-analysis). Passing implies there are no linter/static errors when testing against CI of supported platforms.
 
-Currently nightly results can be seen [here](http://build.ros2.org/view/Fpr/job/Fpr__rcl_logging_spdlog__ubuntu_focal_amd64/lastCompletedBuild/testReport/rcl_logging_spdlog)
+Currently nightly results can be seen [here](http://build.ros2.org/view/Fpr/job/Fpr__rcl_logging__ubuntu_focal_amd64/lastCompletedBuild/testReport/rcl_logging_spdlog)
 
 ## Dependencies [5]
 
