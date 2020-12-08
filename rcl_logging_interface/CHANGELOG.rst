@@ -2,6 +2,14 @@
 Changelog for package rcl_logging_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update QD to QL 1 (`#66 <https://github.com/ros2/rcl_logging/issues/66>`_)
+* Use rcutils_expand_user in rcl_logging_get_logging_directory (`#59 <https://github.com/ros2/rcl_logging/issues/59>`_)
+* Allow configuring logging directory through environment variables (`#53 <https://github.com/ros2/rcl_logging/issues/53>`_)
+* Update the maintainers. (`#55 <https://github.com/ros2/rcl_logging/issues/55>`_)
+* Contributors: Chris Lalancette, Christophe Bedard, Stephen Brawner
+
 2.0.1 (2020-07-21)
 ------------------
 
