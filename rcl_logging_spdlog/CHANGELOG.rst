@@ -2,8 +2,8 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.0 (2020-12-08)
+------------------
 * Update QD to QL 1 (`#66 <https://github.com/ros2/rcl_logging/issues/66>`_)
 * Make sure to check return value from external_initialize. (`#65 <https://github.com/ros2/rcl_logging/issues/65>`_)
 * updated QD section 3.i and 3ii and spelling error (`#63 <https://github.com/ros2/rcl_logging/issues/63>`_)

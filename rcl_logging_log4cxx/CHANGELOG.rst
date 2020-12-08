@@ -2,8 +2,8 @@
 Changelog for package rcl_logging_log4cxx
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.0 (2020-12-08)
+------------------
 * Allow configuring logging directory through environment variables (`#53 <https://github.com/ros2/rcl_logging/issues/53>`_)
 * Update the maintainers. (`#55 <https://github.com/ros2/rcl_logging/issues/55>`_)
 * Contributors: Chris Lalancette, Christophe Bedard
