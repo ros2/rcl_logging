@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <rcpputils/filesystem_helper.hpp>
 #include <rcutils/allocator.h>
-#include <rcutils/filesystem.h>
 #include <rcutils/get_env.h>
 #include <rcutils/logging.h>
 #include <rcutils/process.h>
@@ -24,6 +24,7 @@
 #include <cinttypes>
 #include <memory>
 #include <mutex>
+#include <string>
 #include <utility>
 
 #include "spdlog/spdlog.h"
@@ -75,36 +76,20 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     // To be compatible with ROS 1, we construct a default filename of
     // the form ~/.ros/log/<exe>_<pid>_<milliseconds-since-epoch>.log
 
-    // First get the home directory.
-    const char * homedir = rcutils_get_home_dir();
-    if (homedir == nullptr) {
-      // We couldn't get the home directory; it is not really going to be
-      // possible to do logging properly, so get out of here without setting
-      // up logging.
-      RCUTILS_SET_ERROR_MSG("Failed to get users home directory");
-      return RCL_LOGGING_RET_ERROR;
+    char * logdir = nullptr;
+    rcl_logging_ret_t dir_ret = rcl_logging_get_logging_directory(allocator, &logdir);
+    if (RCL_LOGGING_RET_OK != dir_ret) {
+      // We couldn't get the log directory, so get out of here without setting up
+      // logging.
+      RCUTILS_SET_ERROR_MSG("Failed to get logging directory");
+      return dir_ret;
     }
 
-    // SPDLOG doesn't automatically create the log directories, so make them
-    // by hand here.
-    char name_buffer[4096] = {0};
-    int print_ret = rcutils_snprintf(name_buffer, sizeof(name_buffer), "%s/.ros", homedir);
-    if (print_ret < 0) {
-      RCUTILS_SET_ERROR_MSG("Failed to create home directory string");
-      return RCL_LOGGING_RET_ERROR;
-    }
-    if (!rcutils_mkdir(name_buffer)) {
-      RCUTILS_SET_ERROR_MSG("Failed to create user .ros directory");
-      return RCL_LOGGING_RET_ERROR;
-    }
-
-    print_ret = rcutils_snprintf(name_buffer, sizeof(name_buffer), "%s/.ros/log", homedir);
-    if (print_ret < 0) {
-      RCUTILS_SET_ERROR_MSG("Failed to create log directory string");
-      return RCL_LOGGING_RET_ERROR;
-    }
-    if (!rcutils_mkdir(name_buffer)) {
-      RCUTILS_SET_ERROR_MSG("Failed to create user log directory");
+    // SPDLOG doesn't automatically create the log directories, so create them
+    rcpputils::fs::path logdir_path(logdir);
+    if (!rcpputils::fs::create_directories(logdir_path)) {
+      RCUTILS_SET_ERROR_MSG_WITH_FORMAT_STRING("Failed to create log directory: %s", logdir);
+      allocator.deallocate(logdir, allocator.state);
       return RCL_LOGGING_RET_ERROR;
     }
 
@@ -112,6 +97,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     rcutils_time_point_value_t now;
     rcutils_ret_t ret = rcutils_system_time_now(&now);
     if (ret != RCUTILS_RET_OK) {
+      allocator.deallocate(logdir, allocator.state);
       // We couldn't get the system time, so get out of here without setting up
       // logging.  We don't need to call RCUTILS_SET_ERROR_MSG either since
       // rcutils_system_time_now() already did it.
@@ -122,16 +108,19 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     // Get the program name.
     char * basec = rcutils_get_executable_name(allocator);
     if (basec == nullptr) {
+      allocator.deallocate(logdir, allocator.state);
       // We couldn't get the program name, so get out of here without setting up
       // logging.
       RCUTILS_SET_ERROR_MSG("Failed to get the executable name");
       return RCL_LOGGING_RET_ERROR;
     }
 
-    print_ret = rcutils_snprintf(
+    char name_buffer[4096] = {0};
+    int print_ret = rcutils_snprintf(
       name_buffer, sizeof(name_buffer),
-      "%s/.ros/log/%s_%i_%" PRId64 ".log", homedir,
+      "%s/%s_%i_%" PRId64 ".log", logdir,
       basec, rcutils_get_pid(), ms_since_epoch);
+    allocator.deallocate(logdir, allocator.state);
     allocator.deallocate(basec, allocator.state);
     if (print_ret < 0) {
       RCUTILS_SET_ERROR_MSG("Failed to create log file name string");
