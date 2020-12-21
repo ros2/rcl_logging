@@ -16,7 +16,7 @@
 #include <rcutils/allocator.h>
 #include <rcutils/logging.h>
 
-#include <rcl_logging_spdlog/logging_interface.h>
+#include <rcl_logging_interface/rcl_logging_interface.h>
 
 #include <string>
 

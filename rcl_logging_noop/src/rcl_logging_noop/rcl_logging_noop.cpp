@@ -12,12 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <rcl_logging_interface/rcl_logging_interface.h>
 #include <rcutils/allocator.h>
-
-extern "C" {
-
-typedef int rcl_logging_ret_t;
-#define RCL_LOGGING_RET_OK   (0)
 
 rcl_logging_ret_t rcl_logging_external_initialize(
   const char * config_file,
@@ -46,5 +42,3 @@ rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int l
   (void) level;
   return RCL_LOGGING_RET_OK;
 }
-
-} /* extern "C" */
