@@ -22,9 +22,6 @@
 
 #include "performance_test_fixture/performance_test_fixture.hpp"
 
-#define RCL_LOGGING_RET_OK    (0)
-#define RCL_LOGGING_RET_ERROR (2)
-
 using performance_test_fixture::PerformanceTest;
 
 namespace
