@@ -76,6 +76,29 @@ RCL_LOGGING_PUBLIC
 RCUTILS_WARN_UNUSED
 rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int level);
 
+/// Get the logging directory.
+/**
+ * Uses various environment variables to construct a logging directory path.
+ *
+ * Use $ROS_LOG_DIR if ROS_LOG_DIR is set and not empty.
+ * Otherwise, use $ROS_HOME/log, using ~/.ros for ROS_HOME if not set or if empty.
+ *
+ * It also expands an initial '~' to the current user's home directory,
+ * and converts the path separator if necessary.
+ *
+ * If successful, the directory C string should be deallocated using the given allocator when it is
+ * no longer needed.
+ *
+ * \param[in] allocator The allocator to use for memory allocation.
+ * \param[out] directory The C string pointer at which to write the directory path.
+ *   Only meaningful if the call is successful. Must not be nullptr and must point to nullptr.
+ * \return RCL_LOGGING_RET_OK if successful, or
+ * \return RCL_LOGGING_RET_INVALID_ARGUMENT if any arguments are invalid, or
+ * \return RCL_LOGGING_RET_ERROR if an unspecified error occurs.
+ */
+RCL_LOGGING_PUBLIC
+rcl_logging_ret_t
+rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directory);
 
 #ifdef __cplusplus
 } /* extern "C" */

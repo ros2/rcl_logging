@@ -30,7 +30,7 @@ target_link_libraries(${PROJECT_NAME} spdlog::spdlog)
 ament_target_dependencies(${PROJECT_NAME}
   rcutils
   spdlog
-  rcpputils  
+  rcpputils
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "RCL_LOGGING_BUILDING_DLL")

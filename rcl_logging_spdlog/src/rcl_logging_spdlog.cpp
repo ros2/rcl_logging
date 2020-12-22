@@ -21,7 +21,7 @@
 #include <rcutils/snprintf.h>
 #include <rcutils/time.h>
 #include <rcutils/strdup.h>
-#include "rcutils/format_string.h"
+#include <rcutils/format_string.h>
 
 #include <cerrno>
 #include <cinttypes>
@@ -40,9 +40,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-static rcl_logging_ret_t
-rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directory);
 
 static std::mutex g_logger_mutex;
 static std::unique_ptr<spdlog::logger> g_root_logger = nullptr;
