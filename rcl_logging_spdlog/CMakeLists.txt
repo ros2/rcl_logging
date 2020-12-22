@@ -15,6 +15,7 @@ find_package(ament_cmake_ros REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(spdlog_vendor REQUIRED) # Provides spdlog 1.3.1 on platforms without it.
 find_package(spdlog REQUIRED)
+find_package(rcpputils REQUIRED)
 
 if(NOT WIN32)
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -29,6 +30,7 @@ target_link_libraries(${PROJECT_NAME} spdlog::spdlog)
 ament_target_dependencies(${PROJECT_NAME}
   rcutils
   spdlog
+  rcpputils  
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "RCL_LOGGING_BUILDING_DLL")
