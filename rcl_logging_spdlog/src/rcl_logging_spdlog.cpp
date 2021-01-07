@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <rcpputils/filesystem_helper.hpp>
 #include <rcutils/allocator.h>
 #include <rcutils/filesystem.h>
 #include <rcutils/get_env.h>
@@ -19,6 +20,8 @@
 #include <rcutils/process.h>
 #include <rcutils/snprintf.h>
 #include <rcutils/time.h>
+#include <rcutils/strdup.h>
+#include <rcutils/format_string.h>
 
 #include <cerrno>
 #include <cinttypes>
@@ -82,36 +85,20 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     // To be compatible with ROS 1, we construct a default filename of
     // the form ~/.ros/log/<exe>_<pid>_<milliseconds-since-epoch>.log
 
-    // First get the home directory.
-    const char * homedir = rcutils_get_home_dir();
-    if (homedir == nullptr) {
-      // We couldn't get the home directory; it is not really going to be
-      // possible to do logging properly, so get out of here without setting
-      // up logging.
-      RCUTILS_SET_ERROR_MSG("Failed to get users home directory");
+    char * logdir = nullptr;
+    rcl_logging_ret_t dir_ret = rcl_logging_get_logging_directory(allocator, &logdir);
+    if (RCL_LOGGING_RET_OK != dir_ret) {
+      // We couldn't get the log directory, so get out of here without setting up
+      // logging.
+      RCUTILS_SET_ERROR_MSG("Failed to get logging directory");
       return RCL_LOGGING_RET_ERROR;
     }
 
-    // SPDLOG doesn't automatically create the log directories, so make them
-    // by hand here.
-    char name_buffer[4096] = {0};
-    int print_ret = rcutils_snprintf(name_buffer, sizeof(name_buffer), "%s/.ros", homedir);
-    if (print_ret < 0) {
-      RCUTILS_SET_ERROR_MSG("Failed to create home directory string");
-      return RCL_LOGGING_RET_ERROR;
-    }
-    if (!rcutils_mkdir(name_buffer)) {
-      RCUTILS_SET_ERROR_MSG("Failed to create user .ros directory");
-      return RCL_LOGGING_RET_ERROR;
-    }
-
-    print_ret = rcutils_snprintf(name_buffer, sizeof(name_buffer), "%s/.ros/log", homedir);
-    if (print_ret < 0) {
-      RCUTILS_SET_ERROR_MSG("Failed to create log directory string");
-      return RCL_LOGGING_RET_ERROR;
-    }
-    if (!rcutils_mkdir(name_buffer)) {
-      RCUTILS_SET_ERROR_MSG("Failed to create user log directory");
+    // SPDLOG doesn't automatically create the log directories, so create them
+    rcpputils::fs::path logdir_path(logdir);
+    if (!rcpputils::fs::create_directories(logdir_path)) {
+      RCUTILS_SET_ERROR_MSG_WITH_FORMAT_STRING("Failed to create log directory: %s", logdir);
+      allocator.deallocate(logdir, allocator.state);
       return RCL_LOGGING_RET_ERROR;
     }
 
@@ -135,10 +122,12 @@ rcl_logging_ret_t rcl_logging_external_initialize(
       return RCL_LOGGING_RET_ERROR;
     }
 
-    print_ret = rcutils_snprintf(
+    char name_buffer[4096] = {0};
+    int print_ret = rcutils_snprintf(
       name_buffer, sizeof(name_buffer),
-      "%s/.ros/log/%s_%i_%" PRId64 ".log", homedir,
+      "%s/%s_%i_%" PRId64 ".log", logdir,
       basec, rcutils_get_pid(), ms_since_epoch);
+    allocator.deallocate(logdir, allocator.state);
     allocator.deallocate(basec, allocator.state);
     if (print_ret < 0) {
       RCUTILS_SET_ERROR_MSG("Failed to create log file name string");
@@ -172,6 +161,101 @@ rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int l
 
   g_root_logger->set_level(map_external_log_level_to_library_level(level));
 
+  return RCL_LOGGING_RET_OK;
+}
+
+
+static char *
+rcl_expand_user(const char * path, rcutils_allocator_t allocator)
+{
+  if (NULL == path) {
+    return NULL;
+  }
+
+  if ('~' != path[0]) {
+    return rcutils_strdup(path, allocator);
+  }
+
+  const char * homedir = rcutils_get_home_dir();
+  if (NULL == homedir) {
+    return NULL;
+  }
+  return rcutils_format_string_limit(
+    allocator,
+    strlen(homedir) + strlen(path),
+    "%s%s",
+    homedir,
+    path + 1);
+}
+
+rcl_logging_ret_t
+rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directory)
+{
+  if (NULL == directory) {
+    RCUTILS_SET_ERROR_MSG("directory argument must not be null");
+    return RCL_LOGGING_RET_ERROR;
+  }
+  if (NULL != *directory) {
+    RCUTILS_SET_ERROR_MSG("directory argument must point to null");
+    return RCL_LOGGING_RET_ERROR;
+  }
+
+  const char * log_dir_env;
+  const char * err = rcutils_get_env("ROS_LOG_DIR", &log_dir_env);
+  if (NULL != err) {
+    RCUTILS_SET_ERROR_MSG("rcutils_get_env failed");
+    return RCL_LOGGING_RET_ERROR;
+  }
+  if ('\0' != *log_dir_env) {
+    *directory = rcutils_strdup(log_dir_env, allocator);
+    if (NULL == *directory) {
+      RCUTILS_SET_ERROR_MSG("rcutils_strdup failed");
+      return RCL_LOGGING_RET_ERROR;
+    }
+  } else {
+    const char * ros_home_dir_env;
+    err = rcutils_get_env("ROS_HOME", &ros_home_dir_env);
+    if (NULL != err) {
+      RCUTILS_SET_ERROR_MSG("rcutils_get_env failed");
+      return RCL_LOGGING_RET_ERROR;
+    }
+    char * ros_home_dir;
+    if ('\0' == *ros_home_dir_env) {
+      ros_home_dir = rcutils_join_path("~", ".ros", allocator);
+      if (NULL == ros_home_dir) {
+        RCUTILS_SET_ERROR_MSG("rcutils_join_path failed");
+        return RCL_LOGGING_RET_ERROR;
+      }
+    } else {
+      ros_home_dir = rcutils_strdup(ros_home_dir_env, allocator);
+      if (NULL == ros_home_dir) {
+        RCUTILS_SET_ERROR_MSG("rcutils_strdup failed");
+        return RCL_LOGGING_RET_ERROR;
+      }
+    }
+    *directory = rcutils_join_path(ros_home_dir, "log", allocator);
+    allocator.deallocate(ros_home_dir, allocator.state);
+    if (NULL == *directory) {
+      RCUTILS_SET_ERROR_MSG("rcutils_join_path failed");
+      return RCL_LOGGING_RET_ERROR;
+    }
+  }
+
+  char * directory_maybe_not_expanded = *directory;
+  *directory = rcl_expand_user(directory_maybe_not_expanded, allocator);
+  allocator.deallocate(directory_maybe_not_expanded, allocator.state);
+  if (NULL == *directory) {
+    RCUTILS_SET_ERROR_MSG("rcutils_expand_user failed");
+    return RCL_LOGGING_RET_ERROR;
+  }
+
+  char * directory_maybe_not_native = *directory;
+  *directory = rcutils_to_native_path(directory_maybe_not_native, allocator);
+  allocator.deallocate(directory_maybe_not_native, allocator.state);
+  if (NULL == *directory) {
+    RCUTILS_SET_ERROR_MSG("rcutils_to_native_path failed");
+    return RCL_LOGGING_RET_ERROR;
+  }
   return RCL_LOGGING_RET_OK;
 }
 
