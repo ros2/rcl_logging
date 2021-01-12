@@ -23,6 +23,9 @@
 #include <rcutils/types/string_array.h>
 
 #include <limits.h>
+#ifdef _WIN32
+# include <windows.h>  // MAX_PATH
+#endif
 #include <string>
 
 #include "gtest/gtest.h"
