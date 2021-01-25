@@ -2,8 +2,8 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.1 (2021-01-25)
+------------------
 * Include what you use (`#71 <https://github.com/ros2/rcl_logging/issues/71>`_)
 * Contributors: Ivan Santiago Paunovic
 
