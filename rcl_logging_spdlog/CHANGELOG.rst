@@ -2,6 +2,11 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Include what you use (`#71 <https://github.com/ros2/rcl_logging/issues/71>`_)
+* Contributors: Ivan Santiago Paunovic
+
 2.1.0 (2020-12-08)
 ------------------
 * Update QD to QL 1 (`#66 <https://github.com/ros2/rcl_logging/issues/66>`_)

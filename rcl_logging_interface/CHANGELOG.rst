@@ -2,6 +2,9 @@
 Changelog for package rcl_logging_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 2.1.0 (2020-12-08)
 ------------------
 * Update QD to QL 1 (`#66 <https://github.com/ros2/rcl_logging/issues/66>`_)

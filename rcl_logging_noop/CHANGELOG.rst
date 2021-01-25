@@ -2,6 +2,9 @@
 Changelog for package rcl_logging_noop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 2.1.0 (2020-12-08)
 ------------------
 * Make internal dependencies private (`#60 <https://github.com/ros2/rcl_logging/issues/60>`_)
