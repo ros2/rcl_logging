@@ -2,6 +2,11 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* updating quality declaration links (re: `ros2/docs.ros2.org#52 <https://github.com/ros2/docs.ros2.org/issues/52>`_) (`#73 <https://github.com/ros2/rcl_logging/issues/73>`_)
+* Contributors: shonigmann
+
 2.1.1 (2021-01-25)
 ------------------
 * Include what you use (`#71 <https://github.com/ros2/rcl_logging/issues/71>`_)
