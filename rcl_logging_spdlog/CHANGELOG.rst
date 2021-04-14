@@ -2,6 +2,18 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.0 (2021-04-14)
+------------------
+* Update quality declaration links (re: `ros2/docs.ros2.org#52 <https://github.com/ros2/docs.ros2.org/issues/52>`_) (`#74 <https://github.com/ros2/rcl_logging/issues/74>`_)
+* Allow configuring logging directory through environment variables (`#70 <https://github.com/ros2/rcl_logging/issues/70>`_)
+* Fix build.ros2.org links (`#68 <https://github.com/ros2/rcl_logging/issues/68>`_)
+* Update QD to QL 1 (`#67 <https://github.com/ros2/rcl_logging/issues/67>`_)
+* Fixed backported tests on rcl_logging_spdlog
+* Add fault injection unittest to increase coverage (`#49 <https://github.com/ros2/rcl_logging/issues/49>`_)
+* More rcl_logging_spdlog tests (`#40 <https://github.com/ros2/rcl_logging/issues/40>`_)
+* Added benchmark test to rcl_logging_spdlog (`#52 <https://github.com/ros2/rcl_logging/issues/52>`_)
+* Contributors: Alejandro Hernández Cordero, Scott K Logan, Simon Honigmann, Stephen Brawner, Tom Greier
+
 1.0.1 (2020-07-21)
 ------------------
 * Include rcutils/allocator.h in logging_interface.h (`#47 <https://github.com/ros2/rcl_logging/issues/47>`_)
