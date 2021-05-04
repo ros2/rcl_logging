@@ -14,7 +14,6 @@
 
 #include <rcpputils/filesystem_helper.hpp>
 #include <rcutils/allocator.h>
-#include <rcutils/get_env.h>
 #include <rcutils/logging.h>
 #include <rcutils/process.h>
 #include <rcutils/snprintf.h>

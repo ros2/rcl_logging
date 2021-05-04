@@ -13,10 +13,10 @@
 // limitations under the License.
 
 #include <rcutils/allocator.h>
+#include <rcutils/env.h>
 #include <rcutils/error_handling.h>
 #include <rcutils/filesystem.h>
 #include <rcutils/format_string.h>
-#include <rcutils/get_env.h>
 #include <rcutils/strdup.h>
 
 #include "rcl_logging_interface/rcl_logging_interface.h"

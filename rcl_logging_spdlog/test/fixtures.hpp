@@ -17,8 +17,8 @@
 
 #include <rcpputils/filesystem_helper.hpp>
 #include <rcutils/allocator.h>
+#include <rcutils/env.h>
 #include <rcutils/error_handling.h>
-#include <rcutils/get_env.h>
 #include <rcutils/process.h>
 #include <rcutils/types/string_array.h>
 

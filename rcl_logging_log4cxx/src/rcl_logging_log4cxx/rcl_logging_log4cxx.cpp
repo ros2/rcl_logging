@@ -15,7 +15,6 @@
 #include <rcl_logging_interface/rcl_logging_interface.h>
 
 #include <rcutils/allocator.h>
-#include <rcutils/get_env.h>
 #include <rcutils/logging.h>
 #include <rcutils/process.h>
 #include <rcutils/time.h>
