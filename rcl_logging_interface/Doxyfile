@@ -2,7 +2,7 @@
 
 PROJECT_NAME           = "rcl_logging_interface"
 PROJECT_NUMBER         = master
-PROJECT_BRIEF          = "Interface that rcl_logging backends needs to implement."
+PROJECT_BRIEF          = "Interface that rcl_logging backends need to implement."
 
 INPUT                  = ./include
 RECURSIVE              = YES
