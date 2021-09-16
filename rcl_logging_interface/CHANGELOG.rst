@@ -2,6 +2,12 @@
 Changelog for package rcl_logging_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add Doxyfile to rcl_logging_interface package (`#80 <https://github.com/ros2/rcl_logging/issues/80>`_)
+* Update includes after rcutils/get_env.h deprecation (`#75 <https://github.com/ros2/rcl_logging/issues/75>`_)
+* Contributors: Christophe Bedard, Michel Hidalgo
+
 2.1.2 (2021-04-06)
 ------------------
 
