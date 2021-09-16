@@ -2,8 +2,8 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.3 (2021-09-16)
+------------------
 * Update includes after rcutils/get_env.h deprecation (`#75 <https://github.com/ros2/rcl_logging/issues/75>`_)
 * Contributors: Christophe Bedard
 
