@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include <rcpputils/filesystem_helper.hpp>
-#include <rcpputils/get_env.hpp>
+#include <rcpputils/env.hpp>
 #include <rcutils/allocator.h>
 #include <rcutils/env.h>
 #include <rcutils/error_handling.h>
