@@ -2,6 +2,11 @@
 Changelog for package rcl_logging_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix renamed `rcpputils` header (`#81 <https://github.com/ros2/rcl_logging/issues/81>`_)
+* Contributors: Abrar Rahman Protyasha
+
 2.1.3 (2021-09-16)
 ------------------
 * Add Doxyfile to rcl_logging_interface package (`#80 <https://github.com/ros2/rcl_logging/issues/80>`_)
