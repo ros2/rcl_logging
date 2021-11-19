@@ -4,10 +4,13 @@
   <name>rcl_logging_spdlog</name>
   <version>2.2.0</version>
   <description>Implementation of rcl_logging API for an spdlog backend.</description>
+
   <maintainer email="clalancette@openrobotics.org">Chris Lalancette</maintainer>
-  <maintainer email="william@osrfoundation.org">William Woodall</maintainer>
+
   <license>Apache License 2.0</license>
+
   <author email="clalancette@openrobotics.org">Chris Lalancette</author>
+  <author email="william@osrfoundation.org">William Woodall</author>
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
 
