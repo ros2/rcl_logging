@@ -15,13 +15,6 @@
 #ifndef FIXTURES_HPP_
 #define FIXTURES_HPP_
 
-#include <rcpputils/filesystem_helper.hpp>
-#include <rcutils/allocator.h>
-#include <rcutils/env.h>
-#include <rcutils/error_handling.h>
-#include <rcutils/process.h>
-#include <rcutils/types/string_array.h>
-
 #include <limits.h>
 #ifdef _WIN32
 # include <windows.h>  // MAX_PATH
@@ -29,6 +22,13 @@
 #include <string>
 
 #include "gtest/gtest.h"
+
+#include "rcpputils/filesystem_helper.hpp"
+#include "rcutils/allocator.h"
+#include "rcutils/env.h"
+#include "rcutils/error_handling.h"
+#include "rcutils/process.h"
+#include "rcutils/types/string_array.h"
 
 #ifdef _WIN32
 #define popen _popen
