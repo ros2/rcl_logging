@@ -2,6 +2,13 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.2.1 (2022-01-14)
+------------------
+* Fix include order for cpplint (`#84 <https://github.com/ros2/rcl_logging/issues/84>`_)
+  Relates to https://github.com/ament/ament_lint/pull/324
+* Update maintainers to Chris Lalancette (`#83 <https://github.com/ros2/rcl_logging/issues/83>`_)
+* Contributors: Audrow Nash, Jacob Perron
+
 2.2.0 (2021-11-18)
 ------------------
 * Fix renamed `rcpputils` header (`#81 <https://github.com/ros2/rcl_logging/issues/81>`_)
