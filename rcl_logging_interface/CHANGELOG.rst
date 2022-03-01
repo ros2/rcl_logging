@@ -2,8 +2,8 @@
 Changelog for package rcl_logging_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.3.0 (2022-03-01)
+------------------
 * Install includes to include/${PROJECT_NAME} (`#85 <https://github.com/ros2/rcl_logging/issues/85>`_)
 * Contributors: Shane Loretz
 
