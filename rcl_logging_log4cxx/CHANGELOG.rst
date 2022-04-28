@@ -2,6 +2,11 @@
 Changelog for package rcl_logging_log4cxx
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Change C++ version to 17 in `rcl_logging_log4cxx` (`#79 <https://github.com/ros2/rcl_logging/issues/79>`_)
+* Contributors: Homalozoa X
+
 2.1.2 (2021-04-06)
 ------------------
 

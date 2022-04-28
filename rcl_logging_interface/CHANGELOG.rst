@@ -2,6 +2,9 @@
 Changelog for package rcl_logging_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 2.1.2 (2021-04-06)
 ------------------
 
