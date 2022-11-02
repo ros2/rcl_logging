@@ -2,6 +2,9 @@
 Changelog for package rcl_logging_noop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 2.4.1 (2022-09-13)
 ------------------
 
