@@ -2,8 +2,8 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.4.2 (2022-11-02)
+------------------
 * Disable cppcheck for rcl_logging_spdlog. (`#93 <https://github.com/ros2/rcl_logging/issues/93>`_)
 * Contributors: Chris Lalancette
 
