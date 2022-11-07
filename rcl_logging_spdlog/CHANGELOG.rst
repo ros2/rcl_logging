@@ -2,6 +2,11 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.3.1 (2022-11-07)
+------------------
+* ament_export_dependencies any package with targets we linked against (`#89 <https://github.com/ros2/rcl_logging/issues/89>`_) (`#90 <https://github.com/ros2/rcl_logging/issues/90>`_)
+* Contributors: mergify[bot]
+
 2.3.0 (2022-03-01)
 ------------------
 

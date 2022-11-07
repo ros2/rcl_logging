@@ -2,6 +2,9 @@
 Changelog for package rcl_logging_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.3.1 (2022-11-07)
+------------------
+
 2.3.0 (2022-03-01)
 ------------------
 * Install includes to include/${PROJECT_NAME} (`#85 <https://github.com/ros2/rcl_logging/issues/85>`_)
