@@ -6,6 +6,7 @@
   <description>Implementation of rcl_logging API for an spdlog backend.</description>
 
   <maintainer email="clalancette@openrobotics.org">Chris Lalancette</maintainer>
+  <maintainer email="william@openrobotics.org">William Woodall</maintainer>
 
   <license>Apache License 2.0</license>
 

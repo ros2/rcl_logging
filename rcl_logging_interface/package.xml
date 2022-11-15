@@ -6,6 +6,7 @@
   <description>Interface that rcl_logging backends needs to implement.</description>
 
   <maintainer email="clalancette@openrobotics.org">Chris Lalancette</maintainer>
+  <maintainer email="william@openrobotics.org">William Woodall</maintainer>
 
   <license>Apache License 2.0</license>
 
