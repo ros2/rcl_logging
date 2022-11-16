@@ -34,7 +34,7 @@
 #include "rcl_logging_interface/rcl_logging_interface.h"
 
 static std::mutex g_logger_mutex;
-static std::unique_ptr<spdlog::logger> g_root_logger = nullptr;
+static std::shared_ptr<spdlog::logger> g_root_logger = nullptr;
 
 static spdlog::level::level_enum map_external_log_level_to_library_level(int external_level)
 {
@@ -186,6 +186,8 @@ rcl_logging_ret_t rcl_logging_external_initialize(
       // the old behavior is to not configure the sink at all, so do nothing
     }
 
+    spdlog::register_logger(g_root_logger);
+
     g_root_logger->set_pattern("%v");
   }
 
@@ -194,6 +196,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(
 
 rcl_logging_ret_t rcl_logging_external_shutdown()
 {
+  spdlog::drop("root");
   g_root_logger = nullptr;
   return RCL_LOGGING_RET_OK;
 }
