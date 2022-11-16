@@ -175,7 +175,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     }
 
     auto sink = std::make_unique<spdlog::sinks::basic_file_sink_mt>(name_buffer, false);
-    g_root_logger = std::make_unique<spdlog::logger>("root", std::move(sink));
+    g_root_logger = std::make_shared<spdlog::logger>("root", std::move(sink));
     if (!should_use_old_flushing_behavior) {
       // in this case we should do the new thing (until config files are supported)
       // which is to configure the logger to flush periodically and on
