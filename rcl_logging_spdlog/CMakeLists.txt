@@ -56,7 +56,7 @@ if(BUILD_TESTING)
   find_package(performance_test_fixture REQUIRED)
 
   find_package(ament_cmake_gtest REQUIRED)
-  ament_add_gtest(test_logging_interface test/test_logging_interface.cpp)
+  ament_add_gmock(test_logging_interface test/test_logging_interface.cpp)
   if(TARGET test_logging_interface)
     target_link_libraries(test_logging_interface ${PROJECT_NAME})
     target_compile_definitions(test_logging_interface PUBLIC RCUTILS_ENABLE_FAULT_INJECTION)
