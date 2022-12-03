@@ -2,6 +2,9 @@
 Changelog for package rcl_logging_log4cxx
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.5 (2022-12-02)
+------------------
+
 2.1.4 (2022-04-28)
 ------------------
 * Change C++ version to 17 in `rcl_logging_log4cxx` (`#79 <https://github.com/ros2/rcl_logging/issues/79>`_)
