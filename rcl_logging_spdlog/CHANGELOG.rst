@@ -2,8 +2,8 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.5.0 (2023-02-13)
+------------------
 * Update rcl_logging to C++17. (`#98 <https://github.com/ros2/rcl_logging/issues/98>`_)
 * Contributors: Chris Lalancette
 
