@@ -2,6 +2,11 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.5.1 (2023-04-11)
+------------------
+* Mark the benchmark _ as unused. (`#99 <https://github.com/ros2/rcl_logging/issues/99>`_)
+* Contributors: Chris Lalancette
+
 2.5.0 (2023-02-13)
 ------------------
 * Update rcl_logging to C++17. (`#98 <https://github.com/ros2/rcl_logging/issues/98>`_)
