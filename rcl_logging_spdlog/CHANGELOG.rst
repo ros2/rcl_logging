@@ -2,6 +2,9 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.6.0 (2023-04-27)
+------------------
+
 2.5.1 (2023-04-11)
 ------------------
 * Mark the benchmark _ as unused. (`#99 <https://github.com/ros2/rcl_logging/issues/99>`_)
