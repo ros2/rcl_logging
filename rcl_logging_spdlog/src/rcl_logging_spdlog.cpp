@@ -109,7 +109,7 @@ static std::string get_string_env_var(const char * env_var_name)
             std::string(
               "Failed to get env var '") + env_var_name + "': " + error_str);
   }
-  return env_var_value; // Returns empty string for unset or empty env vars
+  return env_var_value;  // Returns empty string for unset or empty env vars
 }
 
 static bool contained_in(
@@ -151,7 +151,7 @@ static bool get_bool_env_var(const char * env_var_name)
               "Unrecognized value for '") + env_var_name + "': '" + value_str + "'. " +
             "Valid truthy values: " + join_quoted(", ", "'", true_strings) + ". " +
             "Valid falsy values: " + join_quoted(", ", "'", false_strings) + ". "
-        );
+    );
   }
 }
 
