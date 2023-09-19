@@ -255,19 +255,25 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     }
 
     std::unique_ptr<spdlog::sinks::sink> sink;
-    if (get_bool_env_var("RCL_LOGGING_SPDLOG_ROTATE_FILES") == true) {
-      size_t max_size =
-        get_size_t_env_var(
-        "RCL_LOGGING_SPDLOG_ROTATING_FILE_SIZE_BYTES",
-        DEFAULT_ROTATING_FILE_SIZE_BYTES);
-      size_t max_files =
-        get_size_t_env_var(
-        "RCL_LOGGING_SPDLOG_MAX_NUM_FILES",
-        DEFAULT_ROTATING_MAX_NUM_FILES);
-      sink =
-        std::make_unique<spdlog::sinks::rotating_file_sink_mt>(name_buffer, max_size, max_files);
-    } else {
-      sink = std::make_unique<spdlog::sinks::basic_file_sink_mt>(name_buffer, false);
+
+    try {
+      if (get_bool_env_var("RCL_LOGGING_SPDLOG_ROTATE_FILES") == true) {
+        size_t max_size =
+          get_size_t_env_var(
+          "RCL_LOGGING_SPDLOG_ROTATING_FILE_SIZE_BYTES",
+          DEFAULT_ROTATING_FILE_SIZE_BYTES);
+        size_t max_files =
+          get_size_t_env_var(
+          "RCL_LOGGING_SPDLOG_MAX_NUM_FILES",
+          DEFAULT_ROTATING_MAX_NUM_FILES);
+        sink =
+          std::make_unique<spdlog::sinks::rotating_file_sink_mt>(name_buffer, max_size, max_files);
+      } else {
+        sink = std::make_unique<spdlog::sinks::basic_file_sink_mt>(name_buffer, false);
+      }
+    } catch (const std::runtime_error & error) {
+      RCUTILS_SET_ERROR_MSG(error.what());
+      return RCL_LOGGING_RET_ERROR;
     }
 
     g_root_logger = std::make_shared<spdlog::logger>("root", std::move(sink));
