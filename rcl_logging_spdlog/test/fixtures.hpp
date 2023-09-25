@@ -20,10 +20,10 @@
 # include <windows.h>  // MAX_PATH
 #endif
 #include <string>
+#include <filesystem>
 
 #include "gtest/gtest.h"
 
-#include "rcpputils/filesystem_helper.hpp"
 #include "rcutils/allocator.h"
 #include "rcutils/env.h"
 #include "rcutils/error_handling.h"
@@ -38,7 +38,7 @@
 #define DIR_CMD "ls -d"
 #endif
 
-namespace fs = rcpputils::fs;
+namespace fs = std::filesystem;
 
 class AllocatorTest : public ::testing::Test
 {
