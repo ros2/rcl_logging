@@ -29,8 +29,6 @@
 #include "fixtures.hpp"
 #include "rcl_logging_interface/rcl_logging_interface.h"
 
-namespace fs = std::filesystem;
-
 const int logger_levels[] =
 {
   RCUTILS_LOG_SEVERITY_UNSET,
@@ -87,25 +85,25 @@ TEST_F(LoggingTest, init_failure)
   rcutils_reset_error();
 
   // Force failure to create directories
-  fs::path fake_home = fs::current_path() / "fake_home_dir";
-  ASSERT_TRUE(fs::create_directories(fake_home));
+  std::filesystem::path fake_home = std::filesystem::current_path() / "fake_home_dir";
+  ASSERT_TRUE(std::filesystem::create_directories(fake_home));
   ASSERT_EQ(true, rcutils_set_env("HOME", fake_home.string().c_str()));
 
   // ...fail to create .ros dir
-  fs::path ros_dir = fake_home / ".ros";
+  std::filesystem::path ros_dir = fake_home / ".ros";
   std::fstream(ros_dir.string(), std::ios_base::out).close();
   EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, allocator));
-  ASSERT_TRUE(fs::remove_all(ros_dir));
+  ASSERT_TRUE(std::filesystem::remove(ros_dir));
 
   // ...fail to create .ros/log dir
-  ASSERT_TRUE(fs::create_directories(ros_dir));
-  fs::path ros_log_dir = ros_dir / "log";
+  ASSERT_TRUE(std::filesystem::create_directories(ros_dir));
+  std::filesystem::path ros_log_dir = ros_dir / "log";
   std::fstream(ros_log_dir.string(), std::ios_base::out).close();
   EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, allocator));
-  ASSERT_TRUE(fs::remove(ros_log_dir));
-  ASSERT_TRUE(fs::remove(ros_dir));
+  ASSERT_TRUE(std::filesystem::remove(ros_log_dir));
+  ASSERT_TRUE(std::filesystem::remove(ros_dir));
 
-  ASSERT_TRUE(fs::remove(fake_home));
+  ASSERT_TRUE(std::filesystem::remove(fake_home));
 }
 
 TEST_F(LoggingTest, init_old_flushing_behavior)

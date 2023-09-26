@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include <cerrno>
-#include <cassert>
+#include <system_error>
 #include <chrono>
 #include <cinttypes>
 #include <memory>
@@ -33,8 +33,6 @@
 #include "spdlog/sinks/basic_file_sink.h"
 
 #include "rcl_logging_interface/rcl_logging_interface.h"
-
-namespace fs = std::filesystem;
 
 static std::mutex g_logger_mutex;
 static std::shared_ptr<spdlog::logger> g_root_logger = nullptr;
@@ -136,12 +134,12 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     }
 
     std::error_code ec;
-    fs::path logdir_path(logdir);
-    // std::fs::create_directory returns fail when the target directory is already exists.
+    std::filesystem::path logdir_path(logdir);
+    // std::filesystem::create_directory returns fail when the target directory is already exists.
     // So, check it first.
-    if (!fs::is_directory(logdir_path, ec)) {
+    if (!std::filesystem::is_directory(logdir_path, ec)) {
       // SPDLOG doesn't automatically create the log directories, so create them
-      if (!fs::create_directories(logdir_path, ec)) {
+      if (!std::filesystem::create_directories(logdir_path, ec)) {
         RCUTILS_SET_ERROR_MSG_WITH_FORMAT_STRING("Failed to create log directory: %s", logdir);
         allocator.deallocate(logdir, allocator.state);
         return RCL_LOGGING_RET_ERROR;
