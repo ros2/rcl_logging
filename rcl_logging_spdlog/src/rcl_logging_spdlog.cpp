@@ -30,6 +30,7 @@
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/syslog_sink.h"
 
 #include "rcl_logging_interface/rcl_logging_interface.h"
 
@@ -88,6 +89,40 @@ get_should_use_old_flushing_behavior()
     );
   }
 }
+
+RCL_LOGGING_INTERFACE_LOCAL
+bool
+get_should_use_syslog()
+{
+  const char * env_var_name = "RCL_LOGGING_SPDLOG_ENABLE_SYSLOG";
+
+  try {
+    std::string env_var_value = rcpputils::get_env_var(env_var_name);
+
+    if (env_var_value.empty()) {
+      // not set
+      return false;
+    }
+    if ("0" == env_var_value) {
+      // explicitly false
+      return false;
+    }
+    if ("1" == env_var_value) {
+      // explicitly true
+      return true;
+    }
+
+    // unknown value
+    throw std::runtime_error("unrecognized value: " + env_var_value);
+  } catch (const std::runtime_error & error) {
+    throw std::runtime_error(
+            std::string("failed to get env var '") + env_var_name + "': " + error.what()
+    );
+  }
+}
+
+
+
 
 }  // namespace
 
@@ -173,9 +208,24 @@ rcl_logging_ret_t rcl_logging_external_initialize(
       RCUTILS_SET_ERROR_MSG("Failed to create log file name string");
       return RCL_LOGGING_RET_ERROR;
     }
+    std::vector<spdlog::sink_ptr> sinks;
+    auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(name_buffer, false);
+    sinks.push_back(sink);
 
-    auto sink = std::make_unique<spdlog::sinks::basic_file_sink_mt>(name_buffer, false);
-    g_root_logger = std::make_shared<spdlog::logger>("root", std::move(sink));
+    bool should_use_syslog = false;
+    try {
+      should_use_syslog = ::get_should_use_syslog();
+    } catch (const std::runtime_error & error) {
+      RCUTILS_SET_ERROR_MSG(error.what());
+      return RCL_LOGGING_RET_ERROR;
+    }
+
+    if(should_use_syslog) {
+      auto syslog_sink = std::make_shared<spdlog::sinks::syslog_sink_mt>("", LOG_PID,LOG_LOCAL1, true);
+      sinks.push_back(syslog_sink);
+    }
+
+    g_root_logger = std::make_shared<spdlog::logger>("root",  sinks.begin(), sinks.end());
     if (!should_use_old_flushing_behavior) {
       // in this case we should do the new thing (until config files are supported)
       // which is to configure the logger to flush periodically and on
@@ -185,6 +235,9 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     } else {
       // the old behavior is to not configure the sink at all, so do nothing
     }
+
+
+
 
     spdlog::register_logger(g_root_logger);
 
