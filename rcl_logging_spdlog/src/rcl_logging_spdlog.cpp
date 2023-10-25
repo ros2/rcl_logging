@@ -95,6 +95,14 @@ rcl_logging_ret_t rcl_logging_external_initialize(
   const char * config_file,
   rcutils_allocator_t allocator)
 {
+  try {
+    if ("1" == rcpputils::get_env_var("RCL_LOGGING_DISABLE_FILE_WRITING")) {
+      // explicitly true
+      return RCL_LOGGING_RET_OK;
+    }
+  } catch (const std::runtime_error & error) {
+  }
+
   std::lock_guard<std::mutex> lk(g_logger_mutex);
   // It is possible for this to get called more than once in a process (some of
   // the tests do this implicitly by calling rclcpp::init more than once).
@@ -196,22 +204,27 @@ rcl_logging_ret_t rcl_logging_external_initialize(
 
 rcl_logging_ret_t rcl_logging_external_shutdown()
 {
-  spdlog::drop("root");
-  g_root_logger = nullptr;
+  if (g_root_logger != nullptr) {
+    spdlog::drop("root");
+    g_root_logger = nullptr;
+  }
   return RCL_LOGGING_RET_OK;
 }
 
 void rcl_logging_external_log(int severity, const char * name, const char * msg)
 {
   (void)name;
-  g_root_logger->log(map_external_log_level_to_library_level(severity), msg);
+  if (g_root_logger != nullptr) {
+    g_root_logger->log(map_external_log_level_to_library_level(severity), msg);
+  }
 }
 
 rcl_logging_ret_t rcl_logging_external_set_logger_level(const char * name, int level)
 {
   (void)name;
-
-  g_root_logger->set_level(map_external_log_level_to_library_level(level));
+  if (g_root_logger != nullptr) {
+    g_root_logger->set_level(map_external_log_level_to_library_level(level));
+  }
 
   return RCL_LOGGING_RET_OK;
 }
