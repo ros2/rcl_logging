@@ -38,8 +38,6 @@
 #define DIR_CMD "ls -d"
 #endif
 
-namespace fs = std::filesystem;
-
 class AllocatorTest : public ::testing::Test
 {
 public:
@@ -82,9 +80,9 @@ public:
   {
   }
 
-  fs::path find_single_log()
+  std::filesystem::path find_single_log()
   {
-    fs::path log_dir = get_log_dir();
+    std::filesystem::path log_dir = get_log_dir();
     std::stringstream dir_command;
     dir_command << DIR_CMD << " " << (log_dir / get_expected_log_prefix()).string() << "*";
 
@@ -105,7 +103,7 @@ public:
     }
 
     std::string line(raw_line);
-    fs::path line_path(line.substr(0, line.find_last_not_of(" \t\r\n") + 1));
+    std::filesystem::path line_path(line.substr(0, line.find_last_not_of(" \t\r\n") + 1));
     // This should be changed once ros2/rcpputils#68 is resolved
     return line_path.is_absolute() ? line_path : log_dir / line_path;
   }
@@ -123,9 +121,9 @@ private:
     return prefix.str();
   }
 
-  fs::path get_log_dir()
+  std::filesystem::path get_log_dir()
   {
-    return fs::path(rcutils_get_home_dir()) / ".ros" / "log";
+    return std::filesystem::path(rcutils_get_home_dir()) / ".ros" / "log";
   }
 };
 
