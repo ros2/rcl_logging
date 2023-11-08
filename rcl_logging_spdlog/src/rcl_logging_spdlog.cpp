@@ -15,13 +15,16 @@
 #include <cerrno>
 #include <chrono>
 #include <cinttypes>
+#include <filesystem>
 #include <memory>
 #include <mutex>
 #include <string>
+#include <system_error>
 #include <utility>
 
-#include "rcpputils/filesystem_helper.hpp"
 #include "rcpputils/env.hpp"
+#include "rcpputils/scope_exit.hpp"
+
 #include "rcutils/allocator.h"
 #include "rcutils/logging.h"
 #include "rcutils/process.h"
@@ -131,12 +134,21 @@ rcl_logging_ret_t rcl_logging_external_initialize(
       RCUTILS_SET_ERROR_MSG("Failed to get logging directory");
       return dir_ret;
     }
-
-    // SPDLOG doesn't automatically create the log directories, so create them
-    rcpputils::fs::path logdir_path(logdir);
-    if (!rcpputils::fs::create_directories(logdir_path)) {
-      RCUTILS_SET_ERROR_MSG_WITH_FORMAT_STRING("Failed to create log directory: %s", logdir);
+    RCPPUTILS_SCOPE_EXIT(
+    {
       allocator.deallocate(logdir, allocator.state);
+    });
+
+    std::error_code ec;
+    std::filesystem::path logdir_path(logdir);
+
+    std::filesystem::create_directories(logdir_path, ec);
+    // create_directories returns true if it created the directory, and false if it did not.
+    // This behavior is maintained regardless of whether an error occurred.  Since we don't
+    // actually care whether the directory was created, we only check for errors.
+    if (ec.value() != 0) {
+      RCUTILS_SET_ERROR_MSG_WITH_FORMAT_STRING(
+        "Failed to create log directory '%s': %d", logdir, ec.value());
       return RCL_LOGGING_RET_ERROR;
     }
 
@@ -144,7 +156,6 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     rcutils_time_point_value_t now;
     rcutils_ret_t ret = rcutils_system_time_now(&now);
     if (ret != RCUTILS_RET_OK) {
-      allocator.deallocate(logdir, allocator.state);
       // We couldn't get the system time, so get out of here without setting up
       // logging.  We don't need to call RCUTILS_SET_ERROR_MSG either since
       // rcutils_system_time_now() already did it.
@@ -155,20 +166,21 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     // Get the program name.
     char * basec = rcutils_get_executable_name(allocator);
     if (basec == nullptr) {
-      allocator.deallocate(logdir, allocator.state);
       // We couldn't get the program name, so get out of here without setting up
       // logging.
       RCUTILS_SET_ERROR_MSG("Failed to get the executable name");
       return RCL_LOGGING_RET_ERROR;
     }
+    RCPPUTILS_SCOPE_EXIT(
+    {
+      allocator.deallocate(basec, allocator.state);
+    });
 
     char name_buffer[4096] = {0};
     int print_ret = rcutils_snprintf(
       name_buffer, sizeof(name_buffer),
       "%s/%s_%i_%" PRId64 ".log", logdir,
       basec, rcutils_get_pid(), ms_since_epoch);
-    allocator.deallocate(logdir, allocator.state);
-    allocator.deallocate(basec, allocator.state);
     if (print_ret < 0) {
       RCUTILS_SET_ERROR_MSG("Failed to create log file name string");
       return RCL_LOGGING_RET_ERROR;

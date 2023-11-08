@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <filesystem>
 #include <iostream>
 #include <string>
 
 #include "gtest/gtest.h"
 
-#include "rcpputils/filesystem_helper.hpp"
 #include "rcpputils/env.hpp"
 #include "rcutils/allocator.h"
 #include "rcutils/env.h"
@@ -79,104 +79,104 @@ TEST(test_logging_directory, directory)
   directory = nullptr;
 
   // Default case without ROS_LOG_DIR or ROS_HOME being set (but with HOME)
-  rcpputils::fs::path fake_home("/fake_home_dir");
+  std::filesystem::path fake_home("/fake_home_dir");
   ASSERT_EQ(true, rcutils_set_env("HOME", fake_home.string().c_str()));
   ASSERT_EQ(true, rcutils_set_env("USERPROFILE", fake_home.string().c_str()));
-  rcpputils::fs::path default_dir = fake_home / ".ros" / "log";
+  std::filesystem::path default_dir = fake_home / ".ros" / "log";
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
-  EXPECT_STREQ(directory, default_dir.string().c_str());
+  EXPECT_STREQ(directory, default_dir.make_preferred().string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
 
   // Use $ROS_LOG_DIR if it is set
   const char * my_log_dir_raw = "/my/ros_log_dir";
-  rcpputils::fs::path my_log_dir(my_log_dir_raw);
+  std::filesystem::path my_log_dir(my_log_dir_raw);
   ASSERT_EQ(true, rcutils_set_env("ROS_LOG_DIR", my_log_dir.string().c_str()));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
-  EXPECT_STREQ(directory, my_log_dir.string().c_str());
+  EXPECT_STREQ(directory, my_log_dir.make_preferred().string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
   // Make sure it converts path separators when necessary
   ASSERT_EQ(true, rcutils_set_env("ROS_LOG_DIR", my_log_dir_raw));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
-  EXPECT_STREQ(directory, my_log_dir.string().c_str());
+  EXPECT_STREQ(directory, my_log_dir.make_preferred().string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
   // Setting ROS_HOME won't change anything since ROS_LOG_DIR is used first
   ASSERT_EQ(true, rcutils_set_env("ROS_HOME", "/this/wont/be/used"));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
-  EXPECT_STREQ(directory, my_log_dir.string().c_str());
+  EXPECT_STREQ(directory, my_log_dir.make_preferred().string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
   ASSERT_EQ(true, rcutils_set_env("ROS_HOME", nullptr));
   // Empty is considered unset
   ASSERT_EQ(true, rcutils_set_env("ROS_LOG_DIR", ""));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
-  EXPECT_STREQ(directory, default_dir.string().c_str());
+  EXPECT_STREQ(directory, default_dir.make_preferred().string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
   // Make sure '~' is expanded to the home directory
   ASSERT_EQ(true, rcutils_set_env("ROS_LOG_DIR", "~/logdir"));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
-  rcpputils::fs::path fake_log_dir = fake_home / "logdir";
-  EXPECT_STREQ(directory, fake_log_dir.string().c_str());
+  std::filesystem::path fake_log_dir = fake_home / "logdir";
+  EXPECT_STREQ(directory, fake_log_dir.make_preferred().string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
   // But it should only be expanded if it's at the beginning
-  rcpputils::fs::path prefixed_fake_log_dir("/prefix/~/logdir");
+  std::filesystem::path prefixed_fake_log_dir("/prefix/~/logdir");
   ASSERT_EQ(true, rcutils_set_env("ROS_LOG_DIR", prefixed_fake_log_dir.string().c_str()));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
-  EXPECT_STREQ(directory, prefixed_fake_log_dir.string().c_str());
+  EXPECT_STREQ(directory, prefixed_fake_log_dir.make_preferred().string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
   ASSERT_EQ(true, rcutils_set_env("ROS_LOG_DIR", "~"));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
-  EXPECT_STREQ(directory, fake_home.string().c_str());
+  EXPECT_STREQ(directory, fake_home.make_preferred().string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
-  rcpputils::fs::path home_trailing_slash(fake_home.string() + "/");
+  std::filesystem::path home_trailing_slash(fake_home.string() + "/");
   ASSERT_EQ(true, rcutils_set_env("ROS_LOG_DIR", "~/"));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
-  EXPECT_STREQ(directory, home_trailing_slash.string().c_str());
+  EXPECT_STREQ(directory, home_trailing_slash.make_preferred().string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
 
   ASSERT_EQ(true, rcutils_set_env("ROS_LOG_DIR", nullptr));
 
   // Without ROS_LOG_DIR, use $ROS_HOME/log
-  rcpputils::fs::path fake_ros_home = fake_home / ".fakeroshome";
+  std::filesystem::path fake_ros_home = fake_home / ".fakeroshome";
   ASSERT_EQ(true, rcutils_set_env("ROS_HOME", fake_ros_home.string().c_str()));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
-  rcpputils::fs::path fake_ros_home_log_dir = fake_ros_home / "log";
-  EXPECT_STREQ(directory, fake_ros_home_log_dir.string().c_str());
+  std::filesystem::path fake_ros_home_log_dir = fake_ros_home / "log";
+  EXPECT_STREQ(directory, fake_ros_home_log_dir.make_preferred().string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
   // Make sure it converts path separators when necessary
   const char * my_ros_home_raw = "/my/ros/home";
   ASSERT_EQ(true, rcutils_set_env("ROS_HOME", my_ros_home_raw));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
-  rcpputils::fs::path my_ros_home_log_dir = rcpputils::fs::path(my_ros_home_raw) / "log";
-  EXPECT_STREQ(directory, my_ros_home_log_dir.string().c_str());
+  std::filesystem::path my_ros_home_log_dir = std::filesystem::path(my_ros_home_raw) / "log";
+  EXPECT_STREQ(directory, my_ros_home_log_dir.make_preferred().string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
   // Empty is considered unset
   ASSERT_EQ(true, rcutils_set_env("ROS_HOME", ""));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
-  EXPECT_STREQ(directory, default_dir.string().c_str());
+  EXPECT_STREQ(directory, default_dir.make_preferred().string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
   // Make sure '~' is expanded to the home directory
   ASSERT_EQ(true, rcutils_set_env("ROS_HOME", "~/.fakeroshome"));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
-  EXPECT_STREQ(directory, fake_ros_home_log_dir.string().c_str());
+  EXPECT_STREQ(directory, fake_ros_home_log_dir.make_preferred().string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
   // But it should only be expanded if it's at the beginning
-  rcpputils::fs::path prefixed_fake_ros_home("/prefix/~/.fakeroshome");
-  rcpputils::fs::path prefixed_fake_ros_home_log_dir = prefixed_fake_ros_home / "log";
+  std::filesystem::path prefixed_fake_ros_home("/prefix/~/.fakeroshome");
+  std::filesystem::path prefixed_fake_ros_home_log_dir = prefixed_fake_ros_home / "log";
   ASSERT_EQ(true, rcutils_set_env("ROS_HOME", prefixed_fake_ros_home.string().c_str()));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_get_logging_directory(allocator, &directory));
-  EXPECT_STREQ(directory, prefixed_fake_ros_home_log_dir.string().c_str());
+  EXPECT_STREQ(directory, prefixed_fake_ros_home_log_dir.make_preferred().string().c_str());
   allocator.deallocate(directory, allocator.state);
   directory = nullptr;
 

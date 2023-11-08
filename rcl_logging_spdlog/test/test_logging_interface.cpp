@@ -13,12 +13,12 @@
 // limitations under the License.
 
 #include <limits.h>
+#include <filesystem>
 #include <fstream>
 #include <string>
 
 #include "gmock/gmock.h"
 
-#include "rcpputils/filesystem_helper.hpp"
 #include "rcpputils/env.hpp"
 #include "rcutils/allocator.h"
 #include "rcutils/env.h"
@@ -85,25 +85,25 @@ TEST_F(LoggingTest, init_failure)
   rcutils_reset_error();
 
   // Force failure to create directories
-  rcpputils::fs::path fake_home = rcpputils::fs::current_path() / "fake_home_dir";
-  ASSERT_TRUE(rcpputils::fs::create_directories(fake_home));
+  std::filesystem::path fake_home = std::filesystem::current_path() / "fake_home_dir";
+  ASSERT_TRUE(std::filesystem::create_directories(fake_home));
   ASSERT_EQ(true, rcutils_set_env("HOME", fake_home.string().c_str()));
 
   // ...fail to create .ros dir
-  rcpputils::fs::path ros_dir = fake_home / ".ros";
+  std::filesystem::path ros_dir = fake_home / ".ros";
   std::fstream(ros_dir.string(), std::ios_base::out).close();
   EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, allocator));
-  ASSERT_TRUE(rcpputils::fs::remove(ros_dir));
+  ASSERT_TRUE(std::filesystem::remove(ros_dir));
 
   // ...fail to create .ros/log dir
-  ASSERT_TRUE(rcpputils::fs::create_directories(ros_dir));
-  rcpputils::fs::path ros_log_dir = ros_dir / "log";
+  ASSERT_TRUE(std::filesystem::create_directories(ros_dir));
+  std::filesystem::path ros_log_dir = ros_dir / "log";
   std::fstream(ros_log_dir.string(), std::ios_base::out).close();
   EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, allocator));
-  ASSERT_TRUE(rcpputils::fs::remove(ros_log_dir));
-  ASSERT_TRUE(rcpputils::fs::remove(ros_dir));
+  ASSERT_TRUE(std::filesystem::remove(ros_log_dir));
+  ASSERT_TRUE(std::filesystem::remove(ros_dir));
 
-  ASSERT_TRUE(rcpputils::fs::remove(fake_home));
+  ASSERT_TRUE(std::filesystem::remove(fake_home));
 }
 
 TEST_F(LoggingTest, init_old_flushing_behavior)
