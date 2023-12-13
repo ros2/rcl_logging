@@ -65,11 +65,17 @@ private:
 TEST_F(LoggingTest, init_invalid)
 {
   // Config files are not supported by spdlog
-  EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize("anything", allocator));
+  EXPECT_EQ(
+    RCL_LOGGING_RET_ERROR,
+    rcl_logging_external_initialize(nullptr, "anything", allocator));
   rcutils_reset_error();
-  EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, bad_allocator));
+  EXPECT_EQ(
+    RCL_LOGGING_RET_ERROR,
+    rcl_logging_external_initialize("anything", nullptr, bad_allocator));
   rcutils_reset_error();
-  EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, invalid_allocator));
+  EXPECT_EQ(
+    RCL_LOGGING_RET_ERROR,
+    rcl_logging_external_initialize(nullptr, nullptr, invalid_allocator));
   rcutils_reset_error();
 }
 
@@ -81,7 +87,7 @@ TEST_F(LoggingTest, init_failure)
   // No home directory to write log to
   ASSERT_EQ(true, rcutils_set_env("HOME", nullptr));
   ASSERT_EQ(true, rcutils_set_env("USERPROFILE", nullptr));
-  EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, allocator));
+  EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, nullptr, allocator));
   rcutils_reset_error();
 
   // Force failure to create directories
@@ -92,14 +98,14 @@ TEST_F(LoggingTest, init_failure)
   // ...fail to create .ros dir
   std::filesystem::path ros_dir = fake_home / ".ros";
   std::fstream(ros_dir.string(), std::ios_base::out).close();
-  EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, allocator));
+  EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, nullptr, allocator));
   ASSERT_TRUE(std::filesystem::remove(ros_dir));
 
   // ...fail to create .ros/log dir
   ASSERT_TRUE(std::filesystem::create_directories(ros_dir));
   std::filesystem::path ros_log_dir = ros_dir / "log";
   std::fstream(ros_log_dir.string(), std::ios_base::out).close();
-  EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, allocator));
+  EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, nullptr, allocator));
   ASSERT_TRUE(std::filesystem::remove(ros_log_dir));
   ASSERT_TRUE(std::filesystem::remove(ros_dir));
 
@@ -111,7 +117,7 @@ TEST_F(LoggingTest, init_old_flushing_behavior)
   RestoreEnvVar env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR");
   rcpputils::set_env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR", "1");
 
-  ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, allocator));
+  ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
 
   std::stringstream expected_log;
   for (int level : logger_levels) {
@@ -147,7 +153,7 @@ TEST_F(LoggingTest, init_explicit_new_flush_behavior)
   RestoreEnvVar env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR");
   rcpputils::set_env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR", "0");
 
-  ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, allocator));
+  ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
 
   std::stringstream expected_log;
   for (int level : logger_levels) {
@@ -183,7 +189,7 @@ TEST_F(LoggingTest, init_invalid_flush_setting)
   RestoreEnvVar env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR");
   rcpputils::set_env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR", "invalid");
 
-  ASSERT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, allocator));
+  ASSERT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, nullptr, allocator));
   std::string error_state_str = rcutils_get_error_string().str;
   using ::testing::HasSubstr;
   ASSERT_THAT(
@@ -194,10 +200,10 @@ TEST_F(LoggingTest, init_invalid_flush_setting)
 
 TEST_F(LoggingTest, full_cycle)
 {
-  ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, allocator));
+  ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
 
   // Make sure we can call initialize more than once
-  ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, allocator));
+  ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
 
   std::stringstream expected_log;
   for (int level : logger_levels) {
@@ -232,7 +238,7 @@ TEST_F(LoggingTest, init_fini_maybe_fail_test)
 {
   RCUTILS_FAULT_INJECTION_TEST(
   {
-    if (RCL_LOGGING_RET_OK == rcl_logging_external_initialize(nullptr, allocator)) {
+    if (RCL_LOGGING_RET_OK == rcl_logging_external_initialize(nullptr, nullptr, allocator)) {
       EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
     } else {
       EXPECT_TRUE(rcutils_error_is_set());

@@ -95,6 +95,7 @@ get_should_use_old_flushing_behavior()
 }  // namespace
 
 rcl_logging_ret_t rcl_logging_external_initialize(
+  const char * file_name_prefix,
   const char * config_file,
   rcutils_allocator_t allocator)
 {
@@ -163,19 +164,19 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     }
     int64_t ms_since_epoch = RCUTILS_NS_TO_MS(now);
 
-    // Get the program name.
-    char * basec = rcutils_get_executable_name(allocator);
-    if (basec == nullptr) {
-      // We couldn't get the program name, so get out of here without setting up
-      // logging.
-      RCUTILS_SET_ERROR_MSG("Failed to get the executable name");
-      return RCL_LOGGING_RET_ERROR;
+    bool file_name_provided = (nullptr != file_name_prefix) && (file_name_prefix[0] != '\0');
+    char * basec;
+    if (file_name_provided) {
+      basec = const_cast<char *>(file_name_prefix);
+    } else {  // otherwise, get the program name.
+      basec = rcutils_get_executable_name(allocator);
+      if (basec == nullptr) {
+        // We couldn't get the program name, so get out of here without setting up
+        // logging.
+        RCUTILS_SET_ERROR_MSG("Failed to get the executable name");
+        return RCL_LOGGING_RET_ERROR;
+      }
     }
-    RCPPUTILS_SCOPE_EXIT(
-    {
-      allocator.deallocate(basec, allocator.state);
-    });
-
     char name_buffer[4096] = {0};
     int print_ret = rcutils_snprintf(
       name_buffer, sizeof(name_buffer),
@@ -184,6 +185,9 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     if (print_ret < 0) {
       RCUTILS_SET_ERROR_MSG("Failed to create log file name string");
       return RCL_LOGGING_RET_ERROR;
+    }
+    if (!file_name_provided) {
+      allocator.deallocate(basec, allocator.state);
     }
 
     auto sink = std::make_unique<spdlog::sinks::basic_file_sink_mt>(name_buffer, false);
