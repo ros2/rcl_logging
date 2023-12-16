@@ -182,12 +182,12 @@ rcl_logging_ret_t rcl_logging_external_initialize(
       name_buffer, sizeof(name_buffer),
       "%s/%s_%i_%" PRId64 ".log", logdir,
       basec, rcutils_get_pid(), ms_since_epoch);
+    if (!file_name_provided) {
+      allocator.deallocate(basec, allocator.state);
+    }
     if (print_ret < 0) {
       RCUTILS_SET_ERROR_MSG("Failed to create log file name string");
       return RCL_LOGGING_RET_ERROR;
-    }
-    if (!file_name_provided) {
-      allocator.deallocate(basec, allocator.state);
     }
 
     auto sink = std::make_unique<spdlog::sinks::basic_file_sink_mt>(name_buffer, false);

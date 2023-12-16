@@ -112,6 +112,28 @@ TEST_F(LoggingTest, init_failure)
   ASSERT_TRUE(std::filesystem::remove(fake_home));
 }
 
+TEST_F(LoggingTest, log_file_name_prefix)
+{
+  // executable name in default
+  {
+    ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+    EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
+    EXPECT_NO_THROW(find_single_log(nullptr).string());
+  }
+  // falls back to executable name if not nullptr, but empty
+  {
+    ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize("", nullptr, allocator));
+    EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
+    EXPECT_NO_THROW(find_single_log(nullptr).string());
+  }
+  // specified by user application
+  {
+    ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize("logger", nullptr, allocator));
+    EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
+    EXPECT_NO_THROW(find_single_log("logger").string());
+  }
+}
+
 TEST_F(LoggingTest, init_old_flushing_behavior)
 {
   RestoreEnvVar env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR");
@@ -139,7 +161,7 @@ TEST_F(LoggingTest, init_old_flushing_behavior)
 
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
 
-  std::string log_file_path = find_single_log().string();
+  std::string log_file_path = find_single_log(nullptr).string();
   std::ifstream log_file(log_file_path);
   std::stringstream actual_log;
   actual_log << log_file.rdbuf();
@@ -175,7 +197,7 @@ TEST_F(LoggingTest, init_explicit_new_flush_behavior)
 
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
 
-  std::string log_file_path = find_single_log().string();
+  std::string log_file_path = find_single_log(nullptr).string();
   std::ifstream log_file(log_file_path);
   std::stringstream actual_log;
   actual_log << log_file.rdbuf();
@@ -225,7 +247,7 @@ TEST_F(LoggingTest, full_cycle)
 
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
 
-  std::string log_file_path = find_single_log().string();
+  std::string log_file_path = find_single_log(nullptr).string();
   std::ifstream log_file(log_file_path);
   std::stringstream actual_log;
   actual_log << log_file.rdbuf();
