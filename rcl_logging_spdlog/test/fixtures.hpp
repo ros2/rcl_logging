@@ -28,12 +28,13 @@
 #include "rcutils/env.h"
 #include "rcutils/error_handling.h"
 #include "rcutils/process.h"
+#include "rcutils/strdup.h"
 #include "rcutils/types/string_array.h"
 
 #ifdef _WIN32
 #define popen _popen
 #define pclose _pclose
-#define DIR_CMD "dir /B"
+#define DIR_CMD "dir /B /O-D"
 #else
 #define DIR_CMD "ls -td"
 #endif
@@ -114,17 +115,15 @@ private:
     char * exe_name;
     if (name == nullptr || name[0] == '\0') {
       exe_name = rcutils_get_executable_name(allocator);
-      if (nullptr == exe_name) {
-        throw std::runtime_error("Failed to determine executable name");
-      }
     } else {
-      exe_name = const_cast<char *>(name);
+      exe_name = rcutils_strdup(name, allocator);
+    }
+    if (nullptr == exe_name) {
+      throw std::runtime_error("Failed to determine executable name");
     }
     std::stringstream prefix;
     prefix << exe_name << "_" << rcutils_get_pid() << "_";
-    if (name == nullptr || name[0] == '\0') {
-      allocator.deallocate(exe_name, allocator.state);
-    }
+    allocator.deallocate(exe_name, allocator.state);
     return prefix.str();
   }
 

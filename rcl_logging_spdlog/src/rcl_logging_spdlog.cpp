@@ -29,6 +29,7 @@
 #include "rcutils/logging.h"
 #include "rcutils/process.h"
 #include "rcutils/snprintf.h"
+#include "rcutils/strdup.h"
 #include "rcutils/time.h"
 
 #include "spdlog/spdlog.h"
@@ -167,24 +168,25 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     bool file_name_provided = (nullptr != file_name_prefix) && (file_name_prefix[0] != '\0');
     char * basec;
     if (file_name_provided) {
-      basec = const_cast<char *>(file_name_prefix);
+      basec = rcutils_strdup(file_name_prefix, allocator);
     } else {  // otherwise, get the program name.
       basec = rcutils_get_executable_name(allocator);
-      if (basec == nullptr) {
-        // We couldn't get the program name, so get out of here without setting up
-        // logging.
-        RCUTILS_SET_ERROR_MSG("Failed to get the executable name");
-        return RCL_LOGGING_RET_ERROR;
-      }
     }
+    if (basec == nullptr) {
+      // We couldn't get the program name, so get out of here without setting up
+      // logging.
+      RCUTILS_SET_ERROR_MSG("Failed to get the executable name");
+      return RCL_LOGGING_RET_ERROR;
+    }
+    RCPPUTILS_SCOPE_EXIT(
+    {
+      allocator.deallocate(basec, allocator.state);
+    });
     char name_buffer[4096] = {0};
     int print_ret = rcutils_snprintf(
       name_buffer, sizeof(name_buffer),
       "%s/%s_%i_%" PRId64 ".log", logdir,
       basec, rcutils_get_pid(), ms_since_epoch);
-    if (!file_name_provided) {
-      allocator.deallocate(basec, allocator.state);
-    }
     if (print_ret < 0) {
       RCUTILS_SET_ERROR_MSG("Failed to create log file name string");
       return RCL_LOGGING_RET_ERROR;
