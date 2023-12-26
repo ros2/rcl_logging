@@ -2,8 +2,8 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.7.1 (2023-12-26)
+------------------
 * Migrate to std::filesystem (`#104 <https://github.com/ros2/rcl_logging/issues/104>`_)
 * Contributors: Kenta Yonekura
 
