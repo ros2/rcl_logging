@@ -2,6 +2,11 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Migrate to std::filesystem (`#104 <https://github.com/ros2/rcl_logging/issues/104>`_)
+* Contributors: Kenta Yonekura
+
 2.7.0 (2023-09-07)
 ------------------
 * Remove the last uses of ament_target_dependencies in this repo. (`#102 <https://github.com/ros2/rcl_logging/issues/102>`_)
