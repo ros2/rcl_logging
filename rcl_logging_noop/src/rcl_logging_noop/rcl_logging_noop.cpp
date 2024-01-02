@@ -16,9 +16,11 @@
 #include <rcutils/allocator.h>
 
 rcl_logging_ret_t rcl_logging_external_initialize(
+  const char * file_name_prefix,
   const char * config_file,
   rcutils_allocator_t allocator)
 {
+  (void) file_name_prefix;
   (void) config_file;
   (void) allocator;
   return RCL_LOGGING_RET_OK;

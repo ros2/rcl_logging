@@ -28,14 +28,15 @@
 #include "rcutils/env.h"
 #include "rcutils/error_handling.h"
 #include "rcutils/process.h"
+#include "rcutils/strdup.h"
 #include "rcutils/types/string_array.h"
 
 #ifdef _WIN32
 #define popen _popen
 #define pclose _pclose
-#define DIR_CMD "dir /B"
+#define DIR_CMD "dir /B /O-D"
 #else
-#define DIR_CMD "ls -d"
+#define DIR_CMD "ls -td"
 #endif
 
 class AllocatorTest : public ::testing::Test
@@ -80,11 +81,11 @@ public:
   {
   }
 
-  std::filesystem::path find_single_log()
+  std::filesystem::path find_single_log(const char * prefix)
   {
     std::filesystem::path log_dir = get_log_dir();
     std::stringstream dir_command;
-    dir_command << DIR_CMD << " " << (log_dir / get_expected_log_prefix()).string() << "*";
+    dir_command << DIR_CMD << " " << (log_dir / get_expected_log_prefix(prefix)).string() << "*";
 
     FILE * fp = popen(dir_command.str().c_str(), "r");
     if (nullptr == fp) {
@@ -109,9 +110,14 @@ public:
   }
 
 private:
-  std::string get_expected_log_prefix()
+  std::string get_expected_log_prefix(const char * name)
   {
-    char * exe_name = rcutils_get_executable_name(allocator);
+    char * exe_name;
+    if (name == nullptr || name[0] == '\0') {
+      exe_name = rcutils_get_executable_name(allocator);
+    } else {
+      exe_name = rcutils_strdup(name, allocator);
+    }
     if (nullptr == exe_name) {
       throw std::runtime_error("Failed to determine executable name");
     }

@@ -29,6 +29,7 @@
 #include "rcutils/logging.h"
 #include "rcutils/process.h"
 #include "rcutils/snprintf.h"
+#include "rcutils/strdup.h"
 #include "rcutils/time.h"
 
 #include "spdlog/spdlog.h"
@@ -95,6 +96,7 @@ get_should_use_old_flushing_behavior()
 }  // namespace
 
 rcl_logging_ret_t rcl_logging_external_initialize(
+  const char * file_name_prefix,
   const char * config_file,
   rcutils_allocator_t allocator)
 {
@@ -163,8 +165,13 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     }
     int64_t ms_since_epoch = RCUTILS_NS_TO_MS(now);
 
-    // Get the program name.
-    char * basec = rcutils_get_executable_name(allocator);
+    bool file_name_provided = (nullptr != file_name_prefix) && (file_name_prefix[0] != '\0');
+    char * basec;
+    if (file_name_provided) {
+      basec = rcutils_strdup(file_name_prefix, allocator);
+    } else {  // otherwise, get the program name.
+      basec = rcutils_get_executable_name(allocator);
+    }
     if (basec == nullptr) {
       // We couldn't get the program name, so get out of here without setting up
       // logging.
@@ -175,7 +182,6 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     {
       allocator.deallocate(basec, allocator.state);
     });
-
     char name_buffer[4096] = {0};
     int print_ret = rcutils_snprintf(
       name_buffer, sizeof(name_buffer),
