@@ -2,6 +2,11 @@
 Changelog for package rcl_logging_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add file_name_prefix parameter to external log configuration. (`#109 <https://github.com/ros2/rcl_logging/issues/109>`_)
+* Contributors: Tomoya Fujita
+
 2.7.1 (2023-12-26)
 ------------------
 * Migrate to std::filesystem (`#104 <https://github.com/ros2/rcl_logging/issues/104>`_)
