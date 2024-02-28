@@ -68,14 +68,17 @@ TEST_F(LoggingTest, init_invalid)
   EXPECT_EQ(
     RCL_LOGGING_RET_ERROR,
     rcl_logging_external_initialize(nullptr, "anything", allocator));
+  EXPECT_TRUE(rcutils_error_is_set());
   rcutils_reset_error();
   EXPECT_EQ(
     RCL_LOGGING_RET_ERROR,
     rcl_logging_external_initialize("anything", nullptr, bad_allocator));
+  EXPECT_TRUE(rcutils_error_is_set());
   rcutils_reset_error();
   EXPECT_EQ(
     RCL_LOGGING_RET_ERROR,
     rcl_logging_external_initialize(nullptr, nullptr, invalid_allocator));
+  EXPECT_TRUE(rcutils_error_is_set());
   rcutils_reset_error();
 }
 
@@ -88,6 +91,7 @@ TEST_F(LoggingTest, init_failure)
   ASSERT_EQ(true, rcutils_set_env("HOME", nullptr));
   ASSERT_EQ(true, rcutils_set_env("USERPROFILE", nullptr));
   EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+  EXPECT_TRUE(rcutils_error_is_set());
   rcutils_reset_error();
 
   // Force failure to create directories
@@ -99,6 +103,8 @@ TEST_F(LoggingTest, init_failure)
   std::filesystem::path ros_dir = fake_home / ".ros";
   std::fstream(ros_dir.string(), std::ios_base::out).close();
   EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+  EXPECT_TRUE(rcutils_error_is_set());
+  rcutils_reset_error();
   ASSERT_TRUE(std::filesystem::remove(ros_dir));
 
   // ...fail to create .ros/log dir
@@ -106,6 +112,8 @@ TEST_F(LoggingTest, init_failure)
   std::filesystem::path ros_log_dir = ros_dir / "log";
   std::fstream(ros_log_dir.string(), std::ios_base::out).close();
   EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+  EXPECT_TRUE(rcutils_error_is_set());
+  rcutils_reset_error();
   ASSERT_TRUE(std::filesystem::remove(ros_log_dir));
   ASSERT_TRUE(std::filesystem::remove(ros_dir));
 
