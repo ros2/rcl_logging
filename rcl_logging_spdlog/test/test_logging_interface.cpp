@@ -19,6 +19,7 @@
 
 #include "gmock/gmock.h"
 
+#include "rcl_logging_interface/rcl_logging_interface.h"
 #include "rcpputils/env.hpp"
 #include "rcutils/allocator.h"
 #include "rcutils/env.h"
@@ -27,7 +28,6 @@
 #include "rcutils/testing/fault_injection.h"
 
 #include "fixtures.hpp"
-#include "rcl_logging_interface/rcl_logging_interface.h"
 
 const int logger_levels[] =
 {
