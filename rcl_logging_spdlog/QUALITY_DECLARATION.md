@@ -4,7 +4,7 @@ This document is a declaration of software quality for the `rcl_logging_spdlog` 
 
 The package `rcl_logging_spdlog` claims to be in the **Quality Level 1** category.
 
-Below are the rationales, notes, and caveats for this claim, organized by each requirement listed in the [Package Quality Categories in REP-2004](https://www.ros.org/reps/rep-2004.html) of the ROS2 developer guide.
+Below are the rationales, notes, and caveats for this claim, organized by each requirement listed in the [Package Requirements for Quality Level 1 in REP-2004](https://www.ros.org/reps/rep-2004.html).
 
 ## Version Policy [1]
 
@@ -44,7 +44,8 @@ All changes will occur through a pull request, check [ROS 2 Developer Guide](htt
 
 ### Contributor Origin [2.ii]
 
-This package uses DCO as its confirmation of contributor origin policy. More information can be found in [CONTRIBUTING](../CONTRIBUTING.md)
+This package uses DCO as its confirmation of contributor origin policy.
+More information can be found in [CONTRIBUTING](../CONTRIBUTING.md)
 
 ### Peer Review Policy [2.iii]
 
@@ -78,19 +79,21 @@ All pull requests must resolve related documentation changes before merging.
 
 The license for `rcl_logging_spdlog` is Apache 2.0, and a summary is in each source file, the type is declared in the [`package.xml`](./package.xml) manifest file, and a full copy of the license is in the [`LICENSE`](../LICENSE) file.
 
-There is an automated test which runs a linter that ensures each file has a license statement. [Here](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastSuccessfulBuild/testReport/rcl_logging_spdlog/) can be found a list with the latest results of the various linters being run on the package.
+There is an automated test which runs a linter that ensures each file has a license statement.
+[Here](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastSuccessfulBuild/testReport/rcl_logging_spdlog/) can be found a list with the latest results of the various linters being run on the package.
 
 ### Copyright Statements [3.iv]
 
 The copyright holders each provide a statement of copyright in each source code file in `rcl_logging_spdlog`.
 
-There is an automated test which runs a linter that ensures each file has at least one copyright statement. Latest linter result report can be seen [here](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastSuccessfulBuild/testReport/rcl_logging_spdlog/copyright/).
+There is an automated test which runs a linter that ensures each file has at least one copyright statement.
+Latest linter result report can be seen [here](https://ci.ros2.org/view/nightly/job/nightly_linux_release/lastSuccessfulBuild/testReport/rcl_logging_spdlog/copyright/).
 
 ## Testing [4]
 
 ### Feature Testing [4.i]
 
-Each feature in `rcl_logging_spdlog` has corresponding tests which simulate typical usage, and they are located in the [`test`](https://github.com/ros2/rcl_logging/tree/master/rcl_logging_spdlog/test) directory.
+Each feature in `rcl_logging_spdlog` has corresponding tests which simulate typical usage, and they are located in the [`test`](https://github.com/ros2/rcl_logging/tree/rolling/rcl_logging_spdlog/test) directory.
 New features are required to have tests before being added.
 
 Currently nightly test results can be seen here:
@@ -117,7 +120,8 @@ This includes:
 
 Changes are required to make a best effort to keep or increase coverage before being accepted, but decreases are allowed if properly justified and accepted by reviewers.
 
-Current coverage statistics can be viewed [here](https://ci.ros2.org/job/nightly_linux_coverage/lastSuccessfulBuild/cobertura/src_ros2_rcl_logging_rcl_logging_spdlog_src/). A description of how coverage statistics are calculated is summarized in this page ["ROS 2 Onboarding Guide"](https://docs.ros.org/en/rolling/Contributing/Developer-Guide.html#note-on-coverage-runs).
+Current coverage statistics can be viewed [here](https://ci.ros2.org/job/nightly_linux_coverage/lastSuccessfulBuild/cobertura/src_ros2_rcl_logging_rcl_logging_spdlog_src/).
+A description of how coverage statistics are calculated is summarized in this page ["ROS 2 Onboarding Guide"](https://docs.ros.org/en/rolling/Contributing/Developer-Guide.html#note-on-coverage-runs).
 
 ### Performance [4.iv]
 
@@ -131,7 +135,8 @@ Changes that introduce regressions in performance must be adequately justified i
 
 ### Linters and Static Analysis [4.v]
 
-`rcl_logging_spdlog` uses and passes all the standard linters and static analysis tools for a C package as described in the [ROS 2 Developer Guide](https://docs.ros.org/en/rolling/Contributing/Developer-Guide.html#linters-and-static-analysis). Passing implies there are no linter/static errors when testing against CI of supported platforms.
+`rcl_logging_spdlog` uses and passes all the standard linters and static analysis tools for a C package as described in the [ROS 2 Developer Guide](https://docs.ros.org/en/rolling/Contributing/Developer-Guide.html#linters-and-static-analysis).
+Passing implies there are no linter/static errors when testing against CI of supported platforms.
 
 Currently nightly results can be seen here:
 * [linux-aarch64_release](https://ci.ros2.org/view/nightly/job/nightly_linux-aarch64_release/lastSuccessfulBuild/testReport/rcl_logging_spdlog/)
@@ -149,13 +154,13 @@ Below are evaluations of each of `rcl_logging_spdlog`'s run-time and build-time 
 
 The `rcutils` package provides an API which contains common utilities and data structures useful when programming in C.
 
-It is **Quality Level 1**, see its [Quality Declaration document](https://github.com/ros2/rcutils/blob/master/QUALITY_DECLARATION.md).
+It is **Quality Level 1**, see its [Quality Declaration document](https://github.com/ros2/rcutils/blob/rolling/QUALITY_DECLARATION.md).
 
 #### `spdlog_vendor`
 
 The `spdlog_vendor` package provides a CMake shim over the spdlog library.
 
-It is **Quality Level 1**, see its [Quality Declaration document](https://github.com/ros2/spdlog_vendor/blob/master/QUALITY_DECLARATION.md).
+It is **Quality Level 1**, see its [Quality Declaration document](https://github.com/ros2/spdlog_vendor/blob/rolling/QUALITY_DECLARATION.md).
 
 ### Optional Direct Runtime ROS Dependencies [5.ii]
 
@@ -163,7 +168,8 @@ It is **Quality Level 1**, see its [Quality Declaration document](https://github
 
 ### Direct Runtime non-ROS Dependency [5.iii]
 
-`rcl_logging_spdlog` has a Direct Runtime non-ROS dependency on the `spdlog` library. It was declared to be Quality Level 1 [here](https://github.com/ros2/spdlog_vendor/blob/master/SPDLOG_QUALITY_DECLARATION.md).
+`rcl_logging_spdlog` has a Direct Runtime non-ROS dependency on the `spdlog` library.
+It was declared to be Quality Level 1 [here](https://github.com/ros2/spdlog_vendor/blob/rolling/SPDLOG_QUALITY_DECLARATION.md).
 
 ## Platform Support [6]
 
