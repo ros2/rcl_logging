@@ -12,24 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <limits.h>
 #include <filesystem>
 #include <fstream>
+#include <random>
+#include <sstream>
 #include <string>
 
 #include "gmock/gmock.h"
 
 #include "rcl_logging_interface/rcl_logging_interface.h"
+
 #include "rcpputils/env.hpp"
+#include "rcpputils/scope_exit.hpp"
+
 #include "rcutils/allocator.h"
-#include "rcutils/env.h"
 #include "rcutils/error_handling.h"
 #include "rcutils/logging.h"
 #include "rcutils/testing/fault_injection.h"
 
 #include "fixtures.hpp"
 
-const int logger_levels[] =
+static constexpr int logger_levels[] =
 {
   RCUTILS_LOG_SEVERITY_UNSET,
   RCUTILS_LOG_SEVERITY_DEBUG,
@@ -41,7 +44,7 @@ const int logger_levels[] =
 
 // This is a helper class that resets an environment
 // variable when leaving scope
-class RestoreEnvVar
+class RestoreEnvVar final
 {
 public:
   explicit RestoreEnvVar(const std::string & name)
@@ -52,7 +55,7 @@ public:
 
   ~RestoreEnvVar()
   {
-    if (!rcutils_set_env(name_.c_str(), value_.c_str())) {
+    if (!rcpputils::set_env_var(name_.c_str(), value_.c_str())) {
       std::cerr << "Failed to restore value of environment variable: " << name_ << std::endl;
     }
   }
@@ -60,6 +63,42 @@ public:
 private:
   const std::string name_;
   const std::string value_;
+};
+
+class TemporaryLogDir final
+{
+public:
+  TemporaryLogDir()
+  : orig_ros_log_dir_value_(rcpputils::get_env_var("ROS_LOG_DIR"))
+  {
+    // Create a random directory in our current path
+    std::random_device dev;
+    std::mt19937 prng(dev());
+    std::uniform_int_distribution<uint64_t> rand(0);
+
+    std::stringstream ss;
+    ss << std::hex << rand(prng);
+
+    local_log_dir_ = std::filesystem::current_path() / ss.str();
+
+    if (!std::filesystem::create_directories(local_log_dir_)) {
+      throw std::runtime_error("Failed to make temporary log directory");
+    }
+
+    rcpputils::set_env_var("ROS_LOG_DIR", local_log_dir_.string().c_str());
+  }
+
+  ~TemporaryLogDir()
+  {
+    rcpputils::set_env_var("ROS_LOG_DIR", orig_ros_log_dir_value_.c_str());
+    if (std::filesystem::remove_all(local_log_dir_) == 0) {
+      std::cerr << "Failed to remove temporary directory\n";
+    }
+  }
+
+private:
+  const std::string orig_ros_log_dir_value_;
+  std::filesystem::path local_log_dir_;
 };
 
 TEST_F(LoggingTest, init_invalid)
@@ -85,15 +124,15 @@ TEST_F(LoggingTest, init_failure)
   RestoreEnvVar userprofile_var("USERPROFILE");
 
   // No home directory to write log to
-  ASSERT_EQ(true, rcutils_set_env("HOME", nullptr));
-  ASSERT_EQ(true, rcutils_set_env("USERPROFILE", nullptr));
+  ASSERT_TRUE(rcpputils::set_env_var("HOME", nullptr));
+  ASSERT_TRUE(rcpputils::set_env_var("USERPROFILE", nullptr));
   EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, nullptr, allocator));
   rcutils_reset_error();
 
   // Force failure to create directories
   std::filesystem::path fake_home = std::filesystem::current_path() / "fake_home_dir";
   ASSERT_TRUE(std::filesystem::create_directories(fake_home));
-  ASSERT_EQ(true, rcutils_set_env("HOME", fake_home.string().c_str()));
+  ASSERT_TRUE(rcpputils::set_env_var("HOME", fake_home.string().c_str()));
 
   // ...fail to create .ros dir
   std::filesystem::path ros_dir = fake_home / ".ros";
@@ -114,6 +153,8 @@ TEST_F(LoggingTest, init_failure)
 
 TEST_F(LoggingTest, log_file_name_prefix)
 {
+  TemporaryLogDir tmp_log_dir;
+
   std::string log_file_path;
   // executable name in default
   {
@@ -139,6 +180,8 @@ TEST_F(LoggingTest, init_old_flushing_behavior)
 {
   RestoreEnvVar env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR");
   rcpputils::set_env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR", "1");
+
+  TemporaryLogDir tmp_log_dir;
 
   ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
 
@@ -175,6 +218,8 @@ TEST_F(LoggingTest, init_explicit_new_flush_behavior)
 {
   RestoreEnvVar env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR");
   rcpputils::set_env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR", "0");
+
+  TemporaryLogDir tmp_log_dir;
 
   ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
 
@@ -223,6 +268,8 @@ TEST_F(LoggingTest, init_invalid_flush_setting)
 
 TEST_F(LoggingTest, full_cycle)
 {
+  TemporaryLogDir tmp_log_dir;
+
   ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
 
   // Make sure we can call initialize more than once

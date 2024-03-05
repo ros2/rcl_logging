@@ -15,29 +15,19 @@
 #ifndef FIXTURES_HPP_
 #define FIXTURES_HPP_
 
-#include <limits.h>
-#ifdef _WIN32
-# include <windows.h>  // MAX_PATH
-#endif
-#include <string>
 #include <filesystem>
+#include <sstream>
+#include <stdexcept>
+#include <string>
 
 #include "gtest/gtest.h"
 
+#include "rcpputils/scope_exit.hpp"
+
 #include "rcutils/allocator.h"
 #include "rcutils/env.h"
-#include "rcutils/error_handling.h"
 #include "rcutils/process.h"
 #include "rcutils/strdup.h"
-#include "rcutils/types/string_array.h"
-
-#ifdef _WIN32
-#define popen _popen
-#define pclose _pclose
-#define DIR_CMD "dir /B /O-D"
-#else
-#define DIR_CMD "ls -td"
-#endif
 
 class AllocatorTest : public ::testing::Test
 {
@@ -83,30 +73,36 @@ public:
 
   std::filesystem::path find_single_log(const char * prefix)
   {
-    std::filesystem::path log_dir = get_log_dir();
-    std::stringstream dir_command;
-    dir_command << DIR_CMD << " " << (log_dir / get_expected_log_prefix(prefix)).string() << "*";
+    char * rcl_log_dir = nullptr;
+    rcl_logging_ret_t dir_ret = rcl_logging_get_logging_directory(allocator, &rcl_log_dir);
+    if (dir_ret != RCL_LOGGING_RET_OK) {
+      throw std::runtime_error("Failed to get logging directory");
+    }
+    RCPPUTILS_SCOPE_EXIT(
+    {
+      allocator.deallocate(rcl_log_dir, allocator.state);
+    });
+    std::filesystem::path log_dir(rcl_log_dir);
+    std::string expected_prefix = get_expected_log_prefix(prefix);
 
-    FILE * fp = popen(dir_command.str().c_str(), "r");
-    if (nullptr == fp) {
-      throw std::runtime_error("Failed to glob for log files");
+    std::filesystem::path found;
+    std::filesystem::file_time_type found_last_write;
+    for (const std::filesystem::directory_entry & dir_entry :
+      std::filesystem::directory_iterator{log_dir})
+    {
+      // If the start of the filename matches the expected_prefix, and this is the newest file
+      // starting with that prefix, hold onto it to return later.
+      if (dir_entry.path().filename().string().rfind(expected_prefix, 0) == 0) {
+        if (found.string().empty() || dir_entry.last_write_time() > found_last_write) {
+          found = dir_entry.path();
+          found_last_write = dir_entry.last_write_time();
+          // Even though we found the file, we have to keep looking in case there
+          // is another file with the same prefix but a newer timestamp.
+        }
+      }
     }
 
-#ifdef _WIN32
-    char raw_line[MAX_PATH];
-#else
-    char raw_line[PATH_MAX];
-#endif
-    char * ret = fgets(raw_line, sizeof(raw_line), fp);
-    pclose(fp);
-    if (nullptr == ret) {
-      throw std::runtime_error("No log files were found");
-    }
-
-    std::string line(raw_line);
-    std::filesystem::path line_path(line.substr(0, line.find_last_not_of(" \t\r\n") + 1));
-    // This should be changed once ros2/rcpputils#68 is resolved
-    return line_path.is_absolute() ? line_path : log_dir / line_path;
+    return found;
   }
 
 private:
@@ -125,11 +121,6 @@ private:
     prefix << exe_name << "_" << rcutils_get_pid() << "_";
     allocator.deallocate(exe_name, allocator.state);
     return prefix.str();
-  }
-
-  std::filesystem::path get_log_dir()
-  {
-    return std::filesystem::path(rcutils_get_home_dir()) / ".ros" / "log";
   }
 };
 
