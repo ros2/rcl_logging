@@ -100,12 +100,26 @@ private:
   }
 };
 
-class LoggingTest : public AllocatorTest
+class LoggingTest : public ::testing::Test
 {
 public:
-  LoggingTest()
-  : AllocatorTest()
+  void SetUp()
   {
+    allocator = rcutils_get_default_allocator();
+    orig_ros_log_dir_value_ = rcpputils::get_env_var("ROS_LOG_DIR");
+    rcpputils::fs::path log_dir = rcpputils::fs::create_temp_directory("rcl_logging_spdlog");
+
+    local_log_dir_ = log_dir.string();
+
+    rcpputils::set_env_var("ROS_LOG_DIR", local_log_dir_.c_str());
+  }
+
+  void TearDown()
+  {
+    rcpputils::set_env_var("ROS_LOG_DIR", orig_ros_log_dir_value_.c_str());
+    if (std::filesystem::remove_all(local_log_dir_) == 0) {
+      std::cerr << "Failed to remove temporary directory\n";
+    }
   }
 
   std::filesystem::path find_single_log(const char * prefix)
@@ -142,6 +156,8 @@ public:
     return found;
   }
 
+  rcutils_allocator_t allocator;
+
 private:
   std::string get_expected_log_prefix(const char * name)
   {
@@ -159,35 +175,12 @@ private:
     allocator.deallocate(exe_name, allocator.state);
     return prefix.str();
   }
-};
 
-class TemporaryLogDir final
-{
-public:
-  TemporaryLogDir()
-  : orig_ros_log_dir_value_(rcpputils::get_env_var("ROS_LOG_DIR"))
-  {
-    rcpputils::fs::path log_dir = rcpputils::fs::create_temp_directory("rcl_logging_spdlog");
-
-    local_log_dir_ = log_dir.string();
-
-    rcpputils::set_env_var("ROS_LOG_DIR", local_log_dir_.c_str());
-  }
-
-  ~TemporaryLogDir()
-  {
-    rcpputils::set_env_var("ROS_LOG_DIR", orig_ros_log_dir_value_.c_str());
-    if (std::filesystem::remove_all(local_log_dir_) == 0) {
-      std::cerr << "Failed to remove temporary directory\n";
-    }
-  }
-
-private:
-  const std::string orig_ros_log_dir_value_;
+  std::string orig_ros_log_dir_value_;
   std::string local_log_dir_;
 };
 
-TEST_F(LoggingTest, init_invalid)
+TEST_F(AllocatorTest, init_invalid)
 {
   // Config files are not supported by spdlog
   EXPECT_EQ(
@@ -204,7 +197,7 @@ TEST_F(LoggingTest, init_invalid)
   rcutils_reset_error();
 }
 
-TEST_F(LoggingTest, init_failure)
+TEST_F(AllocatorTest, init_failure)
 {
   RestoreEnvVar home_var("HOME");
   RestoreEnvVar userprofile_var("USERPROFILE");
@@ -239,8 +232,6 @@ TEST_F(LoggingTest, init_failure)
 
 TEST_F(LoggingTest, log_file_name_prefix)
 {
-  TemporaryLogDir tmp_log_dir;
-
   std::string log_file_path;
   // executable name in default
   {
@@ -266,8 +257,6 @@ TEST_F(LoggingTest, init_old_flushing_behavior)
 {
   RestoreEnvVar env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR");
   rcpputils::set_env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR", "1");
-
-  TemporaryLogDir tmp_log_dir;
 
   ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
 
@@ -304,8 +293,6 @@ TEST_F(LoggingTest, init_explicit_new_flush_behavior)
 {
   RestoreEnvVar env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR");
   rcpputils::set_env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR", "0");
-
-  TemporaryLogDir tmp_log_dir;
 
   ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
 
@@ -354,8 +341,6 @@ TEST_F(LoggingTest, init_invalid_flush_setting)
 
 TEST_F(LoggingTest, full_cycle)
 {
-  TemporaryLogDir tmp_log_dir;
-
   ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
 
   // Make sure we can call initialize more than once
