@@ -23,14 +23,15 @@
 #include "rcl_logging_interface/rcl_logging_interface.h"
 
 #include "rcpputils/env.hpp"
+#include "rcpputils/filesystem_helper.hpp"
 #include "rcpputils/scope_exit.hpp"
 
 #include "rcutils/allocator.h"
 #include "rcutils/error_handling.h"
 #include "rcutils/logging.h"
+#include "rcutils/process.h"
+#include "rcutils/strdup.h"
 #include "rcutils/testing/fault_injection.h"
-
-#include "fixtures.hpp"
 
 static constexpr int logger_levels[] =
 {
@@ -65,27 +66,112 @@ private:
   const std::string value_;
 };
 
+class AllocatorTest : public ::testing::Test
+{
+public:
+  AllocatorTest()
+  : allocator(rcutils_get_default_allocator()),
+    bad_allocator(get_bad_allocator()),
+    invalid_allocator(rcutils_get_zero_initialized_allocator())
+  {
+  }
+
+  rcutils_allocator_t allocator;
+  rcutils_allocator_t bad_allocator;
+  rcutils_allocator_t invalid_allocator;
+
+private:
+  static rcutils_allocator_t get_bad_allocator()
+  {
+    rcutils_allocator_t bad_allocator = rcutils_get_default_allocator();
+    bad_allocator.allocate = AllocatorTest::bad_malloc;
+    bad_allocator.reallocate = AllocatorTest::bad_realloc;
+    return bad_allocator;
+  }
+
+  static void * bad_malloc(size_t, void *)
+  {
+    return nullptr;
+  }
+
+  static void * bad_realloc(void *, size_t, void *)
+  {
+    return nullptr;
+  }
+};
+
+class LoggingTest : public AllocatorTest
+{
+public:
+  LoggingTest()
+  : AllocatorTest()
+  {
+  }
+
+  std::filesystem::path find_single_log(const char * prefix)
+  {
+    char * rcl_log_dir = nullptr;
+    rcl_logging_ret_t dir_ret = rcl_logging_get_logging_directory(allocator, &rcl_log_dir);
+    if (dir_ret != RCL_LOGGING_RET_OK) {
+      throw std::runtime_error("Failed to get logging directory");
+    }
+    RCPPUTILS_SCOPE_EXIT(
+    {
+      allocator.deallocate(rcl_log_dir, allocator.state);
+    });
+    std::filesystem::path log_dir(rcl_log_dir);
+    std::string expected_prefix = get_expected_log_prefix(prefix);
+
+    std::filesystem::path found;
+    std::filesystem::file_time_type found_last_write;
+    for (const std::filesystem::directory_entry & dir_entry :
+      std::filesystem::directory_iterator{log_dir})
+    {
+      // If the start of the filename matches the expected_prefix, and this is the newest file
+      // starting with that prefix, hold onto it to return later.
+      if (dir_entry.path().filename().string().rfind(expected_prefix, 0) == 0) {
+        if (found.string().empty() || dir_entry.last_write_time() > found_last_write) {
+          found = dir_entry.path();
+          found_last_write = dir_entry.last_write_time();
+          // Even though we found the file, we have to keep looking in case there
+          // is another file with the same prefix but a newer timestamp.
+        }
+      }
+    }
+
+    return found;
+  }
+
+private:
+  std::string get_expected_log_prefix(const char * name)
+  {
+    char * exe_name;
+    if (name == nullptr || name[0] == '\0') {
+      exe_name = rcutils_get_executable_name(allocator);
+    } else {
+      exe_name = rcutils_strdup(name, allocator);
+    }
+    if (nullptr == exe_name) {
+      throw std::runtime_error("Failed to determine executable name");
+    }
+    std::stringstream prefix;
+    prefix << exe_name << "_" << rcutils_get_pid() << "_";
+    allocator.deallocate(exe_name, allocator.state);
+    return prefix.str();
+  }
+};
+
 class TemporaryLogDir final
 {
 public:
   TemporaryLogDir()
   : orig_ros_log_dir_value_(rcpputils::get_env_var("ROS_LOG_DIR"))
   {
-    // Create a random directory in our current path
-    std::random_device dev;
-    std::mt19937 prng(dev());
-    std::uniform_int_distribution<uint64_t> rand(0);
+    rcpputils::fs::path log_dir = rcpputils::fs::create_temp_directory("rcl_logging_spdlog");
 
-    std::stringstream ss;
-    ss << std::hex << rand(prng);
+    local_log_dir_ = log_dir.string();
 
-    local_log_dir_ = std::filesystem::current_path() / ss.str();
-
-    if (!std::filesystem::create_directories(local_log_dir_)) {
-      throw std::runtime_error("Failed to make temporary log directory");
-    }
-
-    rcpputils::set_env_var("ROS_LOG_DIR", local_log_dir_.string().c_str());
+    rcpputils::set_env_var("ROS_LOG_DIR", local_log_dir_.c_str());
   }
 
   ~TemporaryLogDir()
@@ -98,7 +184,7 @@ public:
 
 private:
   const std::string orig_ros_log_dir_value_;
-  std::filesystem::path local_log_dir_;
+  std::string local_log_dir_;
 };
 
 TEST_F(LoggingTest, init_invalid)
