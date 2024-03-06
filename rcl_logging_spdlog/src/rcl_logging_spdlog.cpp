@@ -100,6 +100,8 @@ rcl_logging_ret_t rcl_logging_external_initialize(
   const char * config_file,
   rcutils_allocator_t allocator)
 {
+  RCUTILS_CHECK_ALLOCATOR(&allocator, return RCL_LOGGING_RET_INVALID_ARGUMENT);
+
   std::lock_guard<std::mutex> lk(g_logger_mutex);
   // It is possible for this to get called more than once in a process (some of
   // the tests do this implicitly by calling rclcpp::init more than once).
