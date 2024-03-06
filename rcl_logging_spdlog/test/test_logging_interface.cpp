@@ -12,24 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <limits.h>
 #include <filesystem>
 #include <fstream>
+#include <random>
+#include <sstream>
 #include <string>
 
 #include "gmock/gmock.h"
 
 #include "rcl_logging_interface/rcl_logging_interface.h"
+
 #include "rcpputils/env.hpp"
+#include "rcpputils/filesystem_helper.hpp"
+#include "rcpputils/scope_exit.hpp"
+
 #include "rcutils/allocator.h"
-#include "rcutils/env.h"
 #include "rcutils/error_handling.h"
 #include "rcutils/logging.h"
+#include "rcutils/process.h"
+#include "rcutils/strdup.h"
 #include "rcutils/testing/fault_injection.h"
 
-#include "fixtures.hpp"
-
-const int logger_levels[] =
+static constexpr int logger_levels[] =
 {
   RCUTILS_LOG_SEVERITY_UNSET,
   RCUTILS_LOG_SEVERITY_DEBUG,
@@ -41,7 +45,7 @@ const int logger_levels[] =
 
 // This is a helper class that resets an environment
 // variable when leaving scope
-class RestoreEnvVar
+class RestoreEnvVar final
 {
 public:
   explicit RestoreEnvVar(const std::string & name)
@@ -52,7 +56,7 @@ public:
 
   ~RestoreEnvVar()
   {
-    if (!rcutils_set_env(name_.c_str(), value_.c_str())) {
+    if (!rcpputils::set_env_var(name_.c_str(), value_.c_str())) {
       std::cerr << "Failed to restore value of environment variable: " << name_ << std::endl;
     }
   }
@@ -62,7 +66,121 @@ private:
   const std::string value_;
 };
 
-TEST_F(LoggingTest, init_invalid)
+class AllocatorTest : public ::testing::Test
+{
+public:
+  AllocatorTest()
+  : allocator(rcutils_get_default_allocator()),
+    bad_allocator(get_bad_allocator()),
+    invalid_allocator(rcutils_get_zero_initialized_allocator())
+  {
+  }
+
+  rcutils_allocator_t allocator;
+  rcutils_allocator_t bad_allocator;
+  rcutils_allocator_t invalid_allocator;
+
+private:
+  static rcutils_allocator_t get_bad_allocator()
+  {
+    rcutils_allocator_t bad_allocator = rcutils_get_default_allocator();
+    bad_allocator.allocate = AllocatorTest::bad_malloc;
+    bad_allocator.reallocate = AllocatorTest::bad_realloc;
+    return bad_allocator;
+  }
+
+  static void * bad_malloc(size_t, void *)
+  {
+    return nullptr;
+  }
+
+  static void * bad_realloc(void *, size_t, void *)
+  {
+    return nullptr;
+  }
+};
+
+class LoggingTest : public ::testing::Test
+{
+public:
+  void SetUp()
+  {
+    allocator = rcutils_get_default_allocator();
+    orig_ros_log_dir_value_ = rcpputils::get_env_var("ROS_LOG_DIR");
+    rcpputils::fs::path log_dir = rcpputils::fs::create_temp_directory("rcl_logging_spdlog");
+
+    local_log_dir_ = log_dir.string();
+
+    rcpputils::set_env_var("ROS_LOG_DIR", local_log_dir_.c_str());
+  }
+
+  void TearDown()
+  {
+    rcpputils::set_env_var("ROS_LOG_DIR", orig_ros_log_dir_value_.c_str());
+    if (std::filesystem::remove_all(local_log_dir_) == 0) {
+      std::cerr << "Failed to remove temporary directory\n";
+    }
+  }
+
+  std::filesystem::path find_single_log(const char * prefix)
+  {
+    char * rcl_log_dir = nullptr;
+    rcl_logging_ret_t dir_ret = rcl_logging_get_logging_directory(allocator, &rcl_log_dir);
+    if (dir_ret != RCL_LOGGING_RET_OK) {
+      throw std::runtime_error("Failed to get logging directory");
+    }
+    RCPPUTILS_SCOPE_EXIT(
+    {
+      allocator.deallocate(rcl_log_dir, allocator.state);
+    });
+    std::filesystem::path log_dir(rcl_log_dir);
+    std::string expected_prefix = get_expected_log_prefix(prefix);
+
+    std::filesystem::path found;
+    std::filesystem::file_time_type found_last_write;
+    for (const std::filesystem::directory_entry & dir_entry :
+      std::filesystem::directory_iterator{log_dir})
+    {
+      // If the start of the filename matches the expected_prefix, and this is the newest file
+      // starting with that prefix, hold onto it to return later.
+      if (dir_entry.path().filename().string().rfind(expected_prefix, 0) == 0) {
+        if (found.string().empty() || dir_entry.last_write_time() > found_last_write) {
+          found = dir_entry.path();
+          found_last_write = dir_entry.last_write_time();
+          // Even though we found the file, we have to keep looking in case there
+          // is another file with the same prefix but a newer timestamp.
+        }
+      }
+    }
+
+    return found;
+  }
+
+  rcutils_allocator_t allocator;
+
+private:
+  std::string get_expected_log_prefix(const char * name)
+  {
+    char * exe_name;
+    if (name == nullptr || name[0] == '\0') {
+      exe_name = rcutils_get_executable_name(allocator);
+    } else {
+      exe_name = rcutils_strdup(name, allocator);
+    }
+    if (nullptr == exe_name) {
+      throw std::runtime_error("Failed to determine executable name");
+    }
+    std::stringstream prefix;
+    prefix << exe_name << "_" << rcutils_get_pid() << "_";
+    allocator.deallocate(exe_name, allocator.state);
+    return prefix.str();
+  }
+
+  std::string orig_ros_log_dir_value_;
+  std::string local_log_dir_;
+};
+
+TEST_F(AllocatorTest, init_invalid)
 {
   // Config files are not supported by spdlog
   EXPECT_EQ(
@@ -79,21 +197,21 @@ TEST_F(LoggingTest, init_invalid)
   rcutils_reset_error();
 }
 
-TEST_F(LoggingTest, init_failure)
+TEST_F(AllocatorTest, init_failure)
 {
   RestoreEnvVar home_var("HOME");
   RestoreEnvVar userprofile_var("USERPROFILE");
 
   // No home directory to write log to
-  ASSERT_EQ(true, rcutils_set_env("HOME", nullptr));
-  ASSERT_EQ(true, rcutils_set_env("USERPROFILE", nullptr));
+  ASSERT_TRUE(rcpputils::set_env_var("HOME", nullptr));
+  ASSERT_TRUE(rcpputils::set_env_var("USERPROFILE", nullptr));
   EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, nullptr, allocator));
   rcutils_reset_error();
 
   // Force failure to create directories
   std::filesystem::path fake_home = std::filesystem::current_path() / "fake_home_dir";
   ASSERT_TRUE(std::filesystem::create_directories(fake_home));
-  ASSERT_EQ(true, rcutils_set_env("HOME", fake_home.string().c_str()));
+  ASSERT_TRUE(rcpputils::set_env_var("HOME", fake_home.string().c_str()));
 
   // ...fail to create .ros dir
   std::filesystem::path ros_dir = fake_home / ".ros";
