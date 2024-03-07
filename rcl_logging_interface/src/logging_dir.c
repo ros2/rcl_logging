@@ -28,6 +28,7 @@ rcl_logging_get_logging_directory(rcutils_allocator_t allocator, char ** directo
     RCUTILS_SET_ERROR_MSG("directory argument must not be null");
     return RCL_LOGGING_RET_INVALID_ARGUMENT;
   }
+  RCUTILS_CHECK_ALLOCATOR(&allocator, return RCL_LOGGING_RET_INVALID_ARGUMENT);
   if (NULL != *directory) {
     RCUTILS_SET_ERROR_MSG("directory argument must point to null");
     return RCL_LOGGING_RET_INVALID_ARGUMENT;

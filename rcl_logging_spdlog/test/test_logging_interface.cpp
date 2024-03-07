@@ -192,7 +192,7 @@ TEST_F(AllocatorTest, init_invalid)
     rcl_logging_external_initialize("anything", nullptr, bad_allocator));
   rcutils_reset_error();
   EXPECT_EQ(
-    RCL_LOGGING_RET_ERROR,
+    RCL_LOGGING_RET_INVALID_ARGUMENT,
     rcl_logging_external_initialize(nullptr, nullptr, invalid_allocator));
   rcutils_reset_error();
 }
