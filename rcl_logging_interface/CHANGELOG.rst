@@ -2,6 +2,14 @@
 Changelog for package rcl_logging_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Check allocator validity in some rcl_logging functions (`#116 <https://github.com/ros2/rcl_logging/issues/116>`_)
+  If the allocator is zero-initialized, it may cause a segfault when it is
+  used later in the functions.
+* Use (void) in declaration of param-less function (`#114 <https://github.com/ros2/rcl_logging/issues/114>`_)
+* Contributors: Christophe Bedard, Scott K Logan
+
 3.0.0 (2024-01-24)
 ------------------
 * add file_name_prefix parameter to external log configuration. (`#109 <https://github.com/ros2/rcl_logging/issues/109>`_)

@@ -2,6 +2,9 @@
 Changelog for package rcl_logging_noop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 3.0.0 (2024-01-24)
 ------------------
 * add file_name_prefix parameter to external log configuration. (`#109 <https://github.com/ros2/rcl_logging/issues/109>`_)
