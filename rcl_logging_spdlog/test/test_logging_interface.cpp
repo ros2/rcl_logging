@@ -107,7 +107,7 @@ public:
   {
     allocator = rcutils_get_default_allocator();
     orig_ros_log_dir_value_ = rcpputils::get_env_var("ROS_LOG_DIR");
-    std::filesystem::path log_dir = rcpputils::fs::create_temporal_directory("rcl_logging_spdlog");
+    std::filesystem::path log_dir = rcpputils::fs::create_temporary_directory("rcl_logging_spdlog");
 
     local_log_dir_ = log_dir.string();
 
