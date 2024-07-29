@@ -2,8 +2,8 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.2.1 (2024-07-29)
+------------------
 * Updated deprecated API (`#117 <https://github.com/ros2/rcl_logging/issues/117>`_)
 * Contributors: Alejandro Hernández Cordero
 
