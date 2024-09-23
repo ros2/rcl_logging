@@ -25,7 +25,7 @@ add_library(${PROJECT_NAME} src/rcl_logging_noop.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE
   rcutils::rcutils)
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  rcl_logging_interface::rcl_logging_interface)
+  $<BUILD_INTERFACE:rcl_logging_interface::rcl_logging_interface>)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "RCL_LOGGING_INTERFACE_BUILDING_DLL")
 
