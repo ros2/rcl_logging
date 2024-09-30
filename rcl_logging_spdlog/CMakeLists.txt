@@ -35,7 +35,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
   rcutils::rcutils
   spdlog::spdlog)
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  $<BUILD_INTERFACE:rcl_logging_interface::rcl_logging_interface>)
+  rcl_logging_interface::rcl_logging_interface)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "RCL_LOGGING_INTERFACE_BUILDING_DLL")
 
@@ -68,6 +68,7 @@ if(BUILD_TESTING)
   endif()
 endif()
 
+ament_export_dependencies(rcl_logging_interface)
 ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(${PROJECT_NAME})
 ament_package()

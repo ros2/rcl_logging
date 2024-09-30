@@ -25,7 +25,7 @@ add_library(${PROJECT_NAME} src/rcl_logging_noop.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE
   rcutils::rcutils)
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  $<BUILD_INTERFACE:rcl_logging_interface::rcl_logging_interface>)
+  rcl_logging_interface::rcl_logging_interface)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "RCL_LOGGING_INTERFACE_BUILDING_DLL")
 
@@ -39,7 +39,7 @@ install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 
-
+ament_export_dependencies(rcl_logging_interface)
 ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(${PROJECT_NAME})
 ament_package()
