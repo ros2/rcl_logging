@@ -66,10 +66,13 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_dependencies(rcl_logging_interface)
+<<<<<<< HEAD
 ament_export_dependencies(rcpputils)
 ament_export_dependencies(rcutils)
 ament_export_dependencies(spdlog_vendor)
 ament_export_dependencies(spdlog)
+=======
+>>>>>>> 0724aeb (rcl_logging_interface is only valid path with build environment. (#122))
 ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(${PROJECT_NAME})
 ament_package()

@@ -42,8 +42,11 @@ install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 
+<<<<<<< HEAD
 
 # Export rcl_logging_interface to give downstream packages access to it's headers
+=======
+>>>>>>> 0724aeb (rcl_logging_interface is only valid path with build environment. (#122))
 ament_export_dependencies(rcl_logging_interface)
 ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(${PROJECT_NAME})
