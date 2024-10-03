@@ -2,6 +2,12 @@
 Changelog for package rcl_logging_noop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* rcl_logging_interface is only valid path with build environment. (`#122 <https://github.com/ros2/rcl_logging/issues/122>`_)
+* README update and some cleanups. (`#120 <https://github.com/ros2/rcl_logging/issues/120>`_)
+* Contributors: Tomoya Fujita
+
 3.2.1 (2024-07-29)
 ------------------
 
