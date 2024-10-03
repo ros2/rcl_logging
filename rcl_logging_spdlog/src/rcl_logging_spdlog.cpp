@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
 #include <cerrno>
 #include <chrono>
 #include <cinttypes>
@@ -26,6 +27,7 @@
 #include "rcpputils/scope_exit.hpp"
 
 #include "rcutils/allocator.h"
+#include "rcutils/env.h"
 #include "rcutils/logging.h"
 #include "rcutils/process.h"
 #include "rcutils/snprintf.h"
@@ -34,11 +36,17 @@
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/rotating_file_sink.h"
 
 #include "rcl_logging_interface/rcl_logging_interface.h"
 
 static std::mutex g_logger_mutex;
 static std::shared_ptr<spdlog::logger> g_root_logger = nullptr;
+
+constexpr std::size_t DEFAULT_ROTATING_FILE_SIZE_BYTES = 100 * 1024 * 1024;
+constexpr std::size_t DEFAULT_ROTATING_MAX_NUM_FILES = 5;
+
+using std::size_t;
 
 static spdlog::level::level_enum map_external_log_level_to_library_level(int external_level)
 {
@@ -94,6 +102,78 @@ get_should_use_old_flushing_behavior()
 }
 
 }  // namespace
+
+static std::string get_string_env_var(const char * env_var_name)
+{
+  const char * env_var_value;
+  const char * error_str;
+  error_str = rcutils_get_env(env_var_name, &env_var_value);
+  if (error_str != nullptr) {
+    throw std::runtime_error(
+            std::string(
+              "Failed to get env var '") + env_var_name + "': " + error_str);
+  }
+  return env_var_value;  // Returns empty string for unset or empty env vars
+}
+
+static bool contained_in(
+  const std::vector<std::string> & check_strings,
+  const std::string & value_str)
+{
+  return std::find(check_strings.begin(), check_strings.end(), value_str) != check_strings.end();
+}
+
+static std::string join_quoted(
+  const std::string & sep, const std::string & quote_chars,
+  const std::vector<std::string> & list)
+{
+  if (list.empty()) {
+    return "";
+  }
+
+  std::string joined = quote_chars + *(list.begin()) + quote_chars;
+  std::for_each(
+    list.begin() + 1, list.end(),
+    [&](const auto & entry) {joined += sep + quote_chars + entry + quote_chars;});
+
+  return joined;
+}
+
+static bool get_bool_env_var(const char * env_var_name)
+{
+  std::string value_str = get_string_env_var(env_var_name);
+  std::vector<std::string> true_strings = {"1", "true", "TRUE"};
+  std::vector<std::string> false_strings = {"0", "false", "FALSE", ""};
+
+  if (contained_in(false_strings, value_str)) {
+    return false;
+  } else if (contained_in(true_strings, value_str)) {
+    return true;
+  } else {
+    throw std::runtime_error(
+            std::string(
+              "Unrecognized value for '") + env_var_name + "': '" + value_str + "'. " +
+            "Valid truthy values: " + join_quoted(", ", "'", true_strings) + ". " +
+            "Valid falsy values: " + join_quoted(", ", "'", false_strings) + ". "
+    );
+  }
+}
+
+static size_t get_size_t_env_var(const char * env_var_name, const size_t default_val)
+{
+  std::string value_str = get_string_env_var(env_var_name);
+  if (value_str.empty()) {
+    return default_val;
+  } else {
+    int value = std::stoi(value_str);
+    if (value < 0) {
+      throw std::runtime_error(
+              std::string("Env var must be positive '") + env_var_name + "': '" + value_str + "'. "
+      );
+    }
+    return value;
+  }
+}
 
 rcl_logging_ret_t rcl_logging_external_initialize(
   const char * file_name_prefix,
@@ -194,7 +274,28 @@ rcl_logging_ret_t rcl_logging_external_initialize(
       return RCL_LOGGING_RET_ERROR;
     }
 
-    auto sink = std::make_unique<spdlog::sinks::basic_file_sink_mt>(name_buffer, false);
+    std::unique_ptr<spdlog::sinks::sink> sink;
+
+    try {
+      if (get_bool_env_var("RCL_LOGGING_SPDLOG_ROTATE_FILES") == true) {
+        size_t max_size =
+          get_size_t_env_var(
+          "RCL_LOGGING_SPDLOG_ROTATING_FILE_SIZE_BYTES",
+          DEFAULT_ROTATING_FILE_SIZE_BYTES);
+        size_t max_files =
+          get_size_t_env_var(
+          "RCL_LOGGING_SPDLOG_MAX_NUM_FILES",
+          DEFAULT_ROTATING_MAX_NUM_FILES);
+        sink =
+          std::make_unique<spdlog::sinks::rotating_file_sink_mt>(name_buffer, max_size, max_files);
+      } else {
+        sink = std::make_unique<spdlog::sinks::basic_file_sink_mt>(name_buffer, false);
+      }
+    } catch (const std::runtime_error & error) {
+      RCUTILS_SET_ERROR_MSG(error.what());
+      return RCL_LOGGING_RET_ERROR;
+    }
+
     g_root_logger = std::make_shared<spdlog::logger>("root", std::move(sink));
     if (!should_use_old_flushing_behavior) {
       // in this case we should do the new thing (until config files are supported)
