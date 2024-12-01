@@ -45,7 +45,8 @@ typedef enum
  *   an rcutils_allocator_t rather than an rcl_allocator_t to ensure that the
  *   rcl_logging_* packages don't have a circular dependency back to rcl.
  * \return RCL_LOGGING_RET_OK if initialized successfully.
- * \return RCL_LOGGING_RET_ERROR if an unspecified error occurs.
+ * \return RCL_LOGGING_RET_ERROR if an unspecified error occurs. An rcutils error message will be
+ *   set.
  * \return RCL_LOGGING_RET_CONFIG_FILE_DOESNT_EXIST if a config_file is provided
  *   but the file doesn't exist.
  * \return RCL_LOGGING_RET_CONFIG_FILE_INVALID if a config_file is provided but

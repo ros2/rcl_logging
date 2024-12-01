@@ -135,7 +135,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(
     if (RCL_LOGGING_RET_OK != dir_ret) {
       // We couldn't get the log directory, so get out of here without setting up
       // logging.
-      RCUTILS_SET_ERROR_MSG("Failed to get logging directory");
+      RCUTILS_SET_ERROR_MSG_AND_APPEND_PREV_ERROR("Failed to get logging directory");
       return dir_ret;
     }
     RCPPUTILS_SCOPE_EXIT(
