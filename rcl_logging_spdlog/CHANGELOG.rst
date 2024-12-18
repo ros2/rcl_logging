@@ -2,8 +2,8 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.1 (2024-12-18)
+------------------
 * rcl_logging_interface is only valid path with build environment. (`#122 <https://github.com/ros2/rcl_logging/issues/122>`_) (`#123 <https://github.com/ros2/rcl_logging/issues/123>`_)
   * logging impls need to export dependency for 'rcl_logging_interface'.
   (cherry picked from commit 0724aeb90f5d4efd23a75b1a97a4429ec6911a60)
