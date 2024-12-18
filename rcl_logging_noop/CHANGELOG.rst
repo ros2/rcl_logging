@@ -2,6 +2,14 @@
 Changelog for package rcl_logging_noop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* rcl_logging_interface is only valid path with build environment. (`#122 <https://github.com/ros2/rcl_logging/issues/122>`_) (`#123 <https://github.com/ros2/rcl_logging/issues/123>`_)
+  * logging impls need to export dependency for 'rcl_logging_interface'.
+  (cherry picked from commit 0724aeb90f5d4efd23a75b1a97a4429ec6911a60)
+  Co-authored-by: Tomoya Fujita <Tomoya.Fujita@sony.com>
+* Contributors: mergify[bot]
+
 3.1.0 (2024-03-28)
 ------------------
 
