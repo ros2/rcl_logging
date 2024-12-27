@@ -218,6 +218,7 @@ TEST_F(AllocatorTest, init_failure)
   std::filesystem::path ros_dir = fake_home / ".ros";
   std::fstream(ros_dir.string(), std::ios_base::out).close();
   EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+  rcutils_reset_error();
   ASSERT_TRUE(std::filesystem::remove(ros_dir));
 
   // ...fail to create .ros/log dir
@@ -225,6 +226,7 @@ TEST_F(AllocatorTest, init_failure)
   std::filesystem::path ros_log_dir = ros_dir / "log";
   std::fstream(ros_log_dir.string(), std::ios_base::out).close();
   EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+  rcutils_reset_error();
   ASSERT_TRUE(std::filesystem::remove(ros_log_dir));
   ASSERT_TRUE(std::filesystem::remove(ros_dir));
 
