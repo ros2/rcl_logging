@@ -4,11 +4,7 @@ PROJECT_NAME           = "rcl_logging_noop"
 PROJECT_NUMBER         = master
 PROJECT_BRIEF          = "A library implementation of the rcl_logging interface that does nothing."
 
-# Use these lines to include the generated logging_macro.h (update install path if needed)
-#INPUT                  = README.md ../../../install_isolated/rcutils/include
-#STRIP_FROM_PATH        = /Users/william/ros2_ws/install_isolated/rcutils/include
-# Otherwise just generate for the local (non-generated header files)
-INPUT                  = README.md ./include
+INPUT                  = README.md
 USE_MDFILE_AS_MAINPAGE = README.md
 RECURSIVE              = YES
 OUTPUT_DIRECTORY       = doc_output
