@@ -2,6 +2,11 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.2.4 (2025-11-12)
+------------------
+* Fix cmake deprecation (`#133 <https://github.com/ros2/rcl_logging/issues/133>`_) (`#134 <https://github.com/ros2/rcl_logging/issues/134>`_)
+* Contributors: mergify[bot]
+
 3.2.3 (2025-10-17)
 ------------------
 * Cleanup overwritten warning messages on error. (`#128 <https://github.com/ros2/rcl_logging/issues/128>`_)
