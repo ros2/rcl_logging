@@ -1,0 +1,189 @@
+// Copyright 2024 Open Source Robotics Foundation, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include <filesystem>
+#include <string>
+
+#include "gtest/gtest.h"
+
+#include "rcl_logging_interface/rcl_logging_interface.h"
+
+#include "rcpputils/env.hpp"
+#include "rcpputils/scope_exit.hpp"
+
+#include "rcutils/allocator.h"
+#include "rcutils/error_handling.h"
+#include "rcutils/logging.h"
+
+// Helper class to restore environment variable
+class RestoreEnvVar
+{
+public:
+  explicit RestoreEnvVar(const std::string & name)
+  : name_(name),
+    value_(rcpputils::get_env_var(name.c_str()))
+  {
+  }
+
+  ~RestoreEnvVar()
+  {
+    if (!rcpputils::set_env_var(name_.c_str(), value_.c_str())) {
+      std::cerr << "Failed to restore value of environment variable: " << name_ << std::endl;
+    }
+  }
+
+private:
+  const std::string name_;
+  const std::string value_;
+};
+
+class TestLoggingImplementation : public ::testing::Test
+{
+public:
+  void SetUp() override
+  {
+    allocator = rcutils_get_default_allocator();
+  }
+
+  void TearDown() override
+  {
+    // Clean up any leftover error state
+    if (rcutils_error_is_set()) {
+      rcutils_reset_error();
+    }
+  }
+
+  rcutils_allocator_t allocator;
+};
+
+TEST_F(TestLoggingImplementation, default_implementation)
+{
+  // Without setting RCL_LOGGING_IMPLEMENTATION, should default to rcl_logging_spdlog
+  RestoreEnvVar env_var("RCL_LOGGING_IMPLEMENTATION");
+  ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", ""));
+  ASSERT_TRUE(rcpputils::set_env_var("ROS_LOG_DIR", "/tmp"));
+
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
+}
+
+TEST_F(TestLoggingImplementation, explicit_spdlog)
+{
+  // Explicitly request rcl_logging_spdlog
+  RestoreEnvVar env_var("RCL_LOGGING_IMPLEMENTATION");
+  ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", "rcl_logging_spdlog"));
+  ASSERT_TRUE(rcpputils::set_env_var("ROS_LOG_DIR", "/tmp"));
+
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
+}
+
+TEST_F(TestLoggingImplementation, explicit_noop)
+{
+  // Explicitly request rcl_logging_noop
+  RestoreEnvVar env_var("RCL_LOGGING_IMPLEMENTATION");
+  ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", "rcl_logging_noop"));
+
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
+}
+
+TEST_F(TestLoggingImplementation, invalid_implementation)
+{
+  // Request a non-existent implementation
+  RestoreEnvVar env_var("RCL_LOGGING_IMPLEMENTATION");
+  ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", "nonexistent_impl"));
+
+  EXPECT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+  EXPECT_TRUE(rcutils_error_is_set());
+  rcutils_reset_error();
+}
+
+TEST_F(TestLoggingImplementation, multiple_initialize_same_impl)
+{
+  // Multiple initializations with the same implementation should work
+  RestoreEnvVar env_var("RCL_LOGGING_IMPLEMENTATION");
+  ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", "rcl_logging_noop"));
+
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
+}
+
+TEST_F(TestLoggingImplementation, logging_functions)
+{
+  // Test that we can actually call logging functions
+  RestoreEnvVar env_var("RCL_LOGGING_IMPLEMENTATION");
+  ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", "rcl_logging_noop"));
+
+  ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+
+  // These should not crash
+  rcl_logging_external_log(RCUTILS_LOG_SEVERITY_INFO, "test_logger", "Test message");
+  EXPECT_EQ(
+    RCL_LOGGING_RET_OK,
+    rcl_logging_external_set_logger_level("test_logger", RCUTILS_LOG_SEVERITY_DEBUG));
+
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
+}
+
+TEST_F(TestLoggingImplementation, file_name_prefix)
+{
+  // Test with custom file name prefix
+  RestoreEnvVar env_var("RCL_LOGGING_IMPLEMENTATION");
+  ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", "rcl_logging_spdlog"));
+  ASSERT_TRUE(rcpputils::set_env_var("ROS_LOG_DIR", "/tmp"));
+
+  EXPECT_EQ(
+    RCL_LOGGING_RET_OK,
+    rcl_logging_external_initialize("my_custom_prefix", nullptr, allocator));
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
+}
+
+TEST_F(TestLoggingImplementation, severity_levels)
+{
+  // Test all severity levels
+  RestoreEnvVar env_var("RCL_LOGGING_IMPLEMENTATION");
+  ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", "rcl_logging_noop"));
+
+  ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+
+  const int severity_levels[] = {
+    RCUTILS_LOG_SEVERITY_UNSET,
+    RCUTILS_LOG_SEVERITY_DEBUG,
+    RCUTILS_LOG_SEVERITY_INFO,
+    RCUTILS_LOG_SEVERITY_WARN,
+    RCUTILS_LOG_SEVERITY_ERROR,
+    RCUTILS_LOG_SEVERITY_FATAL,
+  };
+
+  for (int level : severity_levels) {
+    EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_set_logger_level(nullptr, level));
+    rcl_logging_external_log(level, nullptr, "Test message");
+  }
+
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
+}
+
+TEST_F(TestLoggingImplementation, shutdown_without_initialize)
+{
+  // Calling shutdown without initialize should handle gracefully
+  // (might return error or OK depending on implementation)
+  rcl_logging_ret_t ret = rcl_logging_external_shutdown();
+  // Either OK or ERROR is acceptable here
+  EXPECT_TRUE(ret == RCL_LOGGING_RET_OK || ret == RCL_LOGGING_RET_ERROR);
+  if (rcutils_error_is_set()) {
+    rcutils_reset_error();
+  }
+}
