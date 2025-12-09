@@ -1,4 +1,4 @@
-// Copyright 2024 Open Source Robotics Foundation, Inc.
+// Copyright 2025 Sony Group Corporation.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -104,7 +104,6 @@ load_logging_library()
   }
 
   // If we made it here, we couldn't find a logging library to load.
-  // TODO(@fujitatomoya): If we failed to load any libraries up to here, we should try to fetch all of the ones we can find.
   RCUTILS_SET_ERROR_MSG("failed to load any logging implementations");
 
   return nullptr;
@@ -120,7 +119,9 @@ get_logging_library()
 }
 
 void *
-lookup_logging_symbol(std::shared_ptr<rcpputils::SharedLibrary> lib, const std::string & symbol_name)
+lookup_logging_symbol(
+  std::shared_ptr<rcpputils::SharedLibrary> lib,
+  const std::string & symbol_name)
 {
   if (!lib) {
     if (!rcutils_error_is_set()) {
@@ -189,7 +190,7 @@ rcl_logging_external_initialize(
 {
   RCUTILS_LOG_DEBUG_NAMED(
     "rcl_logging_implementation",
-    "rcl_logging_external_initialize called (prefix: %s, config: %s)", 
+    "rcl_logging_external_initialize called (prefix: %s, config: %s)",
     file_name_prefix ? file_name_prefix : "NULL", config_file ? config_file : "NULL");
   CALL_SYMBOL(
     rcl_logging_external_initialize,

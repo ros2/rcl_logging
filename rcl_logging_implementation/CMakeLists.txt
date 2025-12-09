@@ -27,8 +27,15 @@ find_package(rcutils REQUIRED)
 message(STATUS "Building rcl_logging_implementation for dynamic loading")
 
 # Set default logging implementation
-set(DEFAULT_RCL_LOGGING_IMPLEMENTATION "rcl_logging_spdlog" CACHE STRING
-  "Default logging implementation to load if RCL_LOGGING_IMPLEMENTATION is not set")
+# Priority: CMake argument (-D) > Environment variable at build time > Default
+if(DEFINED ENV{DEFAULT_RCL_LOGGING_IMPLEMENTATION})
+  set(DEFAULT_RCL_LOGGING_IMPLEMENTATION "$ENV{DEFAULT_RCL_LOGGING_IMPLEMENTATION}" CACHE STRING
+      "Default logging implementation to load if RCL_LOGGING_IMPLEMENTATION environment variable is not set at runtime")
+else()
+  set(DEFAULT_RCL_LOGGING_IMPLEMENTATION "rcl_logging_spdlog" CACHE STRING
+      "Default logging implementation to load if RCL_LOGGING_IMPLEMENTATION environment variable is not set at runtime")
+endif()
+message(STATUS "Default logging implementation: ${DEFAULT_RCL_LOGGING_IMPLEMENTATION}")
 
 # Create the library
 set(${PROJECT_NAME}_sources
@@ -58,6 +65,10 @@ ament_export_targets(${PROJECT_NAME})
 ament_export_dependencies(rcl_logging_interface rcutils)
 
 if(BUILD_TESTING)
+  # Causes symbols to be exposed for tests to use.
+  target_compile_definitions(${PROJECT_NAME} PRIVATE
+    "RCL_LOGGING_IMPLEMENTATION_DEFAULT_VISIBILITY=RCL_LOGGING_IMPLEMENTATION_PUBLIC")
+
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 

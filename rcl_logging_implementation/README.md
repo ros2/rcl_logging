@@ -66,7 +66,12 @@ export RCL_LOGGING_IMPLEMENTATION=my_custom_logging
 ros2 run my_package my_node
 ```
 
-If not set, the implementation defaults to `rcl_logging_spdlog`.
+If not set, the implementation defaults to `rcl_logging_spdlog` that you can also set via `DEFAULT_RCL_LOGGING_IMPLEMENTATION`.
+
+```bash
+# Set the default to noop (still allows runtime override via environment variable)
+colcon build --packages-select rcl_logging_implementation --cmake-args -DDEFAULT_RCL_LOGGING_IMPLEMENTATION=rcl_logging_noop
+```
 
 ### Build-Time Configuration (Static Linking)
 

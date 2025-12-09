@@ -1,4 +1,4 @@
-// Copyright 2024 Open Source Robotics Foundation, Inc.
+// Copyright 2025 Sony Group Corporation.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RCL_LOGGING_IMPLEMENTATION__FUNCTIONS_HPP_
-#define RCL_LOGGING_IMPLEMENTATION__FUNCTIONS_HPP_
+#ifndef FUNCTIONS_HPP_
+#define FUNCTIONS_HPP_
 
 #include <memory>
 #include <string>
@@ -32,4 +32,4 @@ void * get_logging_symbol(const char * symbol_name);
 
 void unload_logging_library();
 
-#endif  // RCL_LOGGING_IMPLEMENTATION__FUNCTIONS_HPP_
+#endif  // FUNCTIONS_HPP_

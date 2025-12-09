@@ -1,4 +1,4 @@
-// Copyright 2025 Open Source Robotics Foundation, Inc.
+// Copyright 2025 Sony Group Corporation.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RCL_LOGGING_IMPLEMENTATION__VISIBILITY_CONTROL_H_
-#define RCL_LOGGING_IMPLEMENTATION__VISIBILITY_CONTROL_H_
+#ifndef VISIBILITY_CONTROL_H_
+#define VISIBILITY_CONTROL_H_
 
 #ifdef __cplusplus
 extern "C"
@@ -59,4 +59,4 @@ extern "C"
 }
 #endif
 
-#endif  // RCL_LOGGING_IMPLEMENTATION__VISIBILITY_CONTROL_H_
+#endif  // VISIBILITY_CONTROL_H_

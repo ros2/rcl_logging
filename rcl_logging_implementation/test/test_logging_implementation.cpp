@@ -1,4 +1,4 @@
-// Copyright 2024 Open Source Robotics Foundation, Inc.
+// Copyright 2025 Sony Group Corporation.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <chrono>
 #include <filesystem>
 #include <string>
 
@@ -54,6 +55,13 @@ public:
   void SetUp() override
   {
     allocator = rcutils_get_default_allocator();
+
+    // Create a unique temporary directory for this test
+    temp_log_dir = create_temp_directory();
+
+    // Set ROS_LOG_DIR to the temporary directory
+    ros_log_dir_restore = std::make_unique<RestoreEnvVar>("ROS_LOG_DIR");
+    ASSERT_TRUE(rcpputils::set_env_var("ROS_LOG_DIR", temp_log_dir.c_str()));
   }
 
   void TearDown() override
@@ -62,9 +70,38 @@ public:
     if (rcutils_error_is_set()) {
       rcutils_reset_error();
     }
+
+    // Restore ROS_LOG_DIR environment variable
+    ros_log_dir_restore.reset();
+
+    // Remove the temporary directory and its contents
+    if (!temp_log_dir.empty() && std::filesystem::exists(temp_log_dir)) {
+      std::error_code ec;
+      std::filesystem::remove_all(temp_log_dir, ec);
+      if (ec) {
+        std::cerr << "Failed to remove temporary directory: " << temp_log_dir
+                  << " - " << ec.message() << std::endl;
+      }
+    }
+  }
+
+  std::string create_temp_directory()
+  {
+    // Use timestamp-based directory name for cross-platform compatibility
+    auto now = std::chrono::system_clock::now();
+    auto timestamp = std::chrono::duration_cast<std::chrono::microseconds>(
+      now.time_since_epoch()).count();
+
+    std::string temp_dir =
+      std::filesystem::temp_directory_path().string() + "/rcl_logging_test_" +
+      std::to_string(timestamp);
+    std::filesystem::create_directories(temp_dir);
+    return temp_dir;
   }
 
   rcutils_allocator_t allocator;
+  std::string temp_log_dir;
+  std::unique_ptr<RestoreEnvVar> ros_log_dir_restore;
 };
 
 TEST_F(TestLoggingImplementation, default_implementation)
@@ -72,7 +109,6 @@ TEST_F(TestLoggingImplementation, default_implementation)
   // Without setting RCL_LOGGING_IMPLEMENTATION, should default to rcl_logging_spdlog
   RestoreEnvVar env_var("RCL_LOGGING_IMPLEMENTATION");
   ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", ""));
-  ASSERT_TRUE(rcpputils::set_env_var("ROS_LOG_DIR", "/tmp"));
 
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
@@ -83,7 +119,6 @@ TEST_F(TestLoggingImplementation, explicit_spdlog)
   // Explicitly request rcl_logging_spdlog
   RestoreEnvVar env_var("RCL_LOGGING_IMPLEMENTATION");
   ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", "rcl_logging_spdlog"));
-  ASSERT_TRUE(rcpputils::set_env_var("ROS_LOG_DIR", "/tmp"));
 
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
@@ -114,7 +149,7 @@ TEST_F(TestLoggingImplementation, multiple_initialize_same_impl)
 {
   // Multiple initializations with the same implementation should work
   RestoreEnvVar env_var("RCL_LOGGING_IMPLEMENTATION");
-  ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", "rcl_logging_noop"));
+  ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", "rcl_logging_spdlog"));
 
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
   EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
@@ -125,7 +160,7 @@ TEST_F(TestLoggingImplementation, logging_functions)
 {
   // Test that we can actually call logging functions
   RestoreEnvVar env_var("RCL_LOGGING_IMPLEMENTATION");
-  ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", "rcl_logging_noop"));
+  ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", "rcl_logging_spdlog"));
 
   ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
 
@@ -143,7 +178,6 @@ TEST_F(TestLoggingImplementation, file_name_prefix)
   // Test with custom file name prefix
   RestoreEnvVar env_var("RCL_LOGGING_IMPLEMENTATION");
   ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", "rcl_logging_spdlog"));
-  ASSERT_TRUE(rcpputils::set_env_var("ROS_LOG_DIR", "/tmp"));
 
   EXPECT_EQ(
     RCL_LOGGING_RET_OK,
@@ -155,7 +189,7 @@ TEST_F(TestLoggingImplementation, severity_levels)
 {
   // Test all severity levels
   RestoreEnvVar env_var("RCL_LOGGING_IMPLEMENTATION");
-  ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", "rcl_logging_noop"));
+  ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", "rcl_logging_spdlog"));
 
   ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
 

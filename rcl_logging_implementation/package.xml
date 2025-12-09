@@ -9,11 +9,11 @@
     logging implementation (e.g., spdlog, noop, or custom implementations).
   </description>
 
-  <maintainer email="tomoya.fujita825@github.com">Tomoya Fujita</maintainer>
+  <maintainer email="tomoya.fujita825@gmail.com">Tomoya Fujita</maintainer>
 
   <license>Apache License 2.0</license>
 
-  <author email="tomoya.fujita825@github.com">Tomoya Fujita</author>
+  <author email="tomoya.fujita825@gmail.com">Tomoya Fujita</author>
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
 
