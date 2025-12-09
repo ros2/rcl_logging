@@ -47,6 +47,10 @@ add_library(${PROJECT_NAME} ${${PROJECT_NAME}_sources})
 target_compile_definitions(${PROJECT_NAME} PRIVATE
   "DEFAULT_RCL_LOGGING_IMPLEMENTATION=${DEFAULT_RCL_LOGGING_IMPLEMENTATION}")
 
+# Causes the visibility macros to use dllexport rather than dllimport,
+# which is appropriate when building the dll but not consuming it.
+target_compile_definitions(${PROJECT_NAME} PRIVATE "RCL_LOGGING_IMPLEMENTATION_BUILDING_DLL")
+
 target_link_libraries(${PROJECT_NAME} PUBLIC
   rcl_logging_interface::rcl_logging_interface
   rcutils::rcutils)

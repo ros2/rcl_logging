@@ -232,6 +232,10 @@ rcl_logging_external_log(int severity, const char * name, const char * msg)
   }
   if (!symbol_rcl_logging_external_log) {
     // If log is called before init, just return silently
+    RCUTILS_LOG_DEBUG_NAMED(
+      "rcl_logging_implementation",
+      "rcl_logging_external_log called before init; message dropped (name: %s, msg: %s)",
+      name ? name : "NULL", msg ? msg : "NULL");
     return;
   }
 

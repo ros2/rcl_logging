@@ -215,8 +215,7 @@ TEST_F(TestLoggingImplementation, shutdown_without_initialize)
   // Calling shutdown without initialize should handle gracefully
   // (might return error or OK depending on implementation)
   rcl_logging_ret_t ret = rcl_logging_external_shutdown();
-  // Either OK or ERROR is acceptable here
-  EXPECT_TRUE(ret == RCL_LOGGING_RET_OK || ret == RCL_LOGGING_RET_ERROR);
+  EXPECT_EQ(RCL_LOGGING_RET_OK, ret);
   if (rcutils_error_is_set()) {
     rcutils_reset_error();
   }

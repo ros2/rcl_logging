@@ -37,7 +37,7 @@ rcl_logging_implementation (this package) ← Dynamic loading happens here
 When `rcl` is built **with** `RCL_LOGGING_IMPLEMENTATION=rcl_logging_spdlog`, it bypasses this package entirely:
 
 ```
-rcl Application
+rcl application
     ↓
 rcl (core library)
     ↓
