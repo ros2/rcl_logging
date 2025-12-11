@@ -35,7 +35,19 @@
 #define DEFAULT_RCL_LOGGING_IMPLEMENTATION rcl_logging_spdlog
 #endif
 
+// Function pointer types
+typedef rcl_logging_ret_t (* rcl_logging_initialize_func_t)(
+  const char *, const char *, rcutils_allocator_t);
+typedef rcl_logging_ret_t (* rcl_logging_shutdown_func_t)(void);
+typedef void (* rcl_logging_log_func_t)(int, const char *, const char *);
+typedef rcl_logging_ret_t (* rcl_logging_set_logger_level_func_t)(const char *, int);
+
+// Global state
 static std::shared_ptr<rcpputils::SharedLibrary> g_logging_lib = nullptr;
+static rcl_logging_initialize_func_t g_initialize_func = nullptr;
+static rcl_logging_shutdown_func_t g_shutdown_func = nullptr;
+static rcl_logging_log_func_t g_log_func = nullptr;
+static rcl_logging_set_logger_level_func_t g_set_logger_level_func = nullptr;
 
 static std::shared_ptr<rcpputils::SharedLibrary>
 attempt_to_load_one_logging_library(const std::string & library)
@@ -66,67 +78,13 @@ attempt_to_load_one_logging_library(const std::string & library)
   return ret;
 }
 
-std::shared_ptr<rcpputils::SharedLibrary>
-load_logging_library()
-{
-  // The logic to pick the logging library to load goes as follows:
-  //
-  // 1. If the user specified the library to use via the RCL_LOGGING_IMPLEMENTATION
-  //    environment variable, try to load only that library.
-  // 2. Otherwise, try to load the default logging implementation.
-
-  std::string env_var;
-  try {
-    env_var = rcpputils::get_env_var("RCL_LOGGING_IMPLEMENTATION");
-  } catch (const std::exception & e) {
-    RCUTILS_SET_ERROR_MSG_WITH_FORMAT_STRING(
-      "failed to fetch RCL_LOGGING_IMPLEMENTATION "
-      "from environment due to %s", e.what());
-    return nullptr;
-  }
-
-  // User specified a logging implementation, attempt to load that one and only that one
-  if (!env_var.empty()) {
-    return attempt_to_load_one_logging_library(env_var);
-  }
-
-  RCUTILS_LOG_DEBUG_NAMED(
-    "rcl_logging_implementation",
-    "RCL_LOGGING_IMPLEMENTATION not set, using default: %s",
-    STRINGIFY(DEFAULT_RCL_LOGGING_IMPLEMENTATION));
-
-  // User didn't specify, so load the default logging implementation
-  std::shared_ptr<rcpputils::SharedLibrary> ret;
-
-  ret = attempt_to_load_one_logging_library(STRINGIFY(DEFAULT_RCL_LOGGING_IMPLEMENTATION));
-  if (ret != nullptr) {
-    return ret;
-  }
-
-  // If we made it here, we couldn't find a logging library to load.
-  RCUTILS_SET_ERROR_MSG("failed to load any logging implementations");
-
-  return nullptr;
-}
-
-std::shared_ptr<rcpputils::SharedLibrary>
-get_logging_library()
-{
-  if (!g_logging_lib) {
-    g_logging_lib = load_logging_library();
-  }
-  return g_logging_lib;
-}
-
-void *
-lookup_logging_symbol(
+static void *
+lookup_symbol(
   std::shared_ptr<rcpputils::SharedLibrary> lib,
   const std::string & symbol_name)
 {
   if (!lib) {
-    if (!rcutils_error_is_set()) {
-      RCUTILS_SET_ERROR_MSG("no shared library to lookup");
-    }  // else assume library loading failed
+    RCUTILS_SET_ERROR_MSG("no shared library to lookup");
     return nullptr;
   }
 
@@ -146,41 +104,95 @@ lookup_logging_symbol(
   return lib->get_symbol(symbol_name);
 }
 
-void *
-get_logging_symbol(const char * symbol_name)
+bool
+load_logging_library()
 {
+  // Already loaded
+  if (g_logging_lib) {
+    return true;
+  }
+
+  // The logic to pick the logging library to load goes as follows:
+  //
+  // 1. If the user specified the library to use via the RCL_LOGGING_IMPLEMENTATION
+  //    environment variable, try to load only that library.
+  // 2. Otherwise, try to load the default logging implementation.
+
+  std::string env_var;
   try {
-    return lookup_logging_symbol(get_logging_library(), symbol_name);
+    env_var = rcpputils::get_env_var("RCL_LOGGING_IMPLEMENTATION");
   } catch (const std::exception & e) {
     RCUTILS_SET_ERROR_MSG_WITH_FORMAT_STRING(
-      "failed to get symbol '%s' due to %s",
-      symbol_name, e.what());
-    return nullptr;
+      "failed to fetch RCL_LOGGING_IMPLEMENTATION "
+      "from environment due to %s", e.what());
+    return false;
   }
+
+  // User specified a logging implementation, attempt to load that one and only that one
+  if (!env_var.empty()) {
+    g_logging_lib = attempt_to_load_one_logging_library(env_var);
+  } else {
+    RCUTILS_LOG_DEBUG_NAMED(
+      "rcl_logging_implementation",
+      "RCL_LOGGING_IMPLEMENTATION not set, using default: %s",
+      STRINGIFY(DEFAULT_RCL_LOGGING_IMPLEMENTATION));
+
+    // User didn't specify, so load the default logging implementation
+    g_logging_lib =
+      attempt_to_load_one_logging_library(STRINGIFY(DEFAULT_RCL_LOGGING_IMPLEMENTATION));
+  }
+
+  if (!g_logging_lib) {
+    RCUTILS_SET_ERROR_MSG("failed to load any logging implementations");
+    return false;
+  }
+
+  // Register all function pointers
+  g_initialize_func = reinterpret_cast<rcl_logging_initialize_func_t>(
+    lookup_symbol(g_logging_lib, "rcl_logging_external_initialize"));
+  if (!g_initialize_func) {
+    g_logging_lib.reset();
+    return false;
+  }
+
+  g_shutdown_func = reinterpret_cast<rcl_logging_shutdown_func_t>(
+    lookup_symbol(g_logging_lib, "rcl_logging_external_shutdown"));
+  if (!g_shutdown_func) {
+    g_logging_lib.reset();
+    g_initialize_func = nullptr;
+    return false;
+  }
+
+  g_log_func = reinterpret_cast<rcl_logging_log_func_t>(
+    lookup_symbol(g_logging_lib, "rcl_logging_external_log"));
+  if (!g_log_func) {
+    g_logging_lib.reset();
+    g_initialize_func = nullptr;
+    g_shutdown_func = nullptr;
+    return false;
+  }
+
+  g_set_logger_level_func = reinterpret_cast<rcl_logging_set_logger_level_func_t>(
+    lookup_symbol(g_logging_lib, "rcl_logging_external_set_logger_level"));
+  if (!g_set_logger_level_func) {
+    g_logging_lib.reset();
+    g_initialize_func = nullptr;
+    g_shutdown_func = nullptr;
+    g_log_func = nullptr;
+    return false;
+  }
+
+  RCUTILS_LOG_DEBUG_NAMED(
+    "rcl_logging_implementation",
+    "Successfully registered all function pointers from logging library");
+
+  return true;
 }
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
-#define CALL_SYMBOL(symbol_name, ReturnType, error_value, ...) \
-  if (!symbol_ ## symbol_name) { \
-    symbol_ ## symbol_name = get_logging_symbol(#symbol_name); \
-  } \
-  if (!symbol_ ## symbol_name) { \
-    /* error message set by get_logging_symbol() */ \
-    return error_value; \
-  } \
-  typedef ReturnType (* FunctionSignature)(__VA_ARGS__); \
-  FunctionSignature func = reinterpret_cast<FunctionSignature>(symbol_ ## symbol_name); \
-  return func
-
-// Symbol pointers for lazy loading
-void * symbol_rcl_logging_external_initialize = nullptr;
-void * symbol_rcl_logging_external_shutdown = nullptr;
-void * symbol_rcl_logging_external_log = nullptr;
-void * symbol_rcl_logging_external_set_logger_level = nullptr;
 
 rcl_logging_ret_t
 rcl_logging_external_initialize(
@@ -192,11 +204,14 @@ rcl_logging_external_initialize(
     "rcl_logging_implementation",
     "rcl_logging_external_initialize called (prefix: %s, config: %s)",
     file_name_prefix ? file_name_prefix : "NULL", config_file ? config_file : "NULL");
-  CALL_SYMBOL(
-    rcl_logging_external_initialize,
-    rcl_logging_ret_t,
-    RCL_LOGGING_RET_ERROR,
-    const char *, const char *, rcutils_allocator_t)(file_name_prefix, config_file, allocator);
+
+  // Load library and register all function pointers
+  if (!load_logging_library()) {
+    // error message already set by load_logging_library()
+    return RCL_LOGGING_RET_ERROR;
+  }
+
+  return g_initialize_func(file_name_prefix, config_file, allocator);
 }
 
 rcl_logging_ret_t
@@ -205,18 +220,13 @@ rcl_logging_external_shutdown(void)
   RCUTILS_LOG_DEBUG_NAMED(
     "rcl_logging_implementation",
     "rcl_logging_external_shutdown called");
-  if (!symbol_rcl_logging_external_shutdown) {
-    symbol_rcl_logging_external_shutdown = get_logging_symbol("rcl_logging_external_shutdown");
-  }
-  if (!symbol_rcl_logging_external_shutdown) {
+
+  if (!g_shutdown_func) {
     // If shutdown is called before init, it's OK to just return success
     return RCL_LOGGING_RET_OK;
   }
 
-  typedef rcl_logging_ret_t (* FunctionSignature)(void);
-  FunctionSignature func = reinterpret_cast<FunctionSignature>(
-    symbol_rcl_logging_external_shutdown);
-  rcl_logging_ret_t ret = func();
+  rcl_logging_ret_t ret = g_shutdown_func();
 
   // Unload the library after successful shutdown
   unload_logging_library();
@@ -227,31 +237,23 @@ rcl_logging_external_shutdown(void)
 void
 rcl_logging_external_log(int severity, const char * name, const char * msg)
 {
-  if (!symbol_rcl_logging_external_log) {
-    symbol_rcl_logging_external_log = get_logging_symbol("rcl_logging_external_log");
-  }
-  if (!symbol_rcl_logging_external_log) {
+  if (!g_log_func) {
     // If log is called before init, just return silently
-    RCUTILS_LOG_DEBUG_NAMED(
-      "rcl_logging_implementation",
-      "rcl_logging_external_log called before init; message dropped (name: %s, msg: %s)",
-      name ? name : "NULL", msg ? msg : "NULL");
     return;
   }
 
-  typedef void (* FunctionSignature)(int, const char *, const char *);
-  FunctionSignature func = reinterpret_cast<FunctionSignature>(symbol_rcl_logging_external_log);
-  func(severity, name, msg);
+  g_log_func(severity, name, msg);
 }
 
 rcl_logging_ret_t
 rcl_logging_external_set_logger_level(const char * name, int level)
 {
-  CALL_SYMBOL(
-    rcl_logging_external_set_logger_level,
-    rcl_logging_ret_t,
-    RCL_LOGGING_RET_ERROR,
-    const char *, int)(name, level);
+  if (!g_set_logger_level_func) {
+    RCUTILS_SET_ERROR_MSG("logging library not initialized");
+    return RCL_LOGGING_RET_ERROR;
+  }
+
+  return g_set_logger_level_func(name, level);
 }
 
 #ifdef __cplusplus
@@ -262,9 +264,9 @@ void
 unload_logging_library()
 {
   RCUTILS_LOG_DEBUG_NAMED("rcl_logging_implementation", "Unloading logging library");
-  symbol_rcl_logging_external_initialize = nullptr;
-  symbol_rcl_logging_external_shutdown = nullptr;
-  symbol_rcl_logging_external_log = nullptr;
-  symbol_rcl_logging_external_set_logger_level = nullptr;
+  g_initialize_func = nullptr;
+  g_shutdown_func = nullptr;
+  g_log_func = nullptr;
+  g_set_logger_level_func = nullptr;
   g_logging_lib.reset();
 }
