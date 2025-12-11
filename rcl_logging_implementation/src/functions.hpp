@@ -20,16 +20,23 @@
 
 #include "rcpputils/shared_library.hpp"
 
+#include "./visibility_control.h"
+
+RCL_LOGGING_IMPLEMENTATION_DEFAULT_VISIBILITY
 std::shared_ptr<rcpputils::SharedLibrary> load_logging_library();
 
+RCL_LOGGING_IMPLEMENTATION_DEFAULT_VISIBILITY
 std::shared_ptr<rcpputils::SharedLibrary> get_logging_library();
 
+RCL_LOGGING_IMPLEMENTATION_DEFAULT_VISIBILITY
 void * lookup_logging_symbol(
   std::shared_ptr<rcpputils::SharedLibrary> lib,
   const std::string & symbol_name);
 
+RCL_LOGGING_IMPLEMENTATION_DEFAULT_VISIBILITY
 void * get_logging_symbol(const char * symbol_name);
 
+RCL_LOGGING_IMPLEMENTATION_DEFAULT_VISIBILITY
 void unload_logging_library();
 
 #endif  // FUNCTIONS_HPP_
