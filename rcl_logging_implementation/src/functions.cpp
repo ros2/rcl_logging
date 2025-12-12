@@ -151,35 +151,25 @@ load_logging_library()
   g_initialize_func = reinterpret_cast<rcl_logging_initialize_func_t>(
     lookup_symbol(g_logging_lib, "rcl_logging_external_initialize"));
   if (!g_initialize_func) {
-    g_logging_lib.reset();
-    return false;
+    goto cleanup;
   }
 
   g_shutdown_func = reinterpret_cast<rcl_logging_shutdown_func_t>(
     lookup_symbol(g_logging_lib, "rcl_logging_external_shutdown"));
   if (!g_shutdown_func) {
-    g_logging_lib.reset();
-    g_initialize_func = nullptr;
-    return false;
+    goto cleanup;
   }
 
   g_log_func = reinterpret_cast<rcl_logging_log_func_t>(
     lookup_symbol(g_logging_lib, "rcl_logging_external_log"));
   if (!g_log_func) {
-    g_logging_lib.reset();
-    g_initialize_func = nullptr;
-    g_shutdown_func = nullptr;
-    return false;
+    goto cleanup;
   }
 
   g_set_logger_level_func = reinterpret_cast<rcl_logging_set_logger_level_func_t>(
     lookup_symbol(g_logging_lib, "rcl_logging_external_set_logger_level"));
   if (!g_set_logger_level_func) {
-    g_logging_lib.reset();
-    g_initialize_func = nullptr;
-    g_shutdown_func = nullptr;
-    g_log_func = nullptr;
-    return false;
+    goto cleanup;
   }
 
   RCUTILS_LOG_DEBUG_NAMED(
@@ -187,6 +177,14 @@ load_logging_library()
     "Successfully registered all function pointers from logging library");
 
   return true;
+
+cleanup:
+  g_logging_lib.reset();
+  g_initialize_func = nullptr;
+  g_shutdown_func = nullptr;
+  g_log_func = nullptr;
+  g_set_logger_level_func = nullptr;
+  return false;
 }
 
 #ifdef __cplusplus
