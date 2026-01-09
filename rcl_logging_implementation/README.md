@@ -44,7 +44,7 @@ rcl (core library)
 rcl_logging_spdlog ← Direct link, no abstraction layer
 ```
 
-See more details for basic design: https://docs.google.com/document/d/1HLXqzbx7AeSpZgqksyUMM_9zDwWLrSvrIRt8rN-FoyE/edit?tab=t.0
+See more details for [basic design](./doc/basic_design.md).
 
 ## Usage
 
