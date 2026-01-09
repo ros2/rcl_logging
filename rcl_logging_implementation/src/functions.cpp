@@ -21,6 +21,7 @@
 #include "rcl_logging_interface/rcl_logging_interface.h"
 
 #include "rcpputils/env.hpp"
+#include "rcpputils/scope_exit.hpp"
 #include "rcpputils/shared_library.hpp"
 
 #include "rcutils/allocator.h"
@@ -147,44 +148,50 @@ load_logging_library()
     return false;
   }
 
+  // Set up cleanup handler in case of failure
+  bool success = false;
+  RCPPUTILS_SCOPE_EXIT(
+  {
+    if (!success) {
+      g_logging_lib.reset();
+      g_initialize_func = nullptr;
+      g_shutdown_func = nullptr;
+      g_log_func = nullptr;
+      g_set_logger_level_func = nullptr;
+    }
+  });
+
   // Register all function pointers
   g_initialize_func = reinterpret_cast<rcl_logging_initialize_func_t>(
     lookup_symbol(g_logging_lib, "rcl_logging_external_initialize"));
   if (!g_initialize_func) {
-    goto cleanup;
+    return false;
   }
 
   g_shutdown_func = reinterpret_cast<rcl_logging_shutdown_func_t>(
     lookup_symbol(g_logging_lib, "rcl_logging_external_shutdown"));
   if (!g_shutdown_func) {
-    goto cleanup;
+    return false;
   }
 
   g_log_func = reinterpret_cast<rcl_logging_log_func_t>(
     lookup_symbol(g_logging_lib, "rcl_logging_external_log"));
   if (!g_log_func) {
-    goto cleanup;
+    return false;
   }
 
   g_set_logger_level_func = reinterpret_cast<rcl_logging_set_logger_level_func_t>(
     lookup_symbol(g_logging_lib, "rcl_logging_external_set_logger_level"));
   if (!g_set_logger_level_func) {
-    goto cleanup;
+    return false;
   }
 
   RCUTILS_LOG_DEBUG_NAMED(
     "rcl_logging_implementation",
     "Successfully registered all function pointers from logging library");
 
+  success = true;
   return true;
-
-cleanup:
-  g_logging_lib.reset();
-  g_initialize_func = nullptr;
-  g_shutdown_func = nullptr;
-  g_log_func = nullptr;
-  g_set_logger_level_func = nullptr;
-  return false;
 }
 
 #ifdef __cplusplus
@@ -201,7 +208,8 @@ rcl_logging_external_initialize(
   RCUTILS_LOG_DEBUG_NAMED(
     "rcl_logging_implementation",
     "rcl_logging_external_initialize called (prefix: %s, config: %s)",
-    file_name_prefix ? file_name_prefix : "NULL", config_file ? config_file : "NULL");
+    NULL != file_name_prefix ? file_name_prefix : "NULL",
+    NULL != config_file ? config_file : "NULL");
 
   // Load library and register all function pointers
   if (!load_logging_library()) {
