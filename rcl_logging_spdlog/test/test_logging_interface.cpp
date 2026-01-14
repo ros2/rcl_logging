@@ -16,7 +16,7 @@
 #include <fstream>
 #include <string>
 
-#include "gtest/gtest.h"
+#include "gmock/gmock.h"
 
 #include "rcpputils/filesystem_helper.hpp"
 #include "rcpputils/env.hpp"
@@ -104,6 +104,92 @@ TEST_F(LoggingTest, init_failure)
   ASSERT_TRUE(rcpputils::fs::remove(ros_dir));
 
   ASSERT_TRUE(rcpputils::fs::remove(fake_home));
+}
+
+TEST_F(LoggingTest, init_old_flushing_behavior)
+{
+  RestoreEnvVar env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR");
+  rcpputils::set_env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR", "1");
+
+  ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, allocator));
+
+  std::stringstream expected_log;
+  for (int level : logger_levels) {
+    EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_set_logger_level(nullptr, level));
+
+    for (int severity : logger_levels) {
+      std::stringstream ss;
+      ss << "Message of severity " << severity << " at level " << level;
+      rcl_logging_external_log(severity, nullptr, ss.str().c_str());
+
+      if (severity >= level) {
+        expected_log << ss.str() << std::endl;
+      } else if (severity == 0 && level == 10) {
+        // This is a special case - not sure what the right behavior is
+        expected_log << ss.str() << std::endl;
+      }
+    }
+  }
+
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
+
+  std::string log_file_path = find_single_log().string();
+  std::ifstream log_file(log_file_path);
+  std::stringstream actual_log;
+  actual_log << log_file.rdbuf();
+  EXPECT_EQ(
+    expected_log.str(),
+    actual_log.str()) << "Unexpected log contents in " << log_file_path;
+}
+
+TEST_F(LoggingTest, init_explicit_new_flush_behavior)
+{
+  RestoreEnvVar env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR");
+  rcpputils::set_env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR", "0");
+
+  ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, allocator));
+
+  std::stringstream expected_log;
+  for (int level : logger_levels) {
+    EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_set_logger_level(nullptr, level));
+
+    for (int severity : logger_levels) {
+      std::stringstream ss;
+      ss << "Message of severity " << severity << " at level " << level;
+      rcl_logging_external_log(severity, nullptr, ss.str().c_str());
+
+      if (severity >= level) {
+        expected_log << ss.str() << std::endl;
+      } else if (severity == 0 && level == 10) {
+        // This is a special case - not sure what the right behavior is
+        expected_log << ss.str() << std::endl;
+      }
+    }
+  }
+
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
+
+  std::string log_file_path = find_single_log().string();
+  std::ifstream log_file(log_file_path);
+  std::stringstream actual_log;
+  actual_log << log_file.rdbuf();
+  EXPECT_EQ(
+    expected_log.str(),
+    actual_log.str()) << "Unexpected log contents in " << log_file_path;
+}
+
+TEST_F(LoggingTest, init_invalid_flush_setting)
+{
+  RestoreEnvVar env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR");
+  rcpputils::set_env_var("RCL_LOGGING_SPDLOG_EXPERIMENTAL_OLD_FLUSHING_BEHAVIOR", "invalid");
+
+  ASSERT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, allocator));
+  std::string error_state_str = rcutils_get_error_string().str;
+  using ::testing::HasSubstr;
+  ASSERT_THAT(
+    error_state_str,
+    HasSubstr("unrecognized value:"));
+  rcutils_reset_error();
 }
 
 TEST_F(LoggingTest, full_cycle)
