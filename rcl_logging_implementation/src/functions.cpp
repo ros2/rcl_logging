@@ -14,7 +14,10 @@
 
 #include "functions.hpp"
 
+#include <atomic>
+#include <cstdlib>
 #include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 
@@ -49,6 +52,7 @@ static rcl_logging_initialize_func_t g_initialize_func = nullptr;
 static rcl_logging_shutdown_func_t g_shutdown_func = nullptr;
 static rcl_logging_log_func_t g_log_func = nullptr;
 static rcl_logging_set_logger_level_func_t g_set_logger_level_func = nullptr;
+static std::once_flag g_atexit_once_flag;
 
 static std::shared_ptr<rcpputils::SharedLibrary>
 attempt_to_load_one_logging_library(const std::string & library)
@@ -190,6 +194,13 @@ load_logging_library()
     "rcl_logging_implementation",
     "Successfully registered all function pointers from logging library");
 
+  // Register atexit handler to unload library at process exit
+  // This avoids race conditions during shutdown while ensuring cleanup
+  // std::call_once guarantees the handler is registered exactly once
+  std::call_once(
+    g_atexit_once_flag, []() {std::atexit(unload_logging_library);}
+  );
+
   success = true;
   return true;
 }
@@ -234,8 +245,10 @@ rcl_logging_external_shutdown(void)
 
   rcl_logging_ret_t ret = g_shutdown_func();
 
-  // Unload the library after successful shutdown
-  unload_logging_library();
+  // Note: We intentionally do NOT unload the library here to avoid race conditions.
+  // The library will be unloaded at process exit via the registered atexit handler.
+  // This ensures that function pointers remain valid if any thread is still logging.
+  // With this approach, it does not have to generate the mutex overhead.
 
   return ret;
 }
@@ -275,4 +288,17 @@ unload_logging_library()
   g_log_func = nullptr;
   g_set_logger_level_func = nullptr;
   g_logging_lib.reset();
+}
+
+void
+force_unload_logging_library()
+{
+  // Call the regular unload function
+  unload_logging_library();
+  // Reset the once_flag to allow re-registration of atexit handler
+  // This is safe in test scenarios but should NOT be used in production
+  // Note: std::once_flag doesn't have a standard reset method, so we use placement new
+  // to reconstruct it in-place, which is a well-known pattern for testing
+  g_atexit_once_flag.~once_flag();
+  new (&g_atexit_once_flag) std::once_flag();
 }

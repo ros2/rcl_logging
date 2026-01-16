@@ -28,4 +28,9 @@ bool load_logging_library();
 RCL_LOGGING_IMPLEMENTATION_DEFAULT_VISIBILITY
 void unload_logging_library();
 
+// Test-only function to force unload the library and reset all state
+// This allows tests to load different implementations in the same process
+RCL_LOGGING_IMPLEMENTATION_DEFAULT_VISIBILITY
+void force_unload_logging_library();
+
 #endif  // FUNCTIONS_HPP_

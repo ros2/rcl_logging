@@ -20,6 +20,8 @@
 
 #include "rcl_logging_interface/rcl_logging_interface.h"
 
+#include "../src/functions.hpp"
+
 #include "rcpputils/env.hpp"
 #include "rcpputils/scope_exit.hpp"
 
@@ -66,6 +68,9 @@ public:
 
   void TearDown() override
   {
+    // Force unload the logging library to allow tests to load different implementations
+    force_unload_logging_library();
+
     // Clean up any leftover error state
     if (rcutils_error_is_set()) {
       rcutils_reset_error();
