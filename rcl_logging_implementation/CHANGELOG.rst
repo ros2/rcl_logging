@@ -2,8 +2,8 @@
 Changelog for package rcl_logging_implementation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.4.0 (2026-01-28)
+------------------
 * update rcl_logging_implementation architecture diagram. (`#137 <https://github.com/ros2/rcl_logging/issues/137>`_)
 * rcl logging implementation (`#135 <https://github.com/ros2/rcl_logging/issues/135>`_)
   * 1st draft bring-up for rcl_logging_implementation package.
