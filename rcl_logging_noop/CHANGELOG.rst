@@ -2,6 +2,9 @@
 Changelog for package rcl_logging_noop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.4.0 (2026-01-28)
+------------------
+
 3.3.2 (2025-11-12)
 ------------------
 * Fix cmake deprecation (`#133 <https://github.com/ros2/rcl_logging/issues/133>`_)
