@@ -93,6 +93,55 @@ get_should_use_old_flushing_behavior()
   }
 }
 
+/// \brief Get the flush period in seconds from environment variable.
+/// \return The flush period in seconds. Returns 5 (default) if not set.
+///         Returns 0 for immediate flushing on every log.
+///         Throws std::runtime_error for invalid values.
+RCL_LOGGING_INTERFACE_LOCAL
+int
+get_flush_period_seconds()
+{
+  const char * env_var_name = "RCL_LOGGING_SPDLOG_FLUSH_PERIOD_SECONDS";
+
+  try {
+    std::string env_var_value = rcpputils::get_env_var(env_var_name);
+
+    if (env_var_value.empty()) {
+      // not set, use default
+      return 5;
+    }
+
+    // Parse the integer value
+    std::size_t pos = 0;
+    int value = std::stoi(env_var_value, &pos);
+
+    // Check if the entire string was consumed (no trailing garbage)
+    if (pos != env_var_value.length()) {
+      throw std::runtime_error("invalid value (trailing characters): " + env_var_value);
+    }
+
+    if (value < 0) {
+      throw std::runtime_error("invalid value (negative): " + env_var_value);
+    }
+
+    return value;
+  } catch (const std::invalid_argument &) {
+    throw std::runtime_error(
+            std::string("failed to get env var '") + env_var_name +
+            "': value is not a valid integer"
+    );
+  } catch (const std::out_of_range &) {
+    throw std::runtime_error(
+            std::string("failed to get env var '") + env_var_name +
+            "': value is out of range"
+    );
+  } catch (const std::runtime_error & error) {
+    throw std::runtime_error(
+            std::string("failed to get env var '") + env_var_name + "': " + error.what()
+    );
+  }
+}
+
 }  // namespace
 
 rcl_logging_ret_t rcl_logging_external_initialize(
@@ -199,8 +248,22 @@ rcl_logging_ret_t rcl_logging_external_initialize(
       // in this case we should do the new thing (until config files are supported)
       // which is to configure the logger to flush periodically and on
       // error level messages
-      spdlog::flush_every(std::chrono::seconds(5));
-      g_root_logger->flush_on(spdlog::level::err);
+      int flush_period_seconds = 5;  // default
+      try {
+        flush_period_seconds = ::get_flush_period_seconds();
+      } catch (const std::runtime_error & error) {
+        RCUTILS_SET_ERROR_MSG(error.what());
+        g_root_logger = nullptr;
+        return RCL_LOGGING_RET_ERROR;
+      }
+
+      if (flush_period_seconds == 0) {
+        // Flush immediately on every log message (unbuffered mode)
+        g_root_logger->flush_on(spdlog::level::trace);
+      } else {
+        spdlog::flush_every(std::chrono::seconds(flush_period_seconds));
+        g_root_logger->flush_on(spdlog::level::err);
+      }
     } else {
       // the old behavior is to not configure the sink at all, so do nothing
     }

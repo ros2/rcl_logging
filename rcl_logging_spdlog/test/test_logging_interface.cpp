@@ -342,6 +342,86 @@ TEST_F(LoggingTest, init_invalid_flush_setting)
   rcutils_reset_error();
 }
 
+TEST_F(LoggingTest, init_with_custom_flush_period)
+{
+  RestoreEnvVar env_var("RCL_LOGGING_SPDLOG_FLUSH_PERIOD_SECONDS");
+  rcpputils::set_env_var("RCL_LOGGING_SPDLOG_FLUSH_PERIOD_SECONDS", "10");
+
+  ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+
+  rcl_logging_external_log(RCUTILS_LOG_SEVERITY_INFO, nullptr, "Test message with custom flush");
+
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
+
+  std::string log_file_path = find_single_log(nullptr).string();
+  std::ifstream log_file(log_file_path);
+  std::stringstream actual_log;
+  actual_log << log_file.rdbuf();
+  EXPECT_THAT(actual_log.str(), ::testing::HasSubstr("Test message with custom flush"));
+}
+
+TEST_F(LoggingTest, init_with_immediate_flush)
+{
+  RestoreEnvVar env_var("RCL_LOGGING_SPDLOG_FLUSH_PERIOD_SECONDS");
+  rcpputils::set_env_var("RCL_LOGGING_SPDLOG_FLUSH_PERIOD_SECONDS", "0");
+
+  ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+
+  // Log a message - with immediate flush, it should be written right away
+  rcl_logging_external_log(RCUTILS_LOG_SEVERITY_INFO, nullptr, "Immediate flush test");
+
+  // Read the log file before shutdown to verify immediate flushing
+  std::string log_file_path = find_single_log(nullptr).string();
+  std::ifstream log_file(log_file_path);
+  std::stringstream actual_log;
+  actual_log << log_file.rdbuf();
+  EXPECT_THAT(actual_log.str(), ::testing::HasSubstr("Immediate flush test"));
+
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
+}
+
+TEST_F(LoggingTest, init_with_invalid_flush_period_non_integer)
+{
+  RestoreEnvVar env_var("RCL_LOGGING_SPDLOG_FLUSH_PERIOD_SECONDS");
+  rcpputils::set_env_var("RCL_LOGGING_SPDLOG_FLUSH_PERIOD_SECONDS", "abc");
+
+  ASSERT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+  std::string error_state_str = rcutils_get_error_string().str;
+  using ::testing::HasSubstr;
+  ASSERT_THAT(
+    error_state_str,
+    HasSubstr("not a valid integer"));
+  rcutils_reset_error();
+}
+
+TEST_F(LoggingTest, init_with_invalid_flush_period_negative)
+{
+  RestoreEnvVar env_var("RCL_LOGGING_SPDLOG_FLUSH_PERIOD_SECONDS");
+  rcpputils::set_env_var("RCL_LOGGING_SPDLOG_FLUSH_PERIOD_SECONDS", "-1");
+
+  ASSERT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+  std::string error_state_str = rcutils_get_error_string().str;
+  using ::testing::HasSubstr;
+  ASSERT_THAT(
+    error_state_str,
+    HasSubstr("negative"));
+  rcutils_reset_error();
+}
+
+TEST_F(LoggingTest, init_with_invalid_flush_period_trailing_chars)
+{
+  RestoreEnvVar env_var("RCL_LOGGING_SPDLOG_FLUSH_PERIOD_SECONDS");
+  rcpputils::set_env_var("RCL_LOGGING_SPDLOG_FLUSH_PERIOD_SECONDS", "5abc");
+
+  ASSERT_EQ(RCL_LOGGING_RET_ERROR, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+  std::string error_state_str = rcutils_get_error_string().str;
+  using ::testing::HasSubstr;
+  ASSERT_THAT(
+    error_state_str,
+    HasSubstr("trailing characters"));
+  rcutils_reset_error();
+}
+
 TEST_F(LoggingTest, full_cycle)
 {
   ASSERT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
