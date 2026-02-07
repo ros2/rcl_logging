@@ -113,18 +113,17 @@ get_flush_period_seconds()
       return RCL_LOGGING_SPDLOG_FLUSH_DEFAULT_DURATION;
     }
 
+    // Reject anything that isn't purely digits (no whitespace, signs, hex, etc.)
+    for (char c : env_var_value) {
+      if (!std::isdigit(static_cast<unsigned char>(c))) {
+        throw std::runtime_error(
+          std::string("invalid value for ") + env_var_name +
+          ": expected a non-negative integer, got '" + env_var_value + "'");
+      }
+    }
+
     // Parse the integer value
-    std::size_t pos = 0;
-    int value = std::stoi(env_var_value, &pos);
-
-    // Check if the entire string was consumed (no trailing garbage)
-    if (pos != env_var_value.length()) {
-      throw std::runtime_error("invalid value (trailing characters): " + env_var_value);
-    }
-
-    if (value < 0) {
-      throw std::runtime_error("invalid value (negative): " + env_var_value);
-    }
+    int value = std::stoi(env_var_value);
 
     if (get_should_use_old_flushing_behavior()) {
       throw std::runtime_error(
