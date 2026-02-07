@@ -37,6 +37,8 @@
 
 #include "rcl_logging_interface/rcl_logging_interface.h"
 
+#define RCL_LOGGING_SPDLOG_FLUSH_DEFAULT_DURATION 5
+
 static std::mutex g_logger_mutex;
 static std::shared_ptr<spdlog::logger> g_root_logger = nullptr;
 
@@ -108,7 +110,7 @@ get_flush_period_seconds()
 
     if (env_var_value.empty()) {
       // not set, use default
-      return 5;
+      return RCL_LOGGING_SPDLOG_FLUSH_DEFAULT_DURATION;
     }
 
     // Parse the integer value
@@ -248,7 +250,7 @@ rcl_logging_ret_t rcl_logging_external_initialize(
       // in this case we should do the new thing (until config files are supported)
       // which is to configure the logger to flush periodically and on
       // error level messages
-      int flush_period_seconds = 5;  // default
+      int flush_period_seconds = RCL_LOGGING_SPDLOG_FLUSH_DEFAULT_DURATION;
       try {
         flush_period_seconds = ::get_flush_period_seconds();
       } catch (const std::runtime_error & error) {
