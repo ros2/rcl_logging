@@ -126,6 +126,12 @@ get_flush_period_seconds()
       throw std::runtime_error("invalid value (negative): " + env_var_value);
     }
 
+    if (get_should_use_old_flushing_behavior()) {
+      throw std::runtime_error(
+              "cannot set flush period when old flushing behavior is enabled"
+      );
+    }
+
     return value;
   } catch (const std::invalid_argument &) {
     throw std::runtime_error(
