@@ -2,8 +2,8 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.3.2 (2026-02-16)
+------------------
 * change flushing behavior for spdlog log files, and add env var to use old style (no explicit flushing) (`#95 <https://github.com/ros2/rcl_logging/issues/95>`_) (`#136 <https://github.com/ros2/rcl_logging/issues/136>`_)
 * Contributors: mergify[bot]
 
