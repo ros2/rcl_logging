@@ -113,17 +113,32 @@ get_flush_period_seconds()
       return RCL_LOGGING_SPDLOG_FLUSH_DEFAULT_DURATION;
     }
 
-    // Reject anything that isn't purely digits (no whitespace, signs, hex, etc.)
-    for (char c : env_var_value) {
-      if (!std::isdigit(static_cast<unsigned char>(c))) {
-        throw std::runtime_error(
-          std::string("invalid value for ") + env_var_name +
-          ": expected a non-negative integer, got '" + env_var_value + "'");
-      }
+    // Parse the integer value; use pos to detect trailing characters.
+    std::size_t pos = 0;
+    int value;
+    try {
+      value = std::stoi(env_var_value, &pos);
+    } catch (const std::invalid_argument &) {
+      throw std::runtime_error(
+        std::string("invalid value for ") + env_var_name +
+        ": '" + env_var_value + "' is not a valid integer");
+    } catch (const std::out_of_range &) {
+      throw std::runtime_error(
+        std::string("invalid value for ") + env_var_name +
+        ": value is out of range");
     }
 
-    // Parse the integer value
-    int value = std::stoi(env_var_value);
+    if (pos != env_var_value.size()) {
+      throw std::runtime_error(
+        std::string("invalid value for ") + env_var_name +
+        ": trailing characters after integer: '" + env_var_value.substr(pos) + "'");
+    }
+
+    if (value < 0) {
+      throw std::runtime_error(
+        std::string("invalid value for ") + env_var_name +
+        ": value must be non-negative, got " + std::to_string(value));
+    }
 
     if (get_should_use_old_flushing_behavior()) {
       throw std::runtime_error(
@@ -132,16 +147,6 @@ get_flush_period_seconds()
     }
 
     return value;
-  } catch (const std::invalid_argument &) {
-    throw std::runtime_error(
-            std::string("failed to get env var '") + env_var_name +
-            "': value is not a valid integer"
-    );
-  } catch (const std::out_of_range &) {
-    throw std::runtime_error(
-            std::string("failed to get env var '") + env_var_name +
-            "': value is out of range"
-    );
   } catch (const std::runtime_error & error) {
     throw std::runtime_error(
             std::string("failed to get env var '") + env_var_name + "': " + error.what()
