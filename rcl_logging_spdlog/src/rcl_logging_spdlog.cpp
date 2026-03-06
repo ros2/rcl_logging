@@ -37,6 +37,8 @@
 
 #include "rcl_logging_interface/rcl_logging_interface.h"
 
+#define RCL_LOGGING_SPDLOG_FLUSH_DEFAULT_DURATION 5
+
 static std::mutex g_logger_mutex;
 static std::shared_ptr<spdlog::logger> g_root_logger = nullptr;
 
@@ -86,6 +88,65 @@ get_should_use_old_flushing_behavior()
 
     // unknown value
     throw std::runtime_error("unrecognized value: " + env_var_value);
+  } catch (const std::runtime_error & error) {
+    throw std::runtime_error(
+            std::string("failed to get env var '") + env_var_name + "': " + error.what()
+    );
+  }
+}
+
+/// \brief Get the flush period in seconds from environment variable.
+/// \return The flush period in seconds. Returns 5 (default) if not set.
+///         Returns 0 for immediate flushing on every log.
+///         Throws std::runtime_error for invalid values.
+RCL_LOGGING_INTERFACE_LOCAL
+int
+get_flush_period_seconds()
+{
+  const char * env_var_name = "RCL_LOGGING_SPDLOG_FLUSH_PERIOD_SECONDS";
+
+  try {
+    std::string env_var_value = rcpputils::get_env_var(env_var_name);
+
+    if (env_var_value.empty()) {
+      // not set, use default
+      return RCL_LOGGING_SPDLOG_FLUSH_DEFAULT_DURATION;
+    }
+
+    // Parse the integer value; use pos to detect trailing characters.
+    std::size_t pos = 0;
+    int value;
+    try {
+      value = std::stoi(env_var_value, &pos);
+    } catch (const std::invalid_argument &) {
+      throw std::runtime_error(
+        std::string("invalid value for ") + env_var_name +
+        ": '" + env_var_value + "' is not a valid integer");
+    } catch (const std::out_of_range &) {
+      throw std::runtime_error(
+        std::string("invalid value for ") + env_var_name +
+        ": value is out of range");
+    }
+
+    if (pos != env_var_value.size()) {
+      throw std::runtime_error(
+        std::string("invalid value for ") + env_var_name +
+        ": trailing characters after integer: '" + env_var_value.substr(pos) + "'");
+    }
+
+    if (value < 0) {
+      throw std::runtime_error(
+        std::string("invalid value for ") + env_var_name +
+        ": value must be non-negative, got " + std::to_string(value));
+    }
+
+    if (get_should_use_old_flushing_behavior()) {
+      throw std::runtime_error(
+              "cannot set flush period when old flushing behavior is enabled"
+      );
+    }
+
+    return value;
   } catch (const std::runtime_error & error) {
     throw std::runtime_error(
             std::string("failed to get env var '") + env_var_name + "': " + error.what()
@@ -199,8 +260,22 @@ rcl_logging_ret_t rcl_logging_external_initialize(
       // in this case we should do the new thing (until config files are supported)
       // which is to configure the logger to flush periodically and on
       // error level messages
-      spdlog::flush_every(std::chrono::seconds(5));
-      g_root_logger->flush_on(spdlog::level::err);
+      int flush_period_seconds = RCL_LOGGING_SPDLOG_FLUSH_DEFAULT_DURATION;
+      try {
+        flush_period_seconds = ::get_flush_period_seconds();
+      } catch (const std::runtime_error & error) {
+        RCUTILS_SET_ERROR_MSG(error.what());
+        g_root_logger = nullptr;
+        return RCL_LOGGING_RET_ERROR;
+      }
+
+      if (flush_period_seconds == 0) {
+        // Flush immediately on every log message (unbuffered mode)
+        g_root_logger->flush_on(spdlog::level::trace);
+      } else {
+        spdlog::flush_every(std::chrono::seconds(flush_period_seconds));
+        g_root_logger->flush_on(spdlog::level::err);
+      }
     } else {
       // the old behavior is to not configure the sink at all, so do nothing
     }
