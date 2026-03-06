@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>rcl_logging_implementation</name>
-  <version>3.4.0</version>
+  <version>3.4.1</version>
   <description>
     Provides the ability to load logging implementations at runtime.
     This package acts as an abstraction layer between rcl and the actual
