@@ -2,6 +2,9 @@
 Changelog for package rcl_logging_implementation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.4.1 (2026-03-07)
+------------------
+
 3.4.0 (2026-01-28)
 ------------------
 * update rcl_logging_implementation architecture diagram. (`#137 <https://github.com/ros2/rcl_logging/issues/137>`_)
