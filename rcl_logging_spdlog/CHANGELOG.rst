@@ -2,6 +2,9 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 3.4.1 (2026-03-07)
 ------------------
 * feat: add env variable to configure flushing interval (`#139 <https://github.com/ros2/rcl_logging/issues/139>`_)

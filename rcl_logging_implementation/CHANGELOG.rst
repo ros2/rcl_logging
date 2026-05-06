@@ -2,6 +2,9 @@
 Changelog for package rcl_logging_implementation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 3.4.1 (2026-03-07)
 ------------------
 
