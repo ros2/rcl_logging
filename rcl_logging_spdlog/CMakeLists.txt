@@ -2,17 +2,8 @@ cmake_minimum_required(VERSION 3.20)
 
 project(rcl_logging_spdlog)
 
-# Default to C11
-if(NOT CMAKE_C_STANDARD)
-  set(CMAKE_C_STANDARD 11)
-endif()
-# Default to C++20
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 20)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-endif()
-
 find_package(ament_cmake_ros REQUIRED)
+find_package(ament_cmake_ros_core REQUIRED)
 find_package(rcl_logging_interface REQUIRED)
 find_package(rcpputils REQUIRED)
 find_package(rcutils REQUIRED)
@@ -31,6 +22,7 @@ endif()
 
 add_library(${PROJECT_NAME} src/rcl_logging_spdlog.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE
+  ament_cmake_ros_core::ament_ros_defaults
   rcpputils::rcpputils
   rcutils::rcutils
   spdlog::spdlog)
@@ -59,12 +51,12 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   ament_add_gmock(test_logging_interface test/test_logging_interface.cpp)
   if(TARGET test_logging_interface)
-    target_link_libraries(test_logging_interface ${PROJECT_NAME} rcpputils::rcpputils)
+    target_link_libraries(test_logging_interface ${PROJECT_NAME} ament_cmake_ros_core::ament_ros_defaults rcpputils::rcpputils)
     target_compile_definitions(test_logging_interface PUBLIC RCUTILS_ENABLE_FAULT_INJECTION)
   endif()
   add_performance_test(benchmark_logging_interface test/benchmark/benchmark_logging_interface.cpp)
   if(TARGET benchmark_logging_interface)
-    target_link_libraries(benchmark_logging_interface ${PROJECT_NAME})
+    target_link_libraries(benchmark_logging_interface ${PROJECT_NAME} ament_cmake_ros_core::ament_ros_defaults)
   endif()
 endif()
 
