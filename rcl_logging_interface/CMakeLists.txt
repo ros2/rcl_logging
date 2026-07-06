@@ -46,7 +46,11 @@ if(BUILD_TESTING)
   find_package(rcpputils REQUIRED)
   ament_add_gtest(test_get_logging_directory test/test_get_logging_directory.cpp)
   if(TARGET test_get_logging_directory)
-    target_link_libraries(test_get_logging_directory ${PROJECT_NAME} ament_cmake_ros_core::ament_ros_defaults rcpputils::rcpputils rcutils::rcutils)
+    target_link_libraries(test_get_logging_directory
+      ${PROJECT_NAME}
+      ament_cmake_ros_core::ament_ros_defaults
+      rcpputils::rcpputils
+      rcutils::rcutils)
   endif()
 endif()
 
