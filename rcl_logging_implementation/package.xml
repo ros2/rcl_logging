@@ -16,6 +16,7 @@
   <author email="tomoya.fujita825@gmail.com">Tomoya Fujita</author>
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
+  <buildtool_depend>ament_cmake_ros_core</buildtool_depend>
 
   <depend>rcl_logging_interface</depend>
   <depend>rcpputils</depend>

@@ -2,17 +2,8 @@ cmake_minimum_required(VERSION 3.20)
 
 project(rcl_logging_noop)
 
-# Default to C11
-if(NOT CMAKE_C_STANDARD)
-  set(CMAKE_C_STANDARD 11)
-endif()
-# Default to C++17
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-endif()
-
 find_package(ament_cmake_ros REQUIRED)
+find_package(ament_cmake_ros_core REQUIRED)
 find_package(rcl_logging_interface REQUIRED)
 find_package(rcutils REQUIRED)
 
@@ -23,6 +14,7 @@ endif()
 add_library(${PROJECT_NAME} src/rcl_logging_noop.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+  ament_cmake_ros_core::ament_ros_defaults
   rcutils::rcutils
   rcl_logging_interface::rcl_logging_interface)
 

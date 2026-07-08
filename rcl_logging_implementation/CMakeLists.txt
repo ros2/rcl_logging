@@ -2,22 +2,12 @@ cmake_minimum_required(VERSION 3.20)
 
 project(rcl_logging_implementation)
 
-# Default to C11
-if(NOT CMAKE_C_STANDARD)
-  set(CMAKE_C_STANDARD 11)
-endif()
-
-# Default to C++17
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-endif()
-
 if(NOT WIN32)
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 find_package(ament_cmake_ros REQUIRED)
+find_package(ament_cmake_ros_core REQUIRED)
 find_package(rcl_logging_interface REQUIRED)
 find_package(rcpputils REQUIRED)
 find_package(rcutils REQUIRED)
@@ -58,6 +48,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   rcutils::rcutils)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+  ament_cmake_ros_core::ament_ros_defaults
   rcpputils::rcpputils)
 
 install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
@@ -86,6 +77,7 @@ if(BUILD_TESTING)
   if(TARGET test_logging_implementation)
     target_link_libraries(test_logging_implementation
       ${PROJECT_NAME}
+      ament_cmake_ros_core::ament_ros_defaults
       rcpputils::rcpputils
       rcutils::rcutils)
   endif()
