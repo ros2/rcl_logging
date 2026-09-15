@@ -14,7 +14,10 @@
 
 #include <chrono>
 #include <filesystem>
+#include <iostream>
+#include <memory>
 #include <string>
+#include <system_error>
 
 #include "gtest/gtest.h"
 
@@ -23,7 +26,6 @@
 #include "../src/functions.hpp"
 
 #include "rcpputils/env.hpp"
-#include "rcpputils/scope_exit.hpp"
 
 #include "rcutils/allocator.h"
 #include "rcutils/error_handling.h"

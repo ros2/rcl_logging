@@ -14,11 +14,12 @@
 
 #include "functions.hpp"
 
-#include <atomic>
+#include <cstddef>
 #include <cstdlib>
+#include <exception>
 #include <memory>
 #include <mutex>
-#include <stdexcept>
+#include <new>
 #include <string>
 
 #include "rcl_logging_interface/rcl_logging_interface.h"
