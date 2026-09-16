@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <stddef.h>
+
 #include <rcutils/allocator.h>
 #include <rcutils/env.h>
 #include <rcutils/error_handling.h>
 #include <rcutils/filesystem.h>
-#include <rcutils/format_string.h>
 #include <rcutils/strdup.h>
 
 #include "rcl_logging_interface/rcl_logging_interface.h"

@@ -15,11 +15,6 @@
 #ifndef FUNCTIONS_HPP_
 #define FUNCTIONS_HPP_
 
-#include <memory>
-#include <string>
-
-#include "rcpputils/shared_library.hpp"
-
 #include "./visibility_control.h"
 
 RCL_LOGGING_IMPLEMENTATION_DEFAULT_VISIBILITY

@@ -14,11 +14,13 @@
 
 
 #include <rcutils/allocator.h>
+#include <rcutils/error_handling.h>
 #include <rcutils/logging.h>
 #include <rcutils/macros.h>
 
 #include <rcl_logging_interface/rcl_logging_interface.h>
 
+#include <cstdint>
 #include <string>
 
 #include "performance_test_fixture/performance_test_fixture.hpp"

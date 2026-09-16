@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <cerrno>
 #include <chrono>
 #include <cinttypes>
+#include <cstddef>
+#include <cstdint>
 #include <filesystem>
 #include <memory>
 #include <mutex>
+#include <stdexcept>
 #include <string>
 #include <system_error>
 #include <utility>
@@ -26,11 +28,13 @@
 #include "rcpputils/scope_exit.hpp"
 
 #include "rcutils/allocator.h"
+#include "rcutils/error_handling.h"
 #include "rcutils/logging.h"
 #include "rcutils/process.h"
 #include "rcutils/snprintf.h"
 #include "rcutils/strdup.h"
 #include "rcutils/time.h"
+#include "rcutils/types/rcutils_ret.h"
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"

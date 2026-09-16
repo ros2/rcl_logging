@@ -17,6 +17,7 @@
 
 #include "rcl_logging_interface/visibility_control.h"
 #include "rcutils/allocator.h"
+#include "rcutils/macros.h"
 
 #ifdef __cplusplus
 extern "C" {
