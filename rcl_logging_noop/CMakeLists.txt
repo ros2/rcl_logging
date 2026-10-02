@@ -31,6 +31,5 @@ install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
   RUNTIME DESTINATION bin)
 
 ament_export_dependencies(rcl_logging_interface)
-ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(${PROJECT_NAME})
 ament_package()
