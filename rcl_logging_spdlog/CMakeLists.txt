@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(rcl_logging_spdlog)
 
-find_package(ament_cmake_ros REQUIRED)
+find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_ros_core REQUIRED)
 find_package(rcl_logging_interface REQUIRED)
 find_package(rcpputils REQUIRED)
@@ -48,7 +48,7 @@ if(BUILD_TESTING)
 
   find_package(performance_test_fixture REQUIRED)
 
-  find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_gmock REQUIRED)
   ament_add_gmock(test_logging_interface test/test_logging_interface.cpp)
   if(TARGET test_logging_interface)
     target_link_libraries(test_logging_interface ${PROJECT_NAME} ament_cmake_ros_core::ament_ros_defaults rcpputils::rcpputils)
