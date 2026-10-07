@@ -7,7 +7,6 @@ find_package(ament_cmake_ros_core REQUIRED)
 find_package(rcl_logging_interface REQUIRED)
 find_package(rcpputils REQUIRED)
 find_package(rcutils REQUIRED)
-find_package(spdlog_vendor REQUIRED) # Provides spdlog on platforms without it.
 find_package(spdlog REQUIRED)
 
 if(NOT WIN32)

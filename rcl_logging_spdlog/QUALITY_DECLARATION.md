@@ -148,19 +148,13 @@ Currently nightly results can be seen here:
 
 Below are evaluations of each of `rcl_logging_spdlog`'s run-time and build-time dependencies that have been determined to influence the quality.
 
-`rcl_logging_spdlog` depends on the ROS packages `rcutils` and `spdlog_vendor`.
+`rcl_logging_spdlog` depends on the ROS packages `rcutils`.
 
 #### `rcutils`
 
 The `rcutils` package provides an API which contains common utilities and data structures useful when programming in C.
 
 It is **Quality Level 1**, see its [Quality Declaration document](https://github.com/ros2/rcutils/blob/rolling/QUALITY_DECLARATION.md).
-
-#### `spdlog_vendor`
-
-The `spdlog_vendor` package provides a CMake shim over the spdlog library.
-
-It is **Quality Level 1**, see its [Quality Declaration document](https://github.com/ros2/spdlog_vendor/blob/rolling/QUALITY_DECLARATION.md).
 
 ### Optional Direct Runtime ROS Dependencies [5.ii]
 
@@ -169,7 +163,6 @@ It is **Quality Level 1**, see its [Quality Declaration document](https://github
 ### Direct Runtime non-ROS Dependency [5.iii]
 
 `rcl_logging_spdlog` has a Direct Runtime non-ROS dependency on the `spdlog` library.
-It was declared to be Quality Level 1 [here](https://github.com/ros2/spdlog_vendor/blob/rolling/SPDLOG_QUALITY_DECLARATION.md).
 
 ## Platform Support [6]
 
