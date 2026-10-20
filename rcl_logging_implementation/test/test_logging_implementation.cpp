@@ -227,3 +227,15 @@ TEST_F(TestLoggingImplementation, shutdown_without_initialize)
     rcutils_reset_error();
   }
 }
+
+TEST_F(TestLoggingImplementation, explicit_unload_allows_reload)
+{
+  RestoreEnvVar env_var("RCL_LOGGING_IMPLEMENTATION");
+  ASSERT_TRUE(rcpputils::set_env_var("RCL_LOGGING_IMPLEMENTATION", "rcl_logging_spdlog"));
+
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+  unload_logging_library();
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_initialize(nullptr, nullptr, allocator));
+  EXPECT_EQ(RCL_LOGGING_RET_OK, rcl_logging_external_shutdown());
+  unload_logging_library();
+}
