@@ -18,8 +18,6 @@
 #include <cstdlib>
 #include <exception>
 #include <memory>
-#include <mutex>
-#include <new>
 #include <string>
 
 #include "rcl_logging_interface/rcl_logging_interface.h"
@@ -245,10 +243,7 @@ rcl_logging_external_shutdown(void)
 
   rcl_logging_ret_t ret = g_shutdown_func();
 
-  // Note: We intentionally do NOT unload the library here to avoid race conditions.
-  // The library will be unloaded at process exit via the registered atexit handler.
-  // This ensures that function pointers remain valid if any thread is still logging.
-  // With this approach, it does not have to generate the mutex overhead.
+  // The implementation library remains loaded until an explicit unload request.
 
   return ret;
 }
