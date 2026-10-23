@@ -18,8 +18,6 @@
 #include <cstdlib>
 #include <exception>
 #include <memory>
-#include <mutex>
-#include <new>
 #include <string>
 
 #include "rcl_logging_interface/rcl_logging_interface.h"
@@ -48,12 +46,18 @@ typedef void (* rcl_logging_log_func_t)(int, const char *, const char *);
 typedef rcl_logging_ret_t (* rcl_logging_set_logger_level_func_t)(const char *, int);
 
 // Global state
-static std::shared_ptr<rcpputils::SharedLibrary> g_logging_lib = nullptr;
+// Keep the logging implementation loaded through static destruction. An atexit handler that
+// unloads it can also unmap the DSO containing this handler, causing a crash on return.
+static std::shared_ptr<rcpputils::SharedLibrary> &
+logging_lib()
+{
+  static auto * lib = new std::shared_ptr<rcpputils::SharedLibrary>();
+  return *lib;
+}
 static rcl_logging_initialize_func_t g_initialize_func = nullptr;
 static rcl_logging_shutdown_func_t g_shutdown_func = nullptr;
 static rcl_logging_log_func_t g_log_func = nullptr;
 static rcl_logging_set_logger_level_func_t g_set_logger_level_func = nullptr;
-static std::once_flag g_atexit_once_flag;
 
 static std::shared_ptr<rcpputils::SharedLibrary>
 attempt_to_load_one_logging_library(const std::string & library)
@@ -114,7 +118,7 @@ bool
 load_logging_library()
 {
   // Already loaded
-  if (g_logging_lib) {
+  if (logging_lib()) {
     return true;
   }
 
@@ -136,7 +140,7 @@ load_logging_library()
 
   // User specified a logging implementation, attempt to load that one and only that one
   if (!env_var.empty()) {
-    g_logging_lib = attempt_to_load_one_logging_library(env_var);
+    logging_lib() = attempt_to_load_one_logging_library(env_var);
   } else {
     RCUTILS_LOG_DEBUG_NAMED(
       "rcl_logging_implementation",
@@ -144,11 +148,11 @@ load_logging_library()
       STRINGIFY(DEFAULT_RCL_LOGGING_IMPLEMENTATION));
 
     // User didn't specify, so load the default logging implementation
-    g_logging_lib =
+    logging_lib() =
       attempt_to_load_one_logging_library(STRINGIFY(DEFAULT_RCL_LOGGING_IMPLEMENTATION));
   }
 
-  if (!g_logging_lib) {
+  if (!logging_lib()) {
     RCUTILS_SET_ERROR_MSG("failed to load any logging implementations");
     return false;
   }
@@ -158,7 +162,7 @@ load_logging_library()
   RCPPUTILS_SCOPE_EXIT(
   {
     if (!success) {
-      g_logging_lib.reset();
+      logging_lib().reset();
       g_initialize_func = nullptr;
       g_shutdown_func = nullptr;
       g_log_func = nullptr;
@@ -168,25 +172,25 @@ load_logging_library()
 
   // Register all function pointers
   g_initialize_func = reinterpret_cast<rcl_logging_initialize_func_t>(
-    lookup_symbol(g_logging_lib, "rcl_logging_external_initialize"));
+    lookup_symbol(logging_lib(), "rcl_logging_external_initialize"));
   if (!g_initialize_func) {
     return false;
   }
 
   g_shutdown_func = reinterpret_cast<rcl_logging_shutdown_func_t>(
-    lookup_symbol(g_logging_lib, "rcl_logging_external_shutdown"));
+    lookup_symbol(logging_lib(), "rcl_logging_external_shutdown"));
   if (!g_shutdown_func) {
     return false;
   }
 
   g_log_func = reinterpret_cast<rcl_logging_log_func_t>(
-    lookup_symbol(g_logging_lib, "rcl_logging_external_log"));
+    lookup_symbol(logging_lib(), "rcl_logging_external_log"));
   if (!g_log_func) {
     return false;
   }
 
   g_set_logger_level_func = reinterpret_cast<rcl_logging_set_logger_level_func_t>(
-    lookup_symbol(g_logging_lib, "rcl_logging_external_set_logger_level"));
+    lookup_symbol(logging_lib(), "rcl_logging_external_set_logger_level"));
   if (!g_set_logger_level_func) {
     return false;
   }
@@ -194,13 +198,6 @@ load_logging_library()
   RCUTILS_LOG_DEBUG_NAMED(
     "rcl_logging_implementation",
     "Successfully registered all function pointers from logging library");
-
-  // Register atexit handler to unload library at process exit
-  // This avoids race conditions during shutdown while ensuring cleanup
-  // std::call_once guarantees the handler is registered exactly once
-  std::call_once(
-    g_atexit_once_flag, []() {std::atexit(unload_logging_library);}
-  );
 
   success = true;
   return true;
@@ -246,10 +243,7 @@ rcl_logging_external_shutdown(void)
 
   rcl_logging_ret_t ret = g_shutdown_func();
 
-  // Note: We intentionally do NOT unload the library here to avoid race conditions.
-  // The library will be unloaded at process exit via the registered atexit handler.
-  // This ensures that function pointers remain valid if any thread is still logging.
-  // With this approach, it does not have to generate the mutex overhead.
+  // The implementation library remains loaded until an explicit unload request.
 
   return ret;
 }
@@ -288,7 +282,7 @@ unload_logging_library()
   g_shutdown_func = nullptr;
   g_log_func = nullptr;
   g_set_logger_level_func = nullptr;
-  g_logging_lib.reset();
+  logging_lib().reset();
 }
 
 void
@@ -296,10 +290,4 @@ force_unload_logging_library()
 {
   // Call the regular unload function
   unload_logging_library();
-  // Reset the once_flag to allow re-registration of atexit handler
-  // This is safe in test scenarios but should NOT be used in production
-  // Note: std::once_flag doesn't have a standard reset method, so we use placement new
-  // to reconstruct it in-place, which is a well-known pattern for testing
-  g_atexit_once_flag.~once_flag();
-  new (&g_atexit_once_flag) std::once_flag();
 }
