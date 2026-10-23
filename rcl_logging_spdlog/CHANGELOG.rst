@@ -2,6 +2,17 @@
 Changelog for package rcl_logging_spdlog
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.5.1 (2026-10-23)
+------------------
+* test droping vendor (`#148 <https://github.com/ros2/rcl_logging//issues/148>`_)
+* Switch from ament_cmake_ros to just ament_cmake (`#147 <https://github.com/ros2/rcl_logging//issues/147>`_)
+* Remove ament_export_include_directories and ament_export_libraries calls (`#146 <https://github.com/ros2/rcl_logging//issues/146>`_)
+* Use the SPDX identifier Apache-2.0 in package.xml license tags (`#144 <https://github.com/ros2/rcl_logging//issues/144>`_)
+* Including missing dependencies (`#143 <https://github.com/ros2/rcl_logging//issues/143>`_)
+* Include what you use (`#142 <https://github.com/ros2/rcl_logging//issues/142>`_)
+* use C++ 20 in default. (`#141 <https://github.com/ros2/rcl_logging//issues/141>`_)
+* Contributors: Alejandro Hernández Cordero, Christophe Bedard, Michael Carlstrom, Michael Carroll, Tomoya Fujita
+
 3.5.0 (2026-05-06)
 ------------------
 
@@ -52,9 +63,9 @@ Changelog for package rcl_logging_spdlog
   in a directory.  Instead, switch to using the C++ std::filesystem
   directory iterator and doing the work ourselves, which is portable
   and much less error-prone.
-  2.  Set the ROS_LOG_DIR for all of the tests in here.  This should
+  1.  Set the ROS_LOG_DIR for all of the tests in here.  This should
   make the test resistant to being run in parallel with other tests.
-  3.  Consistently use rcpputils::set_env_var, rather than a mix
+  1.  Consistently use rcpputils::set_env_var, rather than a mix
   of rcpputils and rcutils.
 * Update quality declaration document (`#112 <https://github.com/ros2/rcl_logging/issues/112>`_)
 * Re-order rcl_logging_interface include (`#111 <https://github.com/ros2/rcl_logging/issues/111>`_)

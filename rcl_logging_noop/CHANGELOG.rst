@@ -2,6 +2,14 @@
 Changelog for package rcl_logging_noop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.5.1 (2026-10-23)
+------------------
+* Switch from ament_cmake_ros to just ament_cmake (`#147 <https://github.com/ros2/rcl_logging//issues/147>`_)
+* Remove ament_export_include_directories and ament_export_libraries calls (`#146 <https://github.com/ros2/rcl_logging//issues/146>`_)
+* Use the SPDX identifier Apache-2.0 in package.xml license tags (`#144 <https://github.com/ros2/rcl_logging//issues/144>`_)
+* use C++ 20 in default. (`#141 <https://github.com/ros2/rcl_logging//issues/141>`_)
+* Contributors: Christophe Bedard, Michael Carroll, Tomoya Fujita
+
 3.5.0 (2026-05-06)
 ------------------
 

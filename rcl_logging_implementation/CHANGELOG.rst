@@ -2,6 +2,15 @@
 Changelog for package rcl_logging_implementation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.5.1 (2026-10-23)
+------------------
+* Switch from ament_cmake_ros to just ament_cmake (`#147 <https://github.com/ros2/rcl_logging//issues/147>`_)
+* Use the SPDX identifier Apache-2.0 in package.xml license tags (`#144 <https://github.com/ros2/rcl_logging//issues/144>`_)
+* Including missing dependencies (`#143 <https://github.com/ros2/rcl_logging//issues/143>`_)
+* Include what you use (`#142 <https://github.com/ros2/rcl_logging//issues/142>`_)
+* use C++ 20 in default. (`#141 <https://github.com/ros2/rcl_logging//issues/141>`_)
+* Contributors: Alejandro Hernández Cordero, Christophe Bedard, Michael Carroll, Tomoya Fujita
+
 3.5.0 (2026-05-06)
 ------------------
 
