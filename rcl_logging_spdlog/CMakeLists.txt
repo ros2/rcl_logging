@@ -37,12 +37,6 @@ install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  # cppcheck 1.90 doesn't understand some of the syntax in spdlog's bundled fmt
-  # code.  Since we already have cppcheck disabled on Linux, just disable it
-  # completely for this package.
-  list(APPEND AMENT_LINT_AUTO_EXCLUDE
-    ament_cmake_cppcheck
-  )
   ament_lint_auto_find_test_dependencies()
 
   find_package(performance_test_fixture REQUIRED)
