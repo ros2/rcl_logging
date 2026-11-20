@@ -72,6 +72,7 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   find_package(rcl_logging_noop REQUIRED)
   find_package(rcl_logging_spdlog REQUIRED)
+  find_package(spdlog REQUIRED)
 
   ament_add_gtest(test_logging_implementation test/test_logging_implementation.cpp)
   if(TARGET test_logging_implementation)
@@ -80,6 +81,18 @@ if(BUILD_TESTING)
       ament_cmake_ros_core::ament_ros_defaults
       rcpputils::rcpputils
       rcutils::rcutils)
+  endif()
+
+  # A process that uses spdlog itself, so the logging library must stay loaded
+  # until it exits. Its own executable, because the other tests unload the
+  # library, which isn't safe once spdlog outlives it.
+  ament_add_gtest(test_exit_with_spdlog test/test_exit_with_spdlog.cpp)
+  if(TARGET test_exit_with_spdlog)
+    target_link_libraries(test_exit_with_spdlog
+      ${PROJECT_NAME}
+      rcpputils::rcpputils
+      rcutils::rcutils
+      spdlog::spdlog)
   endif()
 endif()
 

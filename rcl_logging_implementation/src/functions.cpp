@@ -15,11 +15,8 @@
 #include "functions.hpp"
 
 #include <cstddef>
-#include <cstdlib>
 #include <exception>
 #include <memory>
-#include <mutex>
-#include <new>
 #include <string>
 
 #include "rcl_logging_interface/rcl_logging_interface.h"
@@ -48,12 +45,19 @@ typedef void (* rcl_logging_log_func_t)(int, const char *, const char *);
 typedef rcl_logging_ret_t (* rcl_logging_set_logger_level_func_t)(const char *, int);
 
 // Global state
-static std::shared_ptr<rcpputils::SharedLibrary> g_logging_lib = nullptr;
+// Never destroyed, so the logging library stays loaded until the process
+// exits. Objects that the library creates can outlive any point at which it
+// could be unloaded, and run its code later in exit(): rcl_logging_spdlog's
+// flush thread and the logger it registers with spdlog are only stopped and
+// destroyed by spdlog's static destructors, which run after atexit() handlers
+// when the process uses spdlog itself. Only the tests unload the library, with
+// force_unload_logging_library().
+static std::shared_ptr<rcpputils::SharedLibrary> & g_logging_lib =
+  *new std::shared_ptr<rcpputils::SharedLibrary>();
 static rcl_logging_initialize_func_t g_initialize_func = nullptr;
 static rcl_logging_shutdown_func_t g_shutdown_func = nullptr;
 static rcl_logging_log_func_t g_log_func = nullptr;
 static rcl_logging_set_logger_level_func_t g_set_logger_level_func = nullptr;
-static std::once_flag g_atexit_once_flag;
 
 static std::shared_ptr<rcpputils::SharedLibrary>
 attempt_to_load_one_logging_library(const std::string & library)
@@ -195,13 +199,6 @@ load_logging_library()
     "rcl_logging_implementation",
     "Successfully registered all function pointers from logging library");
 
-  // Register atexit handler to unload library at process exit
-  // This avoids race conditions during shutdown while ensuring cleanup
-  // std::call_once guarantees the handler is registered exactly once
-  std::call_once(
-    g_atexit_once_flag, []() {std::atexit(unload_logging_library);}
-  );
-
   success = true;
   return true;
 }
@@ -247,7 +244,7 @@ rcl_logging_external_shutdown(void)
   rcl_logging_ret_t ret = g_shutdown_func();
 
   // Note: We intentionally do NOT unload the library here to avoid race conditions.
-  // The library will be unloaded at process exit via the registered atexit handler.
+  // The library stays loaded until the process exits, see g_logging_lib.
   // This ensures that function pointers remain valid if any thread is still logging.
   // With this approach, it does not have to generate the mutex overhead.
 
@@ -294,12 +291,7 @@ unload_logging_library()
 void
 force_unload_logging_library()
 {
-  // Call the regular unload function
+  // Lets the tests load a different implementation. This should NOT be used in
+  // production, see g_logging_lib.
   unload_logging_library();
-  // Reset the once_flag to allow re-registration of atexit handler
-  // This is safe in test scenarios but should NOT be used in production
-  // Note: std::once_flag doesn't have a standard reset method, so we use placement new
-  // to reconstruct it in-place, which is a well-known pattern for testing
-  g_atexit_once_flag.~once_flag();
-  new (&g_atexit_once_flag) std::once_flag();
 }
